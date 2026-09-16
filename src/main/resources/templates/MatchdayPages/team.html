@@ -74,6 +74,20 @@
         <p class="note">Eigentore des Gegners zählen für den Verein, nicht für den Schützen.</p>
         {/if}
       </div>
+
+      <div class="facts-block">
+        <h2>Torzeitpunkte</h2>
+        <table class="balance">
+          <thead>
+          <tr><th></th><th>Erzielt</th><th>Kassiert</th></tr>
+          </thead>
+          <tbody>
+          {#for t in page.goalTimings}
+            <tr><th>{t.label}</th><td>{t.scored}</td><td>{t.conceded}</td></tr>
+          {/for}
+          </tbody>
+        </table>
+      </div>
     </aside>
   </div>
 </article>

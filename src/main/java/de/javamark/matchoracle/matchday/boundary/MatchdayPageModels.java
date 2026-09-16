@@ -2,6 +2,7 @@ package de.javamark.matchoracle.matchday.boundary;
 
 import de.javamark.matchoracle.matchday.entity.Balance;
 import de.javamark.matchoracle.matchday.entity.Goal;
+import de.javamark.matchoracle.matchday.entity.GoalTiming;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
@@ -233,10 +234,16 @@ public final class MatchdayPageModels {
         }
     }
 
+    record GoalTimingRow(String label, int scored, int conceded) {
+        static GoalTimingRow of(GoalTiming t) {
+            return new GoalTimingRow(t.label(), t.scored(), t.conceded());
+        }
+    }
+
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
-                    List<ScorerRow> scorers, String chartJson, DataInfo data) {
+                    List<ScorerRow> scorers, List<GoalTimingRow> goalTimings, String chartJson, DataInfo data) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }
