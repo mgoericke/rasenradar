@@ -200,6 +200,11 @@ h2 { font-size: 1.1rem; }
 .provenance a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 .provenance a:hover { color: var(--ink); border-color: var(--ink); }
 .provenance.is-stale { color: var(--loss); }
+.site-credit { margin: .5rem 0 0; color: var(--ink-mute); font-size: .82rem; }
+.site-credit a { border-bottom: 1px solid var(--line); }
+.site-credit a:hover { color: var(--ink); border-color: var(--ink); }
+.repo-link { display: inline-flex; align-items: center; gap: .3rem; border-bottom: none !important; }
+.repo-link svg { flex-shrink: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
   .fixture, .pill, .pager a { transition: background-color .12s ease, border-color .12s ease; }

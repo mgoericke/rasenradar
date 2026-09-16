@@ -106,7 +106,10 @@ public class MatchdayFacade {
 
     private static TeamSituation team(Team team, Matchday matchday, Standings standings, Form form) {
         var standing = standings.of(team);
-        boolean promoted = Matchday.latestSeason(matchday.league).isPresent()
+        // Champions League has no promotion/relegation — a club new to the league phase qualified
+        // through its domestic league, it was not "promoted" the way a Bundesliga club is.
+        boolean promoted = matchday.league != League.CHAMPIONS_LEAGUE
+                && Matchday.latestSeason(matchday.league).isPresent()
                 && !Match.playedInLeagueSeason(team, matchday.league, matchday.season - 1);
         return new TeamSituation(team.id, team.name, team.shortName,
                 standing.map(s -> s.position()).orElse(null),

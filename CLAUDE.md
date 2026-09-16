@@ -90,6 +90,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Skill-Score | `skillScore` |
 | Saison einer Liga (z. B. 2. Bundesliga 2024/25) | `LeagueSeason` |
 | Vereinsseite (Spielplan, Saisonverlauf, Bilanz, Torschützen) | `TeamPage` / `ScheduleRow` |
+| Champions-League-Ligaphase | `League.CHAMPIONS_LEAGUE` (nur Anzeige, keine KI-Vorschau) |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 

@@ -101,7 +101,11 @@ public class MatchdaySynchronizer {
      * are loaded once, as soon as no matchday of that season is known yet.
      */
     void importMissingSeasons(League league, int currentSeason) {
-        for (int season = currentSeason - historySeasons; season <= currentSeason; season++) {
+        // Champions League: only the current season — the league-phase field turns over so much
+        // each year that past seasons give almost no reusable form/head-to-head data, at the cost
+        // of importing dozens of clubs that will not play again.
+        int seasons = league == League.CHAMPIONS_LEAGUE ? 0 : historySeasons;
+        for (int season = currentSeason - seasons; season <= currentSeason; season++) {
             if (Matchday.count("league = ?1 and season = ?2", league, season) == 0) {
                 importSeason(league, season);
             }

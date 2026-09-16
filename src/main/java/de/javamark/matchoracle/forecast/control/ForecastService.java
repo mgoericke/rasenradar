@@ -53,6 +53,11 @@ public class ForecastService {
         return forecast(matchId, false);
     }
 
+    /** Spec 02 is scoped to the two Bundesligas for now; other leagues (e.g. Champions League) are view-only. */
+    static boolean supportsForecast(String league) {
+        return "bl1".equals(league) || "bl2".equals(league);
+    }
+
     /**
      * Live forecast (spec 02: only before kickoff) or backtest (a played match of the
      * current season, facts as of before kickoff — the models cannot know these results).
@@ -65,6 +70,9 @@ public class ForecastService {
             ForecastParameters parameters = currentParameters();
             MatchSituation situation = matchday.situationOf(matchId, parameters.formMatches)
                     .orElseThrow(() -> new IllegalArgumentException("unknown match " + matchId));
+            if (!supportsForecast(situation.league())) {
+                throw new IllegalStateException("KI-Vorschau ist aktuell nur für die 1. und 2. Bundesliga verfügbar");
+            }
             if (!backtest && situation.played()) {
                 throw new IllegalStateException("Prognosen entstehen nur für Begegnungen, die noch nicht angepfiffen sind");
             }

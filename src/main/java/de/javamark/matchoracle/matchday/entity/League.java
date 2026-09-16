@@ -6,7 +6,8 @@ package de.javamark.matchoracle.matchday.entity;
 public enum League {
 
     BUNDESLIGA_1("bl1"),
-    BUNDESLIGA_2("bl2");
+    BUNDESLIGA_2("bl2"),
+    CHAMPIONS_LEAGUE("ucl");
 
     /** League shortcut as used by the external data source (OpenLigaDB). */
     private final String sourceShortcut;

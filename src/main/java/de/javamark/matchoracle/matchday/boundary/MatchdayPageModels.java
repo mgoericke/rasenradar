@@ -34,6 +34,16 @@ public final class MatchdayPageModels {
         return switch (league) {
             case BUNDESLIGA_1 -> "1. Bundesliga";
             case BUNDESLIGA_2 -> "2. Bundesliga";
+            case CHAMPIONS_LEAGUE -> "Champions League";
+        };
+    }
+
+    /** Short marker in the league badge — "1"/"2" for the Bundesligas, an abbreviation otherwise. */
+    static String badge(League league) {
+        return switch (league) {
+            case BUNDESLIGA_1 -> "1";
+            case BUNDESLIGA_2 -> "2";
+            case CHAMPIONS_LEAGUE -> "CL";
         };
     }
 
@@ -75,10 +85,19 @@ public final class MatchdayPageModels {
             return new Nav(League.BUNDESLIGA_1.sourceShortcut(), null, leagues(null), page);
         }
 
+        /**
+         * Spec 02 is scoped to the two Bundesligas for now; templates use this to hide the KI-Vorschau
+         * CTA elsewhere. Duplicates {@code ForecastService.supportsForecast} — matchday must not
+         * depend on forecast, so this stays a plain, independently kept-in-sync check.
+         */
+        public boolean forecastSupported() {
+            return "bl1".equals(leagueShortcut) || "bl2".equals(leagueShortcut);
+        }
+
         private static List<NavLeague> leagues(League active) {
             return java.util.Arrays.stream(League.values())
                     .map(l -> new NavLeague(l.sourceShortcut(), MatchdayPageModels.leagueName(l),
-                            l == League.BUNDESLIGA_1 ? "1" : "2", l == active))
+                            MatchdayPageModels.badge(l), l == active))
                     .toList();
         }
     }
@@ -107,8 +126,17 @@ public final class MatchdayPageModels {
     record DayGroup(String label, List<MatchRow> matches) {
     }
 
-    /** Zones of the table: bl1 1-4 Champions League; bl2 1-2 promotion, 3 promotion play-off; both 16 relegation play-off, 17-18 relegation. */
+    /**
+     * Zones of the table: bl1 1-4 Champions League; bl2 1-2 promotion, 3 promotion play-off; both
+     * 16 relegation play-off, 17-18 relegation. Champions League league phase: 1-8 straight to the
+     * round of 16, 9-24 into the knockout play-off, 25-36 eliminated.
+     */
     static String zone(League league, int position) {
+        if (league == League.CHAMPIONS_LEAGUE) {
+            if (position <= 8) return "zone-top";
+            if (position <= 24) return "zone-top-playoff";
+            return "zone-bottom";
+        }
         if (league == League.BUNDESLIGA_1 && position <= 4) return "zone-top";
         if (league == League.BUNDESLIGA_2 && position <= 2) return "zone-top";
         if (league == League.BUNDESLIGA_2 && position == 3) return "zone-top-playoff";

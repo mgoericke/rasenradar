@@ -5,7 +5,9 @@
   <div class="matchday-head">
     <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
     <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
+    {#if page.nav.forecastSupported}
     <p class="matchday-actions"><a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a></p>
+    {/if}
     <nav class="pager" aria-label="Spieltag wechseln">
       {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
       {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
@@ -24,13 +26,15 @@
           {#if m.played}{m.score}{#else}–:–{/if}
         </span>
         <span class="away">{#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy"> {/if}{m.away}</span>
-        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if !m.played}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if !m.played && page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
     </li>
     {/for}
   </ol>
   {/for}
+  {#if page.nav.forecastSupported}
   <div hx-get="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts/markers" hx-trigger="load" hx-swap="none"></div>
+  {/if}
 </section>
 
 <aside class="standings">

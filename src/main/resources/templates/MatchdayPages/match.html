@@ -11,9 +11,11 @@
       <span class="away">{#if page.match.awayIcon}<img class="crest large" src="{page.match.awayIcon}" alt=""> {/if}{page.match.away}</span>
     </h1>
     <p class="half">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
+    {#if page.nav.forecastSupported}
     <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML">
       <a class="link-button ai" href="{page.forecastLink}">KI-Vorschau{#if !page.match.played} erstellen{/if}</a>
     </div>
+    {/if}
   </div>
 
   {#if page.goals}

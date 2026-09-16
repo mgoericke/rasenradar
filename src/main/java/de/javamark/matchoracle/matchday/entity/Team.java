@@ -22,8 +22,8 @@ public class Team extends PanacheEntity {
     @Column(length = 30)
     public String shortName;
 
-    /** Club crest, an external URL from the source; may be null. */
-    @Column(length = 500)
+    /** Club crest as provided by the source — usually a URL, but at least one is an inline base64 data: URI; may be null. */
+    @Column(columnDefinition = "text")
     public String iconUrl;
 
     public static Optional<Team> findByExternalId(int externalId) {
