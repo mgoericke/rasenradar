@@ -234,16 +234,18 @@ public final class MatchdayPageModels {
         }
     }
 
-    record GoalTimingRow(String label, int scored, int conceded) {
-        static GoalTimingRow of(GoalTiming t) {
-            return new GoalTimingRow(t.label(), t.scored(), t.conceded());
-        }
+    /** Chart.js data for the goal-timing bar chart: labels plus a scored/conceded series, as JSON. */
+    static String goalTimingJson(List<GoalTiming> timings) {
+        String labels = timings.stream().map(t -> '"' + t.label() + '"').collect(java.util.stream.Collectors.joining(","));
+        String scored = timings.stream().map(t -> String.valueOf(t.scored())).collect(java.util.stream.Collectors.joining(","));
+        String conceded = timings.stream().map(t -> String.valueOf(t.conceded())).collect(java.util.stream.Collectors.joining(","));
+        return "{\"labels\":[" + labels + "],\"scored\":[" + scored + "],\"conceded\":[" + conceded + "]}";
     }
 
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
-                    List<ScorerRow> scorers, List<GoalTimingRow> goalTimings, String chartJson, DataInfo data) {
+                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, DataInfo data) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }
