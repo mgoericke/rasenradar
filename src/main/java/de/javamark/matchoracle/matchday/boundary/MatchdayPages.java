@@ -187,14 +187,19 @@ public class MatchdayPages {
         boolean currentSeason = Matchday.latestSeason(league).map(s -> s == season).orElse(false);
 
         List<SeasonChip> otherSeasons = new ArrayList<>();
+        boolean hasPreviousSeasonInLeague = false;
         for (LeagueSeason ls : Match.findLeagueSeasonsOf(team)) {
             if (ls.league() == league && ls.season() == season) continue;
+            if (ls.league() == league && ls.season() == season - 1) hasPreviousSeasonInLeague = true;
             int last = Match.findPlayedByTeamBefore(team, ls.league(), ls.season(), Integer.MAX_VALUE).stream()
                     .mapToInt(m -> m.matchday.number).max().orElse(0);
             Integer position = standingsCalculator.standingsBefore(ls.league(), ls.season(), last + 1).of(team).map(p -> p.position()).orElse(null);
             otherSeasons.add(new SeasonChip(MatchdayPageModels.seasonLabel(ls.season()), MatchdayPageModels.leagueName(ls.league()), position,
                     "/" + ls.league().sourceShortcut() + "/" + ls.season() + "/teams/" + team.id));
         }
+        String positionChartJson = hasPreviousSeasonInLeague
+                ? seasonComparisonChart(league, team, season, lastPlayedMatchday)
+                : positionChart(league, season, lastPlayedMatchday, List.of(team));
 
         Matchday reference = (played.isEmpty() ? schedule.get(0) : played.get(played.size() - 1)).matchday;
         return new TeamPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, currentSeason, team.name, team.iconUrl,
@@ -207,7 +212,7 @@ public class MatchdayPages {
                 BalanceRow.of("Auswärts", Balance.of(team, played.stream().filter(m -> m.awayTeam.equals(team)).toList())),
                 scorerCalculator.scorersFor(team, league, season).stream().map(ScorerRow::of).toList(),
                 MatchdayPageModels.goalTimingJson(goalTimingCalculator.timingFor(team, league, season)),
-                positionChart(league, season, lastPlayedMatchday, List.of(team)),
+                positionChartJson,
                 DataInfo.of(reference, Instant.now()));
     }
 
@@ -249,9 +254,51 @@ public class MatchdayPages {
         }
         List<String> series = new ArrayList<>();
         for (int i = 0; i < teams.size(); i++) {
-            series.add("{\"name\":\"" + teams.get(i).shortName + "\",\"positions\":[" + String.join(",", positions.get(i)) + "]}");
+            series.add(seriesJson(teams.get(i).shortName, positions.get(i), false));
         }
         return "{\"labels\":[" + String.join(",", labels) + "],\"teams\":[" + String.join(",", series) + "],\"teamCount\":" + teamCount + "}";
+    }
+
+    /**
+     * Table position of one team across the current season and, aligned by matchday number, the
+     * immediately preceding season in the same league — "where did we stand at matchday X last
+     * year". Caller has already checked that a previous season in the same league exists.
+     */
+    private String seasonComparisonChart(League league, Team team, int season, int currentMatchdays) {
+        int previousSeason = season - 1;
+        int previousMatchdays = Match.findPlayedByTeamBefore(team, league, previousSeason, Integer.MAX_VALUE).stream()
+                .mapToInt(m -> m.matchday.number).max().orElse(0);
+        int maxMatchdays = Math.max(currentMatchdays, previousMatchdays);
+
+        List<String> labels = new ArrayList<>();
+        List<String> current = new ArrayList<>();
+        List<String> previous = new ArrayList<>();
+        int teamCount = 18;
+        for (int n = 1; n <= maxMatchdays; n++) {
+            labels.add("\"" + n + "\"");
+            if (n <= currentMatchdays) {
+                Standings s = standingsCalculator.standingsBefore(league, season, n + 1);
+                current.add(s.of(team).map(p -> String.valueOf(p.position())).orElse("null"));
+                teamCount = Math.max(teamCount, s.positions().size());
+            } else {
+                current.add("null");
+            }
+            if (n <= previousMatchdays) {
+                Standings s = standingsCalculator.standingsBefore(league, previousSeason, n + 1);
+                previous.add(s.of(team).map(p -> String.valueOf(p.position())).orElse("null"));
+                teamCount = Math.max(teamCount, s.positions().size());
+            } else {
+                previous.add("null");
+            }
+        }
+        List<String> series = List.of(
+                seriesJson(MatchdayPageModels.seasonLabel(season), current, false),
+                seriesJson(MatchdayPageModels.seasonLabel(previousSeason), previous, true));
+        return "{\"labels\":[" + String.join(",", labels) + "],\"teams\":[" + String.join(",", series) + "],\"teamCount\":" + teamCount + "}";
+    }
+
+    private static String seriesJson(String name, List<String> positions, boolean dashed) {
+        return "{\"name\":\"" + name + "\",\"positions\":[" + String.join(",", positions) + "],\"dashed\":" + dashed + "}";
     }
 
     private static League league(String shortcut) {
