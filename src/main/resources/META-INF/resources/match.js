@@ -12,13 +12,16 @@
     return;
   }
   var colors = ['#14201B', '#1E9E5A'];
+  var mutedColor = '#8C9691'; // --ink-mute — a previous season shown as a faded reference line
   new Chart(el, {
     type: 'line',
     data: {
       labels: data.labels,
       datasets: data.teams.map(function (t, i) {
-        return { label: t.name, data: t.positions, borderColor: colors[i], backgroundColor: colors[i],
-                 borderWidth: 2, pointRadius: 3, tension: 0.2, spanGaps: true };
+        var color = t.dashed ? mutedColor : colors[i];
+        return { label: t.name, data: t.positions, borderColor: color, backgroundColor: color,
+                 borderWidth: 2, pointRadius: t.dashed ? 0 : 3, tension: 0.2, spanGaps: true,
+                 borderDash: t.dashed ? [6, 4] : undefined };
       })
     },
     options: {
