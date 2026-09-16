@@ -68,7 +68,9 @@ services:
       POSTGRES_PASSWORD: ${MATCHORACLE_DB_PASSWORD}
       POSTGRES_DB: matchoracle
     volumes:
-      - rasenradar-postgres-data:/var/lib/postgresql/data
+      # postgres 18+ images store data in a version-specific subdirectory;
+      # mount the parent so that future pg_upgrade works across major versions
+      - rasenradar-postgres-data:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U matchoracle" ]
       interval: 10s
