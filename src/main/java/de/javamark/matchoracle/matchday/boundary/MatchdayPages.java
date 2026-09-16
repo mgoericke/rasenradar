@@ -4,6 +4,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalTimingRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayPage;
@@ -16,6 +17,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StandingRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TeamPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TeamSituation;
 import de.javamark.matchoracle.matchday.control.FormCalculator;
+import de.javamark.matchoracle.matchday.control.GoalTimingCalculator;
 import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
@@ -75,6 +77,9 @@ public class MatchdayPages {
 
     @Inject
     ScorerCalculator scorerCalculator;
+
+    @Inject
+    GoalTimingCalculator goalTimingCalculator;
 
     @GET
     public Response home() {
@@ -169,7 +174,7 @@ public class MatchdayPages {
                 DataInfo.of(matchday, Instant.now()));
     }
 
-    /** The club in one season: standing, position curve, schedule, home/away balance and scorers. */
+    /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */
     private TeamPage teamPage(Team team, League league, int season) {
         String shortcut = league.sourceShortcut();
         List<Match> schedule = Match.findByTeam(team, league, season);
@@ -202,6 +207,7 @@ public class MatchdayPages {
                 BalanceRow.of("Heim", Balance.of(team, played.stream().filter(m -> m.homeTeam.equals(team)).toList())),
                 BalanceRow.of("Auswärts", Balance.of(team, played.stream().filter(m -> m.awayTeam.equals(team)).toList())),
                 scorerCalculator.scorersFor(team, league, season).stream().map(ScorerRow::of).toList(),
+                goalTimingCalculator.timingFor(team, league, season).stream().map(GoalTimingRow::of).toList(),
                 positionChart(league, season, lastPlayedMatchday, List.of(team)),
                 DataInfo.of(reference, Instant.now()));
     }
