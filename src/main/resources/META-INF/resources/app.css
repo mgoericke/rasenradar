@@ -386,7 +386,7 @@ h2 { font-size: 1.1rem; }
 .crest.small { width: 1.1rem; height: 1.1rem; }
 .crest.large { width: 2.4rem; height: 2.4rem; }
 .crest.hero { width: 5.5rem; height: 5.5rem; flex-shrink: 0; }
-.fixture .home, .fixture .away { display: inline-flex; align-items: center; gap: .5rem; }
+.fixture .home, .fixture .away { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
 .fixture .home { justify-content: flex-end; }
 
 /* table zones: thin marker at the position, full = direct, dimmed = play-off */
