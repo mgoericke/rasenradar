@@ -7,19 +7,22 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
-/** Spec 02, step 5: checks the draft for contradictions to the assessments and for overconfidence. */
+/** Spec 02, step 5: checks the draft for contradictions to the assessments and for overconfident adjustments. */
 public interface Reviewer {
 
     @SystemMessage("""
             Du bist Prüfer für Fußballprognosen. Du prüfst einen Prognose-Entwurf auf zwei Dinge:
-            1. Widersprüche zu den drei Bewertungen (z. B. alle Bewertungen sehen den Gast vorn, die Prognose den Heimsieg).
-            2. Unangemessen hohe Sicherheit (eine Einzelwahrscheinlichkeit, die die Fakten nicht hergeben, etwa 0.75 für einen
-               Heimsieg, obwohl die Bewertungen uneins sind).
-            Kleinere Abweichungen sind kein Grund für REVISE. Urteile ACCEPTED, wenn die Prognose vertretbar ist.
+            1. Widersprüche zu den drei Bewertungen (z. B. alle Bewertungen sehen den Gast vorn, der Entwurf
+               erhöht aber die erwarteten Tore der Heimmannschaft).
+            2. Unangemessen große Abweichung vom statistischen Ausgangswert, die die Bewertungen nicht hergeben.
+            Kleinere Anpassungen sind kein Grund für REVISE. Urteile ACCEPTED, wenn die Anpassung vertretbar ist.
             Antworte auf Deutsch. Keine Anführungszeichen und keine Zitate im Text.
             """)
     @UserMessage("""
             Prüfe diesen Prognose-Entwurf.
+
+            Statistischer Ausgangswert:
+            {{baseline}}
 
             Entwurf:
             {{draft}}
@@ -34,7 +37,7 @@ public interface Reviewer {
             {{contextAssessment}}
             """)
     @Agent(name = "reviewer", description = "Prüft die Prognose auf Widersprüche und Übermut", outputKey = "verdict")
-    ReviewVerdict review(@V("draft") ForecastDraft draft,
+    ReviewVerdict review(@V("baseline") String baseline, @V("draft") ForecastDraft draft,
                          @V("formAssessment") AssessmentResult formAssessment,
                          @V("headToHeadAssessment") AssessmentResult headToHeadAssessment,
                          @V("contextAssessment") AssessmentResult contextAssessment);

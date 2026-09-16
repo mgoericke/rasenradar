@@ -49,7 +49,7 @@ public interface ForecastWorkflow {
     ReviewVerdict NOT_REVIEWED = new ReviewVerdict(Verdict.REVISE, "");
 
     @SequenceAgent(outputKey = "draft", subAgents = {Assessors.class, ReviewLoop.class})
-    ResultWithAgenticScope<ForecastDraft> run(@V("facts") String facts, @V("parameters") String parameters,
+    ResultWithAgenticScope<ForecastDraft> run(@V("facts") String facts, @V("baseline") String baseline, @V("parameters") String parameters,
                                               @V("retrospective") String retrospective, @V("reviewNote") String reviewNote,
                                               @V("verdict") ReviewVerdict verdict);
 }

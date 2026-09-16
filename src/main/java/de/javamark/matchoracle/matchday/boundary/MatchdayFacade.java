@@ -49,7 +49,17 @@ public class MatchdayFacade {
     /** A plain statistical estimate from both sides' goal averages — the Rückschau yardstick and the KI-Vorschau's starting point. */
     public ScorelineForecast scorelineForecast(MatchSituation situation) {
         var d = poissonScoreModel.forecast(entityBalance(situation.homeTeam().homeBalance()), entityBalance(situation.awayTeam().awayBalance()));
-        return new ScorelineForecast(d.homeGoals(), d.awayGoals(), d.scoreProbability(), d.homeWin(), d.draw(), d.awayWin());
+        return scorelineForecast(d);
+    }
+
+    /** Same grid, from expected goals already adjusted by a caller (the forecast agent's read) — consistency guaranteed either way. */
+    public ScorelineForecast scorelineForecast(double expectedHomeGoals, double expectedAwayGoals) {
+        return scorelineForecast(poissonScoreModel.fromExpectedGoals(expectedHomeGoals, expectedAwayGoals));
+    }
+
+    private static ScorelineForecast scorelineForecast(de.javamark.matchoracle.matchday.entity.ScoreDistribution d) {
+        return new ScorelineForecast(d.expectedHomeGoals(), d.expectedAwayGoals(), d.homeGoals(), d.awayGoals(),
+                d.scoreProbability(), d.homeWin(), d.draw(), d.awayWin());
     }
 
     private static de.javamark.matchoracle.matchday.entity.Balance entityBalance(Balance b) {
