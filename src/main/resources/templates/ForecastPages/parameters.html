@@ -1,0 +1,22 @@
+{#include base nav=page.nav}
+{#title}Bewertungsmaßstäbe{/title}
+{#body}
+<section class="forecast-page parameters">
+  <h1 class="page-title">Bewertungsmaßstäbe</h1>
+  <p class="muted">Gelten ab der nächsten Vorschau. Bestehende Vorschauen bleiben, wie sie sind.</p>
+  {#if page.message}<p class="note">{page.message}</p>{/if}
+  <form method="post" action="/forecast-parameters" class="param-form">
+    <label>Heimvorteil <span class="muted">Prozentpunkte zugunsten der Heimmannschaft</span>
+      <input type="number" name="homeAdvantage" min="0" max="50" step="1" value="{page.homeAdvantagePercent}">
+    </label>
+    <label>Formzeitraum <span class="muted">letzte Spiele der laufenden Saison</span>
+      <input type="number" name="formMatches" min="1" max="34" step="1" value="{page.formMatches}">
+    </label>
+    <label>Aufsteiger-Malus <span class="muted">Prozentpunkte für eine aufgestiegene Mannschaft</span>
+      <input type="number" name="promotedTeamMalus" min="0" max="50" step="1" value="{page.promotedTeamMalusPercent}">
+    </label>
+    <button type="submit" class="button">Speichern</button>
+  </form>
+</section>
+{/body}
+{/include}

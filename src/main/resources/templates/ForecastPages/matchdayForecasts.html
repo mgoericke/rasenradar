@@ -1,0 +1,41 @@
+{#include base nav=page.nav}
+{#title}KI-Vorschau {page.number}. Spieltag – {page.nav.leagueName}{/title}
+{#body}
+<section class="forecast-page">
+  <p class="breadcrumb"><a href="{page.matchdayLink}">{page.number}. Spieltag</a></p>
+  <h1 class="page-title">KI-Vorschau zum {page.number}. Spieltag</h1>
+  {#if page.openCount > 0}
+  <form method="post" action="{page.startAllLink}" class="start">
+    <button type="submit" class="button">Vorschau für alle {page.openCount} offenen Spiele erstellen</button>
+    <span class="muted">Die Spiele werden nacheinander bewertet.</span>
+  </form>
+  {/if}
+  {#if page.backtestCount > 0}
+  <form method="post" action="{page.matchdayLink}/backtests" class="start">
+    <button type="submit" class="button secondary">Rücktest für {page.backtestCount} gespielte Spiele ohne Vorschau</button>
+    <span class="muted">Nachträgliche Vorschau mit dem Wissensstand von vor dem Anstoß.</span>
+  </form>
+  {/if}
+  <ol class="forecast-list">
+    {#for m in page.matches}
+    <li>
+      <a class="forecast-row" href="{m.link}">
+        <span class="time">{m.kickoff}</span>
+        <span class="teams">{m.homeTeam} – {m.awayTeam}</span>
+        {#if m.forecast}
+        <span class="mini-bars" aria-label="{m.forecast.homeWin}/{m.forecast.draw}/{m.forecast.awayWin}">
+          <span class="home" style="flex-basis: {m.forecast.homeWin}%"></span><span class="draw" style="flex-basis: {m.forecast.draw}%"></span><span class="away" style="flex-basis: {m.forecast.awayWin}%"></span>
+        </span>
+        <span class="tendency-small {m.forecast.tendencyClass}">{m.forecast.tendency} · {m.forecast.expectedScore}{#if m.forecast.backtest} <span class="backtest-badge">Rücktest</span>{/if}</span>
+        {#else if m.running}
+        <span class="muted">wird bewertet …</span>
+        {#else}
+        <span class="muted">noch keine Vorschau</span>
+        {/if}
+      </a>
+    </li>
+    {/for}
+  </ol>
+</section>
+{/body}
+{/include}

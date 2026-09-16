@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{#insert title}Bundesliga aktuell{/} – Bundesliga aktuell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/vendor/htmx-2.0.10.min.js" defer></script>
+</head>
+<body hx-boost="true">
+  <header class="topnav">
+    <nav class="topnav-inner" aria-label="Hauptnavigation">
+      <a class="brand" href="/">Bundesliga aktuell <span class="tagline">mit KI-Vorschau</span></a>
+      <ul class="nav-links">
+        {#for l in nav.leagues}
+        <li><a class="nav-link {#if l.active}is-active{/if}" href="/{l.shortcut}" {#if l.active}aria-current="page"{/if}><span class="badge">{l.badge}</span>{l.name}</a></li>
+        {/for}
+      </ul>
+    </nav>
+  </header>
+  <main class="page">
+    {#insert body}{/}
+  </main>
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <nav class="footer-links" aria-label="Weitere Seiten">
+        <a class="{#if nav.page == 'accuracy'}is-active{/if}" href="/trefferbilanz" {#if nav.page == 'accuracy'}aria-current="page"{/if}>Trefferbilanz</a>
+        <a class="{#if nav.page == 'parameters'}is-active{/if}" href="/forecast-parameters" {#if nav.page == 'parameters'}aria-current="page"{/if}>Bewertungsmaßstäbe</a>
+      </nav>
+      <p class="provenance {#if data??}{#if data.stale}is-stale{/if}{/if}">
+        Spieldaten von <a href="https://www.openligadb.de" rel="noopener">OpenLigaDB</a>{#if data??}, zuletzt geprüft {data.age}{#if data.stale} – das kann veraltet sein{/if}{/if}.
+        Vorläufige Ergebnisse sind als solche markiert. Prognosen entstehen mit KI und können danebenliegen — keine Quoten, keine Wettempfehlungen.
+      </p>
+    </div>
+  </footer>
+  {#insert scripts}{/}
+</body>
+</html>

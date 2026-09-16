@@ -1,0 +1,85 @@
+{#include base nav=page.nav}
+{#title}KI-Vorschau {page.homeTeam} – {page.awayTeam}{/title}
+{#body}
+<article class="forecast-page">
+  <p class="breadcrumb"><a href="{page.matchdayLink}">{page.matchdayNumber}. Spieltag</a> · <a href="{page.matchLink}">{page.homeTeam} – {page.awayTeam}</a> · {page.kickoff} Uhr</p>
+  <h1 class="page-title">KI-Vorschau</h1>
+
+  {#if page.played && page.result}<p class="actual-result">Endstand <strong>{page.result}</strong></p>{/if}
+  {#if page.progress.state != 'NONE'}
+  {#else if page.backtestAllowed}
+  <form method="post" action="{page.matchLink}/forecast" class="start">
+    <button type="submit" class="button">{#if page.latest}Neuen Rücktest erstellen{#else}Rücktest erstellen{/if}</button>
+    <span class="muted">Nachträgliche Vorschau mit dem Wissensstand von vor dem Anstoß – das Ergebnis sieht das Modell nicht.</span>
+  </form>
+  {#else if page.played}
+  <p class="note">Rücktests gibt es nur für Spiele der laufenden Saison – ältere Ergebnisse könnten die Modelle kennen.</p>
+  {#else}
+  <form method="post" action="{page.matchLink}/forecast" class="start">
+    <button type="submit" class="button">{#if page.latest}Neue Vorschau erstellen{#else}Vorschau erstellen{/if}</button>
+    {#if page.latest}<span class="muted">Die bisherige bleibt erhalten – Vorschauen werden nie geändert.</span>{/if}
+  </form>
+  {/if}
+
+  {#include ForecastPages/progressSection fragment=page.progress matchLink=page.matchLink /}
+
+  {#if page.latest}
+  {#let f=page.latest}
+  <section class="forecast">
+    <header class="forecast-head">
+      <div class="tendency {f.tendencyClass}">{f.tendency}{#if f.backtest} <span class="backtest-badge">Rücktest</span>{/if}</div>
+      <div class="expected">Richtwert <strong>{f.expectedScore}</strong></div>
+      <div class="confidence">Sicherheit <strong>{f.confidencePercent} %</strong></div>
+    </header>
+    <div class="bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
+      <span class="bar home" style="flex-basis: {f.homeWin}%"><b>{f.homeWin} %</b> {page.homeTeam}</span>
+      <span class="bar draw" style="flex-basis: {f.draw}%"><b>{f.draw} %</b> Remis</span>
+      <span class="bar away" style="flex-basis: {f.awayWin}%"><b>{f.awayWin} %</b> {page.awayTeam}</span>
+    </div>
+    <p class="reasoning">{f.reasoning}</p>
+
+    <div class="assessments">
+      {#for a in f.assessments}
+      <section class="assessment {#if a.failed}is-failed{/if}">
+        <h2>{a.title}</h2>
+        <p class="assessment-lean"><span class="lean {a.leanClass}">{a.lean}</span>{#if a.confidencePercent} <span class="muted">Sicherheit {a.confidencePercent} %</span>{/if}</p>
+        <p>{a.summary}</p>
+      </section>
+      {/for}
+    </div>
+
+    <section class="review {f.verdictClass}">
+      <h2>Prüfung: {f.verdict}{#if f.revised} <span class="muted">nach einer Überarbeitung</span>{/if}</h2>
+      <p>{f.verdictReason}</p>
+      {#if f.objectionRemains}<p class="note">Der Prüfer hatte auch nach der Überarbeitung Einwände; die Vorschau wird trotzdem ausgegeben.</p>{/if}
+    </section>
+
+    <section class="retrospective">
+      <h2>Rückschau <span class="muted">Begegnungen mit ähnlicher Ausgangslage – Tabellenabstand, Form, Heim-/Auswärtsstärke – unabhängig von den Vereinen</span></h2>
+      {#if f.retrospectiveLines}
+      <ul>
+        {#for line in f.retrospectiveLines}<li>{line}</li>{/for}
+      </ul>
+      {#else}
+      <p class="muted">Keine belastbare Rückschau – zu wenige vergleichbare Fälle.</p>
+      {/if}
+    </section>
+
+    <p class="forecast-meta">Erstellt am {f.createdAt} · Modell {f.modelName} · {f.parameters}</p>
+  </section>
+  {/let}
+  {/if}
+
+  {#if page.older}
+  <section class="older">
+    <h2>Frühere Vorschauen</h2>
+    <ul>
+      {#for f in page.older}
+      <li><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}{f.tendency} {f.homeWin}/{f.draw}/{f.awayWin}, Richtwert {f.expectedScore}, Sicherheit {f.confidencePercent} %</li>
+      {/for}
+    </ul>
+  </section>
+  {/if}
+</article>
+{/body}
+{/include}

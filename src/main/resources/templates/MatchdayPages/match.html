@@ -1,0 +1,78 @@
+{#include base nav=page.nav data=page.data}
+{#title}{page.match.home} – {page.match.away}{/title}
+{#body}
+<article class="match">
+  <p class="breadcrumb"><a href="{page.matchdayLink}">{page.number}. Spieltag</a> · {page.day}, {page.match.time} Uhr</p>
+
+  <div class="scoreboard">
+    <h1 class="teams">
+      <span class="home">{page.match.home}{#if page.match.homeIcon} <img class="crest large" src="{page.match.homeIcon}" alt="">{/if}</span>
+      <span class="score {#if page.match.played}is-played{/if} {#if page.match.provisional}is-provisional{/if}">{#if page.match.played}{page.match.score}{#else}–:–{/if}</span>
+      <span class="away">{#if page.match.awayIcon}<img class="crest large" src="{page.match.awayIcon}" alt=""> {/if}{page.match.away}</span>
+    </h1>
+    <p class="half">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
+    <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML">
+      <a class="link-button ai" href="{page.forecastLink}">KI-Vorschau{#if !page.match.played} erstellen{/if}</a>
+    </div>
+  </div>
+
+  {#if page.goals}
+  <ol class="goals">
+    {#for g in page.goals}
+    <li class="{#if g.forHome}for-home{#else}for-away{/if}">
+      <span class="scorer">{g.scorer}{#if g.note} <em>{g.note}</em>{/if} <span class="minute">{g.minute}</span></span>
+      <span class="running">{g.score}</span>
+    </li>
+    {/for}
+  </ol>
+  {/if}
+
+  <section class="situations">
+    {#for t in page.teams}
+    <div class="situation">
+      <h2><a class="team-link" href="{t.link}">{t.name}</a></h2>
+      <p class="standing">{#if t.position}Platz {t.position}, {t.points} Punkte{#else}noch ohne Spiel{/if}</p>
+      <ol class="form" aria-label="Form, letzte Spiele, ältestes links">
+        {#for r in t.lastMatches}
+        <li><a class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}" href="{r.link}" title="{r.date} {#if r.home}gegen{#else}bei{/if} {r.opponent}">{r.score}</a></li>
+        {/for}
+        {#if t.lastMatches.isEmpty}<li class="muted">noch keine Spiele in dieser Saison</li>{/if}
+      </ol>
+      <table class="balance">
+        <tbody>
+        {#for b in t.balances}
+          <tr><th>{b.label}</th><td>{b.played} Sp.</td><td>{b.wins}-{b.draws}-{b.losses}</td><td>{b.goals}</td><td>{b.points} Pkt.</td></tr>
+        {/for}
+        </tbody>
+      </table>
+    </div>
+    {/for}
+  </section>
+
+  <section class="history">
+    <div class="chart-block">
+      <h2>Tabellenplatz im Saisonverlauf</h2>
+      <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
+    </div>
+    <div class="h2h">
+      <h2>Direkte Duelle <span class="muted">aus Sicht von {page.homeTeam.shortName}</span></h2>
+      {#if page.headToHead.isEmpty}
+      <p class="muted">Keine früheren Begegnungen im Datenbestand.</p>
+      {#else}
+      <p class="h2h-balance">{page.headToHeadBalance.wins} Siege, {page.headToHeadBalance.draws} Unentschieden, {page.headToHeadBalance.losses} Niederlagen, Tore {page.headToHeadBalance.goals}</p>
+      <ol class="meetings">
+        {#for r in page.headToHead}
+        <li><a href="{r.link}"><span class="date">{r.date}</span> <span class="venue">{#if r.home}Heim{#else}Auswärts{/if}</span> <span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span></a></li>
+        {/for}
+      </ol>
+      {/if}
+    </div>
+  </section>
+</article>
+{/body}
+{#scripts}
+<script id="chart-data" type="application/json">{page.chartJson.raw}</script>
+<script src="/vendor/chart-4.5.1.umd.min.js"></script>
+<script src="/match.js"></script>
+{/scripts}
+{/include}

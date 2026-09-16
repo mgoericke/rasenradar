@@ -1,0 +1,74 @@
+{#include base nav=page.nav}
+{#title}Trefferbilanz{/title}
+{#body}
+<section class="forecast-page accuracy">
+  <h1 class="page-title">Trefferbilanz</h1>
+  <p class="muted">Jede Vorschau wird mit dem endgültigen Ergebnis verglichen – auch die schlechten. Eine Quote gibt es erst ab genügend bewerteten Vorschauen. „Live" sind Vorschauen vor dem Anstoß, „Rücktest" nachträgliche Vorschauen mit dem Wissensstand von vor dem Spiel.
+  Als Maßstab dient die Basisprognose: eine reine Statistik aus Torschnitt und Heimvorteil, ohne KI. Der Brier-Score bewertet die Wahrscheinlichkeiten (0 perfekt, 0,67 wie Raten); der Skill-Score sagt, um wie viel die KI-Vorschau besser (positiv) oder schlechter (negativ) als die Basisprognose ist.</p>
+
+  <div class="accuracy-grid">
+    {#for l in page.leagues}
+    <section class="accuracy-card">
+      <h2>{l.name} <span class="muted">{#if l.backtest}Rücktest{#else}Live{/if}</span></h2>
+
+      {#if l.recent}
+      <p class="hit-strip-caption">{l.recentHits} von {l.recentTotal} der letzten Vorschauen richtig getippt</p>
+      <ol class="hit-strip" aria-label="Verlauf der letzten Vorschauen, älteste links">
+        {#for d in l.recent}
+        <li class="hit-dot {l.dotClass(d)}" title="{l.dotTitle(d)}"></li>
+        {/for}
+      </ol>
+      {#else}
+      <p class="muted">Noch keine bewertete Vorschau.</p>
+      {/if}
+
+      <details class="accuracy-details">
+        <summary>Im Detail: Quote und Vergleich mit der Basisprognose</summary>
+        {#if l.hitRatePercent}
+        <p class="big-number">{l.hitRatePercent} %<span class="muted"> Tendenz getroffen</span></p>
+        <p class="accuracy-facts">{l.hits} von {l.evaluated} Vorschauen · durchschnittliche Sicherheit {l.averageConfidencePercent} % · Brier-Score {l.averageBrier}</p>
+        {#if l.calibration == 'OVERCONFIDENT'}
+        <p class="note">Die angegebene Sicherheit liegt deutlich über der Trefferquote – die Vorschauen sind zu sicher.</p>
+        {#else if l.calibration == 'UNDERCONFIDENT'}
+        <p class="note">Die Trefferquote liegt über der angegebenen Sicherheit – die Vorschauen sind eher zu vorsichtig.</p>
+        {#else}
+        <p class="note">Sicherheit und Trefferquote passen zusammen.</p>
+        {/if}
+        {#else}
+        <p class="big-number muted">noch keine Quote</p>
+        <p class="accuracy-facts">{l.evaluated} von mindestens {l.required} Vorschauen bewertet{#if l.evaluated > 0} ({l.hits} getroffen){/if}. Die Datenlage ist zu dünn für eine Zahl.</p>
+        {/if}
+        {#if l.comparable}
+        <table class="yardsticks">
+          <thead><tr><th>Maßstab</th><th>Tendenz</th><th>Brier</th></tr></thead>
+          <tbody>
+          {#for y in l.yardsticks}
+            <tr class="{#if y.oracle}is-oracle{/if}"><th>{y.label}</th><td>{y.hitRatePercent} %</td><td>{y.brier}</td></tr>
+          {/for}
+          </tbody>
+        </table>
+        {#if l.skillVerdict == 'BETTER'}
+        <p class="note">Skill-Score {l.skillScorePercent} %: Die KI-Vorschau schlägt die Basisprognose aus Torschnitt und Heimvorteil.</p>
+        {#else if l.skillVerdict == 'WORSE'}
+        <p class="note">Skill-Score {l.skillScorePercent} %: Die Basisprognose aus Torschnitt und Heimvorteil ist derzeit besser als die KI-Vorschau.</p>
+        {#else}
+        <p class="note">Skill-Score {l.skillScorePercent} %: KI-Vorschau und Basisprognose liegen gleichauf.</p>
+        {/if}
+        {#else if l.hitRatePercent}
+        <p class="note">Der Vergleich mit der Basisprognose folgt, sobald genügend Spiele ({l.baselineEvaluated} von {l.required}) eine haben.</p>
+        {/if}
+        {#if l.perMatchday}
+        <div class="chart"><canvas id="accuracy-{l.id}" aria-label="Trefferquote je Spieltag"></canvas></div>
+        <script id="accuracy-data-{l.id}" type="application/json">{l.chartJson.raw}</script>
+        {/if}
+      </details>
+    </section>
+    {/for}
+  </div>
+</section>
+{/body}
+{#scripts}
+<script src="/vendor/chart-4.5.1.umd.min.js"></script>
+<script src="/accuracy.js"></script>
+{/scripts}
+{/include}

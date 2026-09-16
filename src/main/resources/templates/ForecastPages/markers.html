@@ -1,0 +1,3 @@
+{#for m in markers}
+<span id="forecast-marker-{m.matchId}" hx-swap-oob="true" class="forecast-marker {m.tendencyClass}" title="KI-Vorschau: {m.tendency} {m.homeWin}/{m.draw}/{m.awayWin}">{m.label}</span>
+{/for}

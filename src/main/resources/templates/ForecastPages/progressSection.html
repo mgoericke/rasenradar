@@ -1,0 +1,21 @@
+{#if fragment.state != 'NONE'}
+<section class="progress {#if fragment.finished}is-finished{/if}" id="progress"
+         {#if !fragment.finished}hx-get="{matchLink}/forecast/progress" hx-trigger="every 2s" hx-swap="outerHTML"{/if}>
+  {#if fragment.state == 'WAITING'}
+  <p class="progress-title">Wartet – ein anderes Spiel wird gerade bewertet.</p>
+  {#else if fragment.state == 'RUNNING'}
+  <p class="progress-title">Die KI-Vorschau entsteht …</p>
+  {#else if fragment.state == 'FAILED'}
+  <p class="progress-title is-error">Die letzte Vorschau ist fehlgeschlagen.</p>
+  <p class="progress-error">{fragment.error}</p>
+  {/if}
+  {#if fragment.steps && fragment.state != 'DONE'}
+  <ol class="steps">
+    {#for s in fragment.steps}
+    <li class="step {s.state.toLowerCase}"><span class="dot"></span>{s.label}</li>
+    {/for}
+  </ol>
+  {/if}
+  {#if fragment.state == 'DONE'}<script>window.location.reload();</script>{/if}
+</section>
+{/if}

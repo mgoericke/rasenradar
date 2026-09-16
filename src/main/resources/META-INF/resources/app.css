@@ -1,0 +1,394 @@
+/* Match Oracle — matchday board. One accent, one memorable element: the score cell. */
+:root {
+  /* see docs/styleguide.md — light paper, one dark stage, one brass accent */
+  --ground: #F4F4F1;
+  --surface: #FFFFFF;
+  --stage: #101B16;
+  --stage-ink: #EEF3EF;
+  --stage-soft: #9DB0A5;
+  --stage-line: rgba(255, 255, 255, .14);
+  --ink: #14201B;
+  --ink-soft: #5A655F;
+  --ink-mute: #8C9691;
+  --line: #E2E5E2;
+  --win: #1A8A50;
+  --loss: #C63C3C;
+  --draw: #A3ABA6;
+  --accent: #B99A5B;
+  --zone: #EEF2EF;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --text: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+a { color: inherit; text-decoration: none; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--win); outline-offset: 2px; border-radius: 4px; }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.015em; margin: 0; }
+h2 { font-size: 1.1rem; }
+.muted { color: var(--ink-mute); font-weight: 400; }
+
+/* top navigation: the dark stage — brand left, links right, wrapping on narrow screens */
+.topnav {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--stage); color: var(--stage-ink);
+}
+.topnav-inner {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem 2rem;
+  padding: .7rem clamp(1rem, 4vw, 3rem);
+  max-width: 1280px;
+}
+.brand {
+  display: inline-flex; flex-wrap: wrap; align-items: baseline; column-gap: .45rem;
+  margin-right: auto; padding: .35rem 0;
+  font-family: var(--display); font-weight: 700; font-size: 1.25rem; line-height: 1.2; letter-spacing: -0.02em;
+  color: #fff;
+}
+.tagline { font-family: var(--text); font-weight: 400; font-size: .9rem; color: var(--stage-soft); letter-spacing: 0; }
+.nav-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+.nav-link {
+  display: inline-flex; align-items: center; gap: .45rem; padding: .45rem 0;
+  border-bottom: 2px solid transparent; color: var(--stage-soft); font-weight: 500; white-space: nowrap;
+}
+.nav-link:hover { color: #fff; }
+.nav-link.is-active { color: #fff; border-color: var(--accent); }
+.topnav a:focus-visible { outline-color: var(--accent); }
+/* league badge: a small disc with the league number; brass when active */
+.badge {
+  display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%;
+  font-family: var(--display); font-weight: 700; font-size: .8rem; line-height: 1;
+  border: 1.5px solid var(--stage-soft); color: var(--stage-soft); background: transparent;
+}
+.nav-link.is-active .badge { border-color: var(--accent); background: var(--accent); color: var(--stage); }
+
+.page {
+  display: grid; gap: 2.5rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+  max-width: 1280px;
+}
+@media (max-width: 900px) { .page { grid-template-columns: 1fr; } }
+
+/* matchday head */
+.matchday-title { font-size: clamp(2.6rem, 6.5vw, 4.4rem); font-weight: 700; line-height: .95; letter-spacing: -0.04em; }
+.matchday-title .number { font-variation-settings: "opsz" 96; }
+.matchday-season { margin: .35rem 0 0; color: var(--ink-soft); font-size: 1.05rem; }
+.pager { display: flex; gap: 1.5rem; margin-top: 1rem; }
+.pager a { border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.pager a:hover { border-color: var(--ink); color: var(--ink); }
+.pager .disabled { color: var(--ink-mute); }
+
+/* fixtures */
+.day { margin: 2rem 0 .5rem; font-size: .95rem; font-weight: 500; color: var(--ink-soft); }
+.fixtures { list-style: none; margin: 0; padding: 0; background: var(--surface); border-radius: 12px; border: 1px solid var(--line); }
+.fixtures li + li { border-top: 1px solid var(--line); }
+.fixture {
+  display: grid; align-items: center; gap: .75rem;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto minmax(0, 1fr) 2.6rem;
+  padding: .7rem .9rem;
+}
+.fixture:hover { background: var(--zone); }
+.fixture .time { color: var(--ink-mute); font-size: .85rem; }
+.fixture .home { text-align: right; font-weight: 500; }
+.fixture .away { text-align: left; font-weight: 500; }
+.fixture .half { color: var(--ink-mute); font-size: .8rem; }
+
+/* the score cell: solid when final, outlined while provisional, quiet before kickoff */
+.score {
+  font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: -0.02em;
+  min-width: 3.6rem; padding: .15rem .45rem; text-align: center; border-radius: 6px;
+  border: 1.5px solid var(--line); color: var(--ink-mute);
+}
+.score.is-played { background: var(--ink); color: #fff; border-color: var(--ink); }
+.score.is-played.is-provisional { background: transparent; color: var(--ink); border-color: var(--ink); border-style: dashed; }
+
+/* standings */
+.standings { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; align-self: start; }
+.standings table { width: 100%; border-collapse: collapse; margin-top: .85rem; font-size: .92rem; }
+.standings th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .4rem; border-bottom: 1px solid var(--line); }
+.standings td { text-align: right; padding: .42rem .4rem; border-bottom: 1px solid var(--line); }
+.standings tbody tr:last-child td { border-bottom: 0; }
+.standings th.team, .standings td.team { text-align: left; }
+.standings td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .55rem; }
+.standings .points { font-family: var(--display); font-weight: 700; font-size: 1rem; }
+.note { color: var(--ink-mute); font-size: .85rem; margin: .75rem 0 0; }
+
+/* match page */
+.match { grid-column: 1 / -1; max-width: 960px; }
+.breadcrumb { color: var(--ink-soft); margin: 0 0 1rem; }
+.breadcrumb a { border-bottom: 1px solid var(--line); }
+/* the scoreboard is the dark stage of the match page: floodlight, white crests, brass way to the forecast */
+.scoreboard { background: var(--stage); color: var(--stage-ink); border-radius: 14px; padding: 2rem 1.5rem 1.6rem; text-align: center; }
+.scoreboard .teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.25rem; font-size: clamp(1.3rem, 3vw, 2rem); letter-spacing: -0.02em; color: #fff; }
+.scoreboard .home { text-align: right; }
+.scoreboard .away { text-align: left; }
+.scoreboard .score { font-size: clamp(2.2rem, 5.5vw, 3.4rem); min-width: 5.4rem; padding: .15rem .8rem; border-color: var(--stage-line); color: var(--stage-soft); }
+.scoreboard .score.is-played { background: #fff; color: var(--stage); border-color: #fff; }
+.scoreboard .score.is-played.is-provisional { background: transparent; color: #fff; border-color: var(--stage-soft); }
+.scoreboard .half { margin: .7rem 0 0; color: var(--stage-soft); }
+.scoreboard .crest.large { background: #fff; border-radius: 50%; padding: .25rem; width: 2.8rem; height: 2.8rem; }
+.scoreboard .forecast-summary { border-top: 1px solid var(--stage-line); margin-top: 1.2rem; padding-top: 1rem; }
+.scoreboard .forecast-summary .summary-figures { color: var(--stage-soft); }
+.scoreboard .forecast-summary .summary-figures strong { color: #fff; }
+.scoreboard .mini-bars .home { background: #fff; }
+.scoreboard .mini-bars .draw { background: var(--stage-soft); }
+.scoreboard .mini-bars .away { background: #2FB36B; }
+.scoreboard .tendency-small { color: #fff; }
+.scoreboard .tendency-small.away_win { color: #2FB36B; }
+.scoreboard .tendency-small.draw { color: var(--stage-soft); }
+.scoreboard .muted { color: var(--stage-soft); }
+.scoreboard .link-button { background: transparent; color: #fff; border-color: var(--accent); }
+.scoreboard .link-button:hover { background: var(--accent); color: var(--stage); }
+
+/* goal sequence: home goals on the left, away goals on the right, running score in the middle */
+.goals { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .3rem; }
+.goals li { display: grid; grid-template-columns: 1fr 3.6rem 1fr; gap: 1rem; align-items: baseline; font-size: .95rem; }
+.goals li > * { grid-row: 1; }
+.goals .running { grid-column: 2; text-align: center; font-family: var(--display); font-weight: 600; }
+.goals .for-home .scorer { grid-column: 1; text-align: right; }
+.goals .for-away .scorer { grid-column: 3; text-align: left; }
+.goals .minute { color: var(--ink-mute); font-size: .85rem; }
+.goals .scorer em { font-style: normal; color: var(--ink-mute); }
+
+.situations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+@media (max-width: 700px) { .situations { grid-template-columns: 1fr; } }
+.situation { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
+.situation .standing { margin: .2rem 0 .8rem; color: var(--ink-soft); }
+.form { list-style: none; margin: 0; padding: 0; display: flex; gap: .4rem; flex-wrap: wrap; }
+.pill {
+  display: inline-block; min-width: 2.9rem; text-align: center; padding: .25rem .4rem; border-radius: 6px;
+  font-family: var(--display); font-weight: 700; color: #fff; border: 2px solid transparent;
+}
+.pill.win { background: var(--win); border-color: var(--win); }
+.pill.loss { background: var(--loss); border-color: var(--loss); }
+.pill.draw { background: var(--draw); border-color: var(--draw); }
+.pill.is-provisional { background: transparent; border-style: dashed; }
+.pill.win.is-provisional { color: var(--win); }
+.pill.loss.is-provisional { color: var(--loss); }
+.pill.draw.is-provisional { color: var(--ink-soft); }
+.balance { margin-top: 1rem; border-collapse: collapse; width: 100%; font-size: .9rem; }
+.balance th { text-align: left; font-weight: 500; color: var(--ink-mute); padding: .25rem 0; }
+.balance td { text-align: right; padding: .25rem 0 .25rem .6rem; }
+
+.history { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+@media (max-width: 800px) { .history { grid-template-columns: 1fr; } }
+.chart-block, .h2h { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
+.chart { position: relative; height: 240px; margin-top: .75rem; }
+.h2h-balance { color: var(--ink-soft); margin: .3rem 0 .8rem; }
+.meetings { list-style: none; margin: 0; padding: 0; }
+.meetings li + li { border-top: 1px solid var(--line); }
+.meetings a { display: grid; grid-template-columns: 5rem 1fr auto; gap: .75rem; align-items: center; padding: .4rem 0; }
+.meetings .date { color: var(--ink-mute); font-size: .9rem; }
+.meetings .venue { color: var(--ink-soft); }
+
+/* site footer: the way to the secondary pages, and where the data source is credited */
+.site-footer { border-top: 1px solid var(--line); margin-top: 1rem; }
+.site-footer-inner { max-width: 1280px; padding: 1.5rem clamp(1rem, 4vw, 3rem) 2.5rem; display: grid; gap: .8rem; }
+.footer-links { display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; }
+.footer-links a { color: var(--ink-soft); font-weight: 500; font-size: .92rem; }
+.footer-links a:hover, .footer-links a.is-active { color: var(--ink); }
+.provenance { margin: 0; color: var(--ink-mute); font-size: .85rem; max-width: 70ch; }
+.provenance a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.provenance a:hover { color: var(--ink); border-color: var(--ink); }
+.provenance.is-stale { color: var(--loss); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fixture, .pill, .pager a { transition: background-color .12s ease, border-color .12s ease; }
+}
+
+/* --- buttons ---------------------------------------------------------------------- */
+.button {
+  font: inherit; font-weight: 600; color: #fff; background: var(--ink); border: 0; border-radius: 8px;
+  padding: .55rem 1rem; cursor: pointer;
+}
+.button:hover { background: var(--stage); }
+.link-button { display: inline-block; font-weight: 500; border: 1px solid var(--line); border-radius: 8px; padding: .4rem .8rem; background: var(--surface); }
+.link-button:hover { border-color: var(--ink); }
+/* the way to the forecast carries the brass accent — nothing else does */
+.link-button.ai { border-color: var(--accent); }
+.link-button.ai:hover { background: var(--accent); border-color: var(--accent); color: var(--stage); }
+
+/* --- forecast pages --------------------------------------------------------------- */
+.forecast-page { grid-column: 1 / -1; max-width: 960px; }
+.page-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; }
+.start { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.5rem; }
+
+.progress { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; }
+.progress-title { margin: 0 0 .6rem; font-weight: 500; }
+.progress-title.is-error { color: var(--loss); }
+.progress-error { color: var(--ink-soft); font-size: .85rem; word-break: break-word; }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 1.2rem; flex-wrap: wrap; }
+.step { display: inline-flex; align-items: center; gap: .45rem; color: var(--ink-mute); }
+.step .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--line); }
+.step.running { color: var(--ink); }
+.step.running .dot { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+.step.done { color: var(--ink-soft); }
+.step.done .dot { background: var(--ink); }
+.step.failed { color: var(--loss); }
+.step.failed .dot { background: var(--loss); }
+@keyframes pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .step.running .dot { animation: none; } }
+
+.forecast { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem 1.5rem 1.1rem; }
+.forecast-head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.tendency { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; }
+.tendency.home_win { color: var(--ink); }
+.tendency.away_win { color: var(--win); }
+.tendency.draw { color: var(--ink-soft); }
+.expected, .confidence { color: var(--ink-soft); }
+.expected strong, .confidence strong { color: var(--ink); font-family: var(--display); font-size: 1.2rem; }
+
+/* the probability bars: one row, widths are the probabilities */
+.bars { display: flex; gap: 3px; height: 2.6rem; border-radius: 8px; overflow: hidden; }
+.bar { display: flex; align-items: center; gap: .4rem; padding: 0 .6rem; color: #fff; font-size: .85rem; white-space: nowrap; overflow: hidden; min-width: 0; }
+.bar b { font-family: var(--display); font-size: 1.05rem; }
+.bar.home { background: var(--ink); }
+.bar.draw { background: var(--draw); }
+.bar.away { background: var(--win); }
+.reasoning { font-size: 1.05rem; line-height: 1.55; margin: 1.2rem 0; max-width: 70ch; }
+
+.assessments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 800px) { .assessments { grid-template-columns: 1fr; } }
+.assessment { background: var(--ground); border-radius: 10px; padding: 1rem 1.1rem; font-size: .92rem; }
+.assessment.is-failed { border: 1px dashed var(--loss); }
+.assessment h2 { font-size: 1rem; margin-bottom: .3rem; }
+.assessment-lean { margin: 0 0 .5rem; }
+.lean { font-weight: 600; }
+.lean.home_win { color: var(--ink); }
+.lean.away_win { color: var(--win); }
+.lean.draw, .lean.none { color: var(--ink-soft); }
+
+.review { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; border: 1px solid var(--line); font-size: .92rem; }
+.review h2 { font-size: 1rem; margin-bottom: .3rem; }
+.review.accepted { border-color: var(--win); }
+.review.objection { border-color: var(--loss); }
+.forecast-meta { color: var(--ink-mute); font-size: .8rem; margin: 1rem 0 0; }
+.older { margin-top: 1.5rem; }
+.older ul { padding-left: 1.2rem; }
+
+.forecast-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.forecast-list li + li { border-top: 1px solid var(--line); }
+.forecast-row { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 8rem minmax(0, 1fr); gap: 1rem; align-items: center; padding: .7rem .9rem; }
+.forecast-row:hover { background: var(--zone); }
+.forecast-row .time { color: var(--ink-mute); font-size: .85rem; }
+.forecast-row .teams { font-weight: 500; }
+.mini-bars { display: flex; gap: 2px; height: .6rem; border-radius: 3px; overflow: hidden; }
+.mini-bars .home { background: var(--ink); }
+.mini-bars .draw { background: var(--draw); }
+.mini-bars .away { background: var(--win); }
+.tendency-small { font-weight: 600; font-size: .9rem; }
+.tendency-small.away_win { color: var(--win); }
+.tendency-small.draw { color: var(--ink-soft); }
+@media (max-width: 700px) { .forecast-row { grid-template-columns: 1fr; gap: .3rem; } }
+
+.param-form { display: grid; gap: 1rem; max-width: 32rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; }
+.param-form label { display: grid; gap: .3rem; font-weight: 500; }
+.param-form label .muted { font-weight: 400; font-size: .85rem; }
+.param-form input { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 6px; width: 8rem; }
+.param-form input:focus-visible { outline: 3px solid var(--win); outline-offset: 1px; }
+.matchday-actions, .match-actions { margin: .8rem 0 0; }
+
+/* existing forecasts, composed into the matchday pages via htmx fragments */
+.forecast-summary { display: flex; align-items: center; justify-content: center; gap: .8rem; flex-wrap: wrap; margin: .8rem 0 0; }
+.forecast-summary .mini-bars { flex: 0 0 6rem; width: 6rem; }
+.forecast-summary .summary-figures { color: var(--ink-soft); font-size: .85rem; }
+.forecast-summary .summary-figures strong { color: var(--ink); font-family: var(--display); font-size: 1rem; }
+.forecast-marker { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.forecast-marker.is-empty { display: none; }
+.forecast-marker.home_win { color: var(--ink); }
+.forecast-marker.away_win { color: var(--win); }
+.forecast-marker.draw { color: var(--ink-soft); }
+
+/* club page */
+.club { grid-column: 1 / -1; max-width: 1100px; }
+.club-head { display: flex; gap: 1.5rem; align-items: center; margin-bottom: 2rem; }
+.club-name { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
+.club-season { margin: .3rem 0 0; color: var(--ink-soft); font-size: 1.05rem; }
+.club-standing { margin: .6rem 0 0; color: var(--ink-soft); }
+.club-standing .place { font-family: var(--display); font-weight: 700; font-size: 1.25rem; color: var(--ink); padding-left: .6rem; border-left: 3px solid var(--line); }
+.club-standing.zone-top .place, .club-standing.zone-top-playoff .place { border-color: var(--win); }
+.club-standing.zone-bottom .place, .club-standing.zone-bottom-playoff .place { border-color: var(--loss); }
+.seasons { list-style: none; margin: .8rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.seasons a { display: inline-block; padding: .25rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: .9rem; }
+.seasons a:hover { border-color: var(--ink); }
+.club-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media (max-width: 800px) { .club-body { grid-template-columns: 1fr; } .club-head { flex-direction: column; align-items: flex-start; } }
+.club-main { display: grid; gap: 1.5rem; }
+.club-side { display: grid; gap: 1.5rem; }
+.schedule-block, .facts-block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
+.schedule { list-style: none; margin: .5rem 0 0; padding: 0; }
+.schedule li + li { border-top: 1px solid var(--line); }
+.schedule a { display: grid; grid-template-columns: 2rem 6.5rem 3.2rem 1fr auto; gap: .6rem; align-items: center; padding: .4rem 0; }
+.schedule a:hover { background: var(--zone); }
+.schedule .md { color: var(--ink-mute); font-size: .85rem; }
+.schedule .date { font-size: .9rem; }
+.schedule .venue { color: var(--ink-soft); font-size: .85rem; }
+.schedule .opponent { font-weight: 500; }
+.schedule .pill.open { background: transparent; border-color: var(--line); color: var(--ink-mute); font-weight: 500; }
+@media (max-width: 500px) { .schedule a { grid-template-columns: 2rem 1fr auto; } .schedule .date, .schedule .venue { display: none; } }
+.scorers { list-style: none; margin: .5rem 0 0; padding: 0; }
+.scorers li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; border-bottom: 1px solid var(--line); }
+.scorers .count { font-family: var(--display); font-weight: 700; }
+.standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
+
+/* club crests from the source; sized so they never dominate the score cell */
+.crest { width: 1.4rem; height: 1.4rem; object-fit: contain; vertical-align: middle; }
+.crest.small { width: 1.1rem; height: 1.1rem; }
+.crest.large { width: 2.4rem; height: 2.4rem; }
+.crest.hero { width: 5.5rem; height: 5.5rem; flex-shrink: 0; }
+.fixture .home, .fixture .away { display: inline-flex; align-items: center; gap: .5rem; }
+.fixture .home { justify-content: flex-end; }
+
+/* table zones: thin marker at the position, full = direct, dimmed = play-off */
+.standings tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
+.standings tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
+.standings tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
+.standings tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
+
+/* retrospective on the forecast page */
+.retrospective { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; background: var(--ground); font-size: .92rem; }
+.retrospective h2 { font-size: 1rem; margin-bottom: .4rem; }
+.retrospective ul { margin: 0; padding-left: 1.1rem; }
+.retrospective li { margin: .15rem 0; }
+
+/* accuracy page */
+.accuracy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 800px) { .accuracy-grid { grid-template-columns: 1fr; } }
+.accuracy-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.3rem 1.4rem; }
+.big-number { font-family: var(--display); font-weight: 700; font-size: clamp(2.2rem, 5.5vw, 3.4rem); letter-spacing: -0.04em; margin: .4rem 0 .2rem; font-variation-settings: "opsz" 96; }
+.big-number .muted { font-family: var(--text); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
+.accuracy-facts { color: var(--ink-soft); margin: 0 0 .6rem; }
+.yardsticks { border-collapse: collapse; width: 100%; margin: .6rem 0 .2rem; font-size: .92rem; }
+.yardsticks th { text-align: left; font-weight: 500; color: var(--ink-mute); padding: .3rem 0; border-bottom: 1px solid var(--line); }
+.yardsticks td { text-align: right; padding: .3rem 0 .3rem .8rem; border-bottom: 1px solid var(--ground); }
+.yardsticks thead th + th { text-align: right; }
+.yardsticks tr.is-oracle th, .yardsticks tr.is-oracle td { color: var(--ink); font-weight: 600; }
+.yardsticks tr.is-oracle th { box-shadow: inset 2px 0 0 var(--accent); padding-left: .5rem; }
+
+/* the simple view: a plain hit/miss timeline, no statistics required to read it */
+.hit-strip-caption { margin: .1rem 0 .5rem; color: var(--ink-soft); }
+.hit-strip { list-style: none; margin: 0 0 .3rem; padding: 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+.hit-dot { width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 1.5px solid var(--line); }
+.hit-dot.is-exact { background: var(--win); border-color: var(--win); }
+.hit-dot.is-tendency { background: color-mix(in srgb, var(--win) 40%, var(--surface)); border-color: var(--win); }
+.hit-dot.is-miss { background: var(--surface); border-color: var(--loss); }
+
+/* the detailed view is opt-in: quote, calibration and the statistical comparison */
+.accuracy-details { margin-top: 1.1rem; border-top: 1px solid var(--line); padding-top: .9rem; }
+.accuracy-details summary { cursor: pointer; font-weight: 500; color: var(--ink-soft); }
+.accuracy-details summary:hover { color: var(--ink); }
+.accuracy-details[open] summary { color: var(--ink); margin-bottom: .8rem; }
+
+/* backtests: clearly marked wherever a forecast appears */
+.backtest-badge { display: inline-block; font-family: var(--text); font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 4px; padding: .05rem .35rem; vertical-align: middle; }
+.button.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
+.actual-result { margin: 0 0 1rem; color: var(--ink-soft); }

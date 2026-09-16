@@ -1,0 +1,56 @@
+{#include base nav=page.nav data=page.data}
+{#title}{page.number}. Spieltag – {page.nav.leagueName}{/title}
+{#body}
+<section class="matchday">
+  <div class="matchday-head">
+    <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
+    <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
+    <p class="matchday-actions"><a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a></p>
+    <nav class="pager" aria-label="Spieltag wechseln">
+      {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
+      {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
+    </nav>
+  </div>
+
+  {#for day in page.days}
+  <h2 class="day">{day.label}</h2>
+  <ol class="fixtures">
+    {#for m in day.matches}
+    <li>
+      <a class="fixture" href="{m.link}">
+        <span class="time">{m.time}</span>
+        <span class="home">{m.home}{#if m.homeIcon} <img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}</span>
+        <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if}">
+          {#if m.played}{m.score}{#else}–:–{/if}
+        </span>
+        <span class="away">{#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy"> {/if}{m.away}</span>
+        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if !m.played}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+      </a>
+    </li>
+    {/for}
+  </ol>
+  {/for}
+  <div hx-get="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts/markers" hx-trigger="load" hx-swap="none"></div>
+</section>
+
+<aside class="standings">
+  <h2>Tabelle <span class="muted">nach dem {page.number}. Spieltag</span></h2>
+  <table>
+    <thead>
+      <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff.</th><th>Pkt.</th></tr>
+    </thead>
+    <tbody>
+      {#for r in page.standings}
+      <tr class="{r.zone}">
+        <td class="pos">{r.position}</td>
+        <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
+        <td>{r.played}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
+        <td>{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+      </tr>
+      {/for}
+    </tbody>
+  </table>
+  {#if page.standingsProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
+</aside>
+{/body}
+{/include}

@@ -1,0 +1,25 @@
+# Started automatically by Quarkus Compose Dev Services in dev mode and tests.
+# Quarkus derives the datasource (user, password, db name, port) from this file,
+# so nothing about it needs to be repeated in application.properties.
+services:
+  db:
+    image: docker.io/library/postgres:18-alpine
+    healthcheck:
+      test: pg_isready -U matchoracle -d matchoracle
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    ports:
+      # fixed host port so a DB client (IntelliJ, psql) can connect during development
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: matchoracle
+      POSTGRES_PASSWORD: matchoracle
+      POSTGRES_DB: matchoracle
+    volumes:
+      # postgres 18+ images store data in a version-specific subdirectory;
+      # mount the parent so that future pg_upgrade works across major versions
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:
