@@ -40,7 +40,7 @@ public class MatchdaySynchronizer {
     int syncWindow;
 
     /** Past seasons kept as history in addition to the current one. */
-    @ConfigProperty(name = "matchoracle.matchday.history-seasons", defaultValue = "2")
+    @ConfigProperty(name = "matchoracle.matchday.history-seasons", defaultValue = "5")
     int historySeasons;
 
     /** Checks the current matchday (+/- window) of both leagues and reloads what changed. */
