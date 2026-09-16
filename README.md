@@ -1,61 +1,64 @@
-# match-oracle
+# Rasenradar
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+**Bundesliga aktuell – mit KI-Vorschau**
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+[![Build](https://github.com/mgoericke/rasenradar/actions/workflows/build.yml/badge.svg)](https://github.com/mgoericke/rasenradar/actions/workflows/build.yml)
+[![Security Scan](https://github.com/mgoericke/rasenradar/actions/workflows/security.yml/badge.svg)](https://github.com/mgoericke/rasenradar/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java 21](https://img.shields.io/badge/Java-21-orange)](https://openjdk.org/projects/jdk/21/)
+[![Quarkus 3.39](https://img.shields.io/badge/Quarkus-3.39-blue)](https://quarkus.io/)
 
-## Running the application in dev mode
+Aktuelle Spieltage, Tabellen und Vereinsdaten der 1./2. Bundesliga und der Champions-League-Ligaphase — plus eine KI-Vorschau je Begegnung, die sich selbst an ihrer eigenen Trefferbilanz messen lässt.
 
-You can run your application in dev mode that enables live coding using:
+**Live:** [rasenradar.markserver.de](https://rasenradar.markserver.de)
 
-```shell script
-./mvnw quarkus:dev
+> [!NOTE]
+> Ein privates, nicht kommerzielles Hobbyprojekt eines Bundesliga-Fans. Keine Quoten, keine Wettempfehlungen — die KI-Vorschau ist eine Einschätzung, kein Rat.
+
+## Screenshots
+
+| Spieltag | Begegnung |
+|---|---|
+| ![Spieltagsübersicht mit Tabelle](docs/screenshots/spieltag.jpg) | ![Begegnung mit Tabellenverlauf und direkten Duellen](docs/screenshots/spielseite.jpg) |
+
+| KI-Vorschau | Vereinsseite |
+|---|---|
+| ![KI-Vorschau mit Wahrscheinlichkeiten, Bewertungen und Prüfung](docs/screenshots/ki-vorschau.jpg) | ![Vereinsseite mit Saisonverlauf, Spielplan und Torschützen](docs/screenshots/vereinsseite.jpg) |
+
+**Trefferbilanz** — wie gut die KI-Vorschau wirklich ist, gemessen an einer reinen Statistik-Basisprognose:
+
+![Trefferbilanz mit einfachem Trefferverlauf und Vergleich zur Basisprognose](docs/screenshots/trefferbilanz.jpg)
+
+## Features
+
+- **Spieldaten in Echtzeit** — 1./2. Bundesliga und die Champions-League-Ligaphase, alle 15 Minuten mit [OpenLigaDB](https://www.openligadb.de) abgeglichen. Ergebnisse gelten erst 24 Stunden nach Anstoß als endgültig; vorläufige Ergebnisse sind im UI klar markiert.
+- **Abgeleitete Fakten** — Form (letzte 5 Saisonspiele), direkte Duelle über mehrere Saisons, Tabelle „vor Spieltag N", Heim-/Auswärtsbilanz, Torschützen je Verein.
+- **Vereinsseiten** — Tabellenplatz im Saisonverlauf, kompletter Spielplan, Bilanz, Torschützen, Verlinkung zu Vorsaisons (auch über Ligagrenzen hinweg bei Auf-/Absteigern).
+- **KI-Vorschau** — ein agentischer Workflow (LangChain4j) aus drei parallelen Bewertern (Form, direkte Duelle, Umfeld), einem Prognostiker und einem Prüfer mit einer Überarbeitungsrunde. Modell: Anthropic Claude Sonnet 5, lokales Ollama als Fallback im Dev-Modus. Eine Prognose wird nie geändert oder gelöscht — eine erneute ist ein neuer Eintrag.
+- **Rückschau mit Trefferbilanz** — jede Prognose wird gegen das endgültige Ergebnis geprüft (Tendenztreffer, Brier-Score, Sicherheitskalibrierung) und gegen eine statistische Basisprognose (Poisson-Schätzung aus Torschnitt und Heimvorteil) verglichen. Eine Quote gibt es erst ab genügend Datenbasis — vorher ausdrücklich nichts statt einer dünnen Zahl. Dazu eine einfache Trefferverlauf-Ansicht ohne Statistikwissen.
+- **Rücktest-Modus** — Prognosen für bereits gespielte Begegnungen der laufenden Saison, sofort bewertet, getrennt von Live-Prognosen ausgewiesen.
+
+## Architektur
+
+Boundary–Control–Entity je fachlichem Feature (`matchday`, `forecast`, `review`), Abhängigkeitsrichtung per [ArchUnit](https://www.archunit.org/) erzwungen. Details, Sequenzdiagramme und Architekturentscheidungen: [`docs/architecture/`](docs/architecture/).
+
+**Stack:** Quarkus 3.39 · Java 21 · PostgreSQL/Flyway · Hibernate ORM mit Panache · LangChain4j agentic · Qute + htmx + Chart.js, kein SPA.
+
+## Entwicklung
+
+```bash
+./mvnw quarkus:dev     # Dev-Modus mit Live-Reload, Dev UI: http://localhost:8080/q/dev/
+./mvnw test             # Tests (ArchUnit eingeschlossen)
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+Voraussetzungen: Docker (für den Postgres-Dev-Service via Compose Dev Services), ein `ANTHROPIC_API_KEY` in der Umgebung oder in einer lokalen `.env` für die KI-Vorschau — ohne Key fällt der Workflow auf ein lokales Ollama-Modell zurück.
 
-## Packaging and running the application
+Details zu Arbeitsweise, Glossar und Fachregeln: [`CLAUDE.md`](CLAUDE.md). UI-Styleguide: [`docs/styleguide.md`](docs/styleguide.md).
 
-The application can be packaged using:
+## Deployment
 
-```shell script
-./mvnw package
-```
+Docker Compose hinter Traefik, automatisch über GitHub Actions. Details: [`deployment/`](deployment/DEPLOYMENT.md).
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+## Lizenz
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/match-oracle-1.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- LangChain4j Agentic ([guide](https://docs.quarkiverse.io/quarkus-langchain4j/dev/index.html)): Provides integration
-  with LangChain4j's Agentic module
-- Quarkus LangChain4j Skills ([guide](https://docs.quarkiverse.io/quarkus-langchain4j/dev/index.html)): Provides
-  integration of Quarkus LangChain4j with Agent Skills.
+[MIT](LICENSE)
