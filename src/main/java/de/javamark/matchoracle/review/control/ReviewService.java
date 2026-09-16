@@ -2,6 +2,7 @@ package de.javamark.matchoracle.review.control;
 
 import de.javamark.matchoracle.matchday.boundary.MatchSituation;
 import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
+import de.javamark.matchoracle.matchday.boundary.ScorelineForecast;
 import de.javamark.matchoracle.review.entity.AccuracyReport;
 import de.javamark.matchoracle.review.entity.Baseline;
 import de.javamark.matchoracle.review.entity.ForecastEvaluation;
@@ -73,9 +74,10 @@ public class ReviewService {
     /** How many of the most recent evaluations the plain hit/miss timeline shows. */
     static final int RECENT_RESULTS_LIMIT = 12;
 
-    static Situation situationFrom(MatchSituation s) {
+    Situation situationFrom(MatchSituation s) {
         Situation situation = new Situation();
-        Baseline baseline = BaselineForecast.from(s);
+        ScorelineForecast sf = matchday.scorelineForecast(s);
+        Baseline baseline = new Baseline(sf.homeWin(), sf.draw(), sf.awayWin());
         situation.baselineHomeWin = baseline.homeWin();
         situation.baselineDraw = baseline.draw();
         situation.baselineAwayWin = baseline.awayWin();
@@ -136,7 +138,8 @@ public class ReviewService {
             if (facts.isEmpty()) {
                 continue;
             }
-            Baseline baseline = BaselineForecast.from(facts.get());
+            ScorelineForecast sf = matchday.scorelineForecast(facts.get());
+            Baseline baseline = new Baseline(sf.homeWin(), sf.draw(), sf.awayWin());
             situation.baselineHomeWin = baseline.homeWin();
             situation.baselineDraw = baseline.draw();
             situation.baselineAwayWin = baseline.awayWin();
