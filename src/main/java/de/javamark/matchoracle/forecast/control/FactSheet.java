@@ -6,6 +6,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchSituation.Balance;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation.Meeting;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation.Result;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation.TeamSituation;
+import de.javamark.matchoracle.matchday.boundary.ScorelineForecast;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -56,6 +57,13 @@ final class FactSheet {
         return "Heimvorteil: " + Math.round(p.homeAdvantage * 100) + " Prozentpunkte zugunsten der Heimmannschaft\n"
                 + "Formzeitraum: die letzten " + p.formMatches + " Spiele der laufenden Saison\n"
                 + "Aufsteiger-Malus: " + Math.round(p.promotedTeamMalus * 100) + " Prozentpunkte für eine aufgestiegene Mannschaft\n";
+    }
+
+    /** Spec 02: the statistical starting point, purely from goal averages — Heimvorteil/Aufsteiger-Malus are not in it yet. */
+    static String baseline(ScorelineForecast b) {
+        return String.format(Locale.GERMAN, "%.1f erwartete Tore Heimmannschaft, %.1f erwartete Tore Gastmannschaft "
+                + "(rein statistisch aus den Torschnitten, vor Heimvorteil und Aufsteiger-Malus)",
+                b.expectedHomeGoals(), b.expectedAwayGoals());
     }
 
     private static String team(TeamSituation t, Instant kickoff) {

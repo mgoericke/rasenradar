@@ -7,6 +7,7 @@ import de.javamark.matchoracle.forecast.entity.ForecastParameters;
 import de.javamark.matchoracle.forecast.entity.Verdict;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation;
 import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
+import de.javamark.matchoracle.matchday.boundary.ScorelineForecast;
 import de.javamark.matchoracle.review.boundary.ReviewFacade;
 import dev.langchain4j.agentic.scope.AgenticScope;
 import dev.langchain4j.agentic.scope.ResultWithAgenticScope;
@@ -83,18 +84,20 @@ public class ForecastService {
                 throw new IllegalStateException("Rücktests nur für die laufende Saison – ältere Ergebnisse könnten die Modelle kennen");
             }
             String facts = FactSheet.render(situation);
+            ScorelineForecast statisticalBaseline = matchday.scorelineForecast(situation);
+            String baselineText = FactSheet.baseline(statisticalBaseline);
             // spec 03, rules: nothing instead of a thin retrospective
             String retrospective = review.retrospectiveFor(matchId).orElse(null);
             String retrospectiveText = retrospective == null
                     ? "Keine belastbare Rückschau verfügbar (zu wenige vergleichbare Fälle)." : retrospective;
             ResultWithAgenticScope<ForecastDraft> result;
             try {
-                result = workflow.run(facts, FactSheet.parameters(parameters), retrospectiveText, "", ForecastWorkflow.NOT_REVIEWED);
+                result = workflow.run(facts, baselineText, FactSheet.parameters(parameters), retrospectiveText, "", ForecastWorkflow.NOT_REVIEWED);
             } catch (RuntimeException e) {
                 if (!isUnparsableAnswer(e)) throw e;
                 // one broken answer of the forecaster or reviewer should not cost the whole run
                 LOG.warnf("Forecast for match %d got an unparsable answer, running once more: %s", matchId, causeChain(e));
-                result = workflow.run(facts, FactSheet.parameters(parameters), retrospectiveText, "", ForecastWorkflow.NOT_REVIEWED);
+                result = workflow.run(facts, baselineText, FactSheet.parameters(parameters), retrospectiveText, "", ForecastWorkflow.NOT_REVIEWED);
             }
             long id = commit(situation, parameters, result.result(), result.agenticScope(), retrospective, backtest);
             handOver(id);
@@ -165,13 +168,13 @@ public class ForecastService {
         forecast.awayTeam = situation.awayTeam().name();
         forecast.kickoff = situation.kickoff();
 
-        Probabilities p = Probabilities.normalized(draft.homeWin(), draft.draw(), draft.awayWin());
-        forecast.homeWin = p.homeWin();
-        forecast.draw = p.draw();
-        forecast.awayWin = p.awayWin();
-        forecast.expectedHomeGoals = Math.max(0, draft.expectedHomeGoals());
-        forecast.expectedAwayGoals = Math.max(0, draft.expectedAwayGoals());
-        forecast.confidence = confidence(Math.max(p.homeWin(), Math.max(p.draw(), p.awayWin())), failed);
+        ScorelineForecast sf = matchday.scorelineForecast(Math.max(0, draft.expectedHomeGoals()), Math.max(0, draft.expectedAwayGoals()));
+        forecast.homeWin = sf.homeWin();
+        forecast.draw = sf.draw();
+        forecast.awayWin = sf.awayWin();
+        forecast.expectedHomeGoals = sf.homeGoals();
+        forecast.expectedAwayGoals = sf.awayGoals();
+        forecast.confidence = confidence(sf.scoreProbability(), failed);
         forecast.reasoning = draft.reasoning();
 
         forecast.verdict = verdict.verdict();
@@ -198,7 +201,7 @@ public class ForecastService {
         });
         forecast.persist();
         LOG.infof("%s %d for %s - %s: %.0f/%.0f/%.0f, confidence %.2f, verdict %s%s", backtest ? "Backtest" : "Forecast", forecast.id,
-                forecast.homeTeam, forecast.awayTeam, p.homeWin() * 100, p.draw() * 100, p.awayWin() * 100,
+                forecast.homeTeam, forecast.awayTeam, sf.homeWin() * 100, sf.draw() * 100, sf.awayWin() * 100,
                 forecast.confidence, forecast.verdict, forecast.revised ? " (revised)" : "");
         return forecast.id;
     }

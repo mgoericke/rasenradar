@@ -50,7 +50,7 @@ public class PoissonScoreModel {
             }
         }
         double total = homeWin + draw + awayWin;
-        return new ScoreDistribution(bestHome, bestAway, bestP / total, homeWin / total, draw / total, awayWin / total);
+        return new ScoreDistribution(expectedHome, expectedAway, bestHome, bestAway, bestP / total, homeWin / total, draw / total, awayWin / total);
     }
 
     /** Goals per match, blended with the league value; one match counts, but it does not decide alone. */

@@ -12,24 +12,31 @@ public interface Forecaster {
 
     @SystemMessage("""
             Du bist Prognostiker für Fußballspiele der 1. und 2. Bundesliga.
-            Du verdichtest drei Bewertungen (Form, direkte Duelle, Umfeld) zu einer Prognose.
-            Die drei Wahrscheinlichkeiten für Heimsieg, Unentschieden und Auswärtssieg müssen zusammen genau 1 ergeben.
-            Sie drücken deine Sicherheit aus: ein klarer Favorit bekommt eine hohe Wahrscheinlichkeit, ein offenes Spiel
-            verteilt sie breit. Berücksichtige den Heimvorteil und den Aufsteiger-Malus aus den Bewertungsmaßstäben.
-            Ist eine Bewertung ausgefallen, verteile die Wahrscheinlichkeiten breiter und erwähne den Ausfall.
-            Vermerkt das Faktenblatt eine dünne Formdatenbasis (Achtung-Hinweis), stütze dich stärker auf Tabellenlage
-            und Heim-/Auswärtsbilanz statt auf die Form - ein oder zwei Saisonspiele sind kein verlässlicher Trend.
-            Der erwartete Torverlauf ist ein Richtwert: leite ihn aus den Torschnitten im Faktenblatt ab
-            (Tore des Gastgebers zu Hause, Gegentore des Gastes auswärts und umgekehrt), runde auf ganze Tore
-            und wähle nicht pauschal 1:1.
-            Antworte auf Deutsch. Die Begründung wie im Sportteil einer Zeitung: höchstens drei kurze Sätze, konkret,
-            ohne Floskeln wie zeigt sich, präsentiert sich oder unterstreicht, und ohne die Bewertungen bloß zusammenzufassen.
+            Du gehst von einem statistischen Ausgangswert für die erwarteten Tore beider Mannschaften aus
+            (rein aus den Torschnitten der laufenden Saison berechnet) und passt ihn an, wenn die drei
+            Bewertungen (Form, direkte Duelle, Umfeld) etwas anderes nahelegen. Berücksichtige dabei den
+            Heimvorteil und den Aufsteiger-Malus aus den Bewertungsmaßstäben - der Ausgangswert kennt sie
+            noch nicht.
+            Bleib in der Nähe des Ausgangswerts: kleine, begründete Anpassungen statt großer Sprünge. Die
+            tatsächlichen Wahrscheinlichkeiten für Heimsieg, Unentschieden und Auswärtssieg sowie das
+            wahrscheinlichste Ergebnis werden aus deinen angepassten Torerwartungen berechnet, nicht von dir
+            geschätzt.
+            Ist eine Bewertung ausgefallen, sei bei der Anpassung zurückhaltender und erwähne den Ausfall.
+            Vermerkt das Faktenblatt eine dünne Formdatenbasis (Achtung-Hinweis), stütze dich stärker auf
+            Tabellenlage und Heim-/Auswärtsbilanz statt auf die Form - ein oder zwei Saisonspiele sind kein
+            verlässlicher Trend.
+            Antworte auf Deutsch. Die Begründung wie im Sportteil einer Zeitung: höchstens drei kurze Sätze,
+            konkret, ohne Floskeln wie zeigt sich, präsentiert sich oder unterstreicht, und ohne die
+            Bewertungen bloß zusammenzufassen.
             Keine Anführungszeichen und keine Zitate im Text. Keine Quoten, keine Wettempfehlungen.
             """)
     @UserMessage("""
             Erstelle die Prognose für diese Begegnung.
 
             {{facts}}
+
+            Statistischer Ausgangswert:
+            {{baseline}}
 
             Bewertungsmaßstäbe:
             {{parameters}}
@@ -50,8 +57,8 @@ public interface Forecaster {
             Anmerkung des Prüfers zu einem früheren Entwurf (leer, wenn es der erste Entwurf ist):
             {{reviewNote}}
             """)
-    @Agent(name = "forecaster", description = "Verdichtet die Bewertungen zu einer Prognose", outputKey = "draft")
-    ForecastDraft forecast(@V("facts") String facts, @V("parameters") String parameters,
+    @Agent(name = "forecaster", description = "Passt den statistischen Ausgangswert an die Bewertungen an", outputKey = "draft")
+    ForecastDraft forecast(@V("facts") String facts, @V("baseline") String baseline, @V("parameters") String parameters,
                            @V("formAssessment") AssessmentResult formAssessment,
                            @V("headToHeadAssessment") AssessmentResult headToHeadAssessment,
                            @V("contextAssessment") AssessmentResult contextAssessment,
