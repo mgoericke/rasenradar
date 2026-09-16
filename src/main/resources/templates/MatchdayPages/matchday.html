@@ -5,9 +5,12 @@
   <div class="matchday-head">
     <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
     <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
-    {#if page.nav.forecastSupported}
-    <p class="matchday-actions"><a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a></p>
-    {/if}
+    <p class="matchday-actions">
+      {#if page.nav.forecastSupported}
+      <a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a>
+      {/if}
+      <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
+    </p>
     <nav class="pager" aria-label="Spieltag wechseln">
       {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
       {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}

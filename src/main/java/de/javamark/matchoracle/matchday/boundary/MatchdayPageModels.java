@@ -234,6 +234,12 @@ public final class MatchdayPageModels {
         }
     }
 
+    record LeagueScorerRow(int rank, String name, String team, int goals, int penalties) {
+    }
+
+    record LeagueScorersPage(Nav nav, String season, List<LeagueScorerRow> scorers) {
+    }
+
     /** Chart.js data for the goal-timing bar chart: labels plus a scored/conceded series, as JSON. */
     static String goalTimingJson(List<GoalTiming> timings) {
         String labels = timings.stream().map(t -> '"' + t.label() + '"').collect(java.util.stream.Collectors.joining(","));
