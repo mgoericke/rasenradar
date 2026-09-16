@@ -44,6 +44,16 @@ Boundary–Control–Entity je fachlichem Feature (`matchday`, `forecast`, `revi
 
 **Stack:** Quarkus 3.39 · Java 21 · PostgreSQL/Flyway · Hibernate ORM mit Panache · LangChain4j agentic · Qute + htmx + Chart.js, kein SPA.
 
+## Lokal ausprobieren
+
+Kein Java, kein Maven nötig — zieht das veröffentlichte Image:
+
+```bash
+docker compose up
+```
+
+Danach [localhost:8080](http://localhost:8080). Für die KI-Vorschau vorher `export ANTHROPIC_API_KEY=...` setzen; alles andere (Spieltage, Tabellen, Vereine, Trefferbilanz) funktioniert auch ohne.
+
 ## Entwicklung
 
 ```bash
