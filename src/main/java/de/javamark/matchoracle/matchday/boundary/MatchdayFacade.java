@@ -6,6 +6,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchSituation.Result;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation.TeamSituation;
 import de.javamark.matchoracle.matchday.control.FormCalculator;
 import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
+import de.javamark.matchoracle.matchday.control.PoissonScoreModel;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.HeadToHead;
@@ -36,10 +37,23 @@ public class MatchdayFacade {
     @Inject
     HeadToHeadCalculator headToHeadCalculator;
 
+    @Inject
+    PoissonScoreModel poissonScoreModel;
+
     /** The situation before a match, with the form window given by the caller (a forecast parameter). */
     @Transactional(Transactional.TxType.SUPPORTS)
     public Optional<MatchSituation> situationOf(long matchId, int formMatches) {
         return Match.<Match>findByIdOptional(matchId).map(match -> situation(match, formMatches));
+    }
+
+    /** A plain statistical estimate from both sides' goal averages — the Rückschau yardstick and the KI-Vorschau's starting point. */
+    public ScorelineForecast scorelineForecast(MatchSituation situation) {
+        var d = poissonScoreModel.forecast(entityBalance(situation.homeTeam().homeBalance()), entityBalance(situation.awayTeam().awayBalance()));
+        return new ScorelineForecast(d.homeGoals(), d.awayGoals(), d.scoreProbability(), d.homeWin(), d.draw(), d.awayWin());
+    }
+
+    private static de.javamark.matchoracle.matchday.entity.Balance entityBalance(Balance b) {
+        return new de.javamark.matchoracle.matchday.entity.Balance(b.wins(), b.draws(), b.losses(), b.goalsFor(), b.goalsAgainst());
     }
 
     /** Ids of all matches whose result is FINAL — the review derives a situation for each of them. */
