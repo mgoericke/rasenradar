@@ -4,7 +4,6 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
-import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalTimingRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayPage;
@@ -207,7 +206,7 @@ public class MatchdayPages {
                 BalanceRow.of("Heim", Balance.of(team, played.stream().filter(m -> m.homeTeam.equals(team)).toList())),
                 BalanceRow.of("Auswärts", Balance.of(team, played.stream().filter(m -> m.awayTeam.equals(team)).toList())),
                 scorerCalculator.scorersFor(team, league, season).stream().map(ScorerRow::of).toList(),
-                goalTimingCalculator.timingFor(team, league, season).stream().map(GoalTimingRow::of).toList(),
+                MatchdayPageModels.goalTimingJson(goalTimingCalculator.timingFor(team, league, season)),
                 positionChart(league, season, lastPlayedMatchday, List.of(team)),
                 DataInfo.of(reference, Instant.now()));
     }

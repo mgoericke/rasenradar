@@ -35,3 +35,30 @@
     }
   });
 })();
+
+// Goals scored/conceded per 15-minute window — club page only.
+(function () {
+  var el = document.getElementById('goal-timing');
+  var dataEl = document.getElementById('goal-timing-data');
+  if (!el || !dataEl) return;
+  var data = JSON.parse(dataEl.textContent);
+  new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [
+        { label: 'Erzielt', data: data.scored, backgroundColor: '#1A8A50' },
+        { label: 'Kassiert', data: data.conceded, backgroundColor: '#C63C3C' }
+      ]
+    },
+    options: {
+      animation: false,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, title: { display: true, text: 'Tore' } },
+        x: { grid: { display: false } }
+      },
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+})();
