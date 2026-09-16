@@ -76,7 +76,9 @@ h2 { font-size: 1.1rem; }
   padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
   max-width: 1280px;
 }
-@media (max-width: 900px) { .page { grid-template-columns: 1fr; } }
+/* minmax(0, 1fr), not plain 1fr — otherwise a wide child (e.g. the probability bars) grows the
+   track to fit its content and pushes the whole page wider than the viewport on mobile */
+@media (max-width: 900px) { .page { grid-template-columns: minmax(0, 1fr); } }
 
 /* matchday head */
 .matchday-title { font-size: clamp(2.6rem, 6.5vw, 4.4rem); font-weight: 700; line-height: .95; letter-spacing: -0.04em; }
@@ -114,6 +116,11 @@ h2 { font-size: 1.1rem; }
 /* standings */
 .standings { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; align-self: start; }
 .standings table { width: 100%; border-collapse: collapse; margin-top: .85rem; font-size: .92rem; }
+/* narrow screens: scroll the table instead of squeezing nine columns and wrapping every team name */
+@media (max-width: 480px) {
+  .standings { overflow-x: auto; }
+  .standings table { width: auto; min-width: 30rem; }
+}
 .standings th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .4rem; border-bottom: 1px solid var(--line); }
 .standings td { text-align: right; padding: .42rem .4rem; border-bottom: 1px solid var(--line); }
 .standings tbody tr:last-child td { border-bottom: 0; }
@@ -136,6 +143,12 @@ h2 { font-size: 1.1rem; }
 .scoreboard .score.is-played.is-provisional { background: transparent; color: #fff; border-color: var(--stage-soft); }
 .scoreboard .half { margin: .7rem 0 0; color: var(--stage-soft); }
 .scoreboard .crest.large { background: #fff; border-radius: 50%; padding: .25rem; width: 2.8rem; height: 2.8rem; }
+/* narrow screens: two team names either side of the score badge has no room to breathe — stack instead */
+@media (max-width: 480px) {
+  .scoreboard .teams { grid-template-columns: 1fr; gap: .6rem; font-size: 1.35rem; }
+  .scoreboard .home, .scoreboard .away { display: flex; align-items: center; justify-content: center; gap: .5rem; text-align: center; }
+  .scoreboard .score { justify-self: center; }
+}
 .scoreboard .forecast-summary { border-top: 1px solid var(--stage-line); margin-top: 1.2rem; padding-top: 1rem; }
 .scoreboard .forecast-summary .summary-figures { color: var(--stage-soft); }
 .scoreboard .forecast-summary .summary-figures strong { color: #fff; }
@@ -277,7 +290,7 @@ h2 { font-size: 1.1rem; }
 
 /* the probability bars: one row, widths are the probabilities */
 .bars { display: flex; gap: 3px; height: 2.6rem; border-radius: 8px; overflow: hidden; }
-.bar { display: flex; align-items: center; gap: .4rem; padding: 0 .6rem; color: #fff; font-size: .85rem; white-space: nowrap; overflow: hidden; min-width: 0; }
+.bar { display: flex; align-items: center; gap: .4rem; padding: 0 .6rem; color: #fff; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bar b { font-family: var(--display); font-size: 1.05rem; }
 .bar.home { background: var(--ink); }
 .bar.draw { background: var(--draw); }
