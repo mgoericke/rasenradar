@@ -154,9 +154,9 @@ h2 { font-size: 1.1rem; }
 .scoreboard .forecast-summary .summary-figures strong { color: #fff; }
 .scoreboard .mini-bars .home { background: #fff; }
 .scoreboard .mini-bars .draw { background: var(--stage-soft); }
-.scoreboard .mini-bars .away { background: #2FB36B; }
+.scoreboard .mini-bars .away { background: var(--line); }
 .scoreboard .tendency-small { color: #fff; }
-.scoreboard .tendency-small.away_win { color: #2FB36B; }
+.scoreboard .tendency-small.away_win { color: var(--line); }
 .scoreboard .tendency-small.draw { color: var(--stage-soft); }
 .scoreboard .muted { color: var(--stage-soft); }
 .scoreboard .link-button { background: transparent; color: #fff; border-color: var(--accent); }
@@ -283,7 +283,7 @@ h2 { font-size: 1.1rem; }
 .forecast-head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .tendency { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; }
 .tendency.home_win { color: var(--ink); }
-.tendency.away_win { color: var(--win); }
+.tendency.away_win { color: var(--ink-mute); }
 .tendency.draw { color: var(--ink-soft); }
 .expected, .confidence { color: var(--ink-soft); }
 .expected strong, .confidence strong { color: var(--ink); font-family: var(--display); font-size: 1.2rem; }
@@ -294,7 +294,8 @@ h2 { font-size: 1.1rem; }
 .bar b { font-family: var(--display); font-size: 1.05rem; }
 .bar.home { background: var(--ink); }
 .bar.draw { background: var(--draw); }
-.bar.away { background: var(--win); }
+/* not --win: none of the three outcomes has happened yet, so none gets the "this is good" color */
+.bar.away { background: var(--ink-soft); }
 .reasoning { font-size: 1.05rem; line-height: 1.55; margin: 1.2rem 0; max-width: 70ch; }
 
 .assessments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
@@ -305,7 +306,7 @@ h2 { font-size: 1.1rem; }
 .assessment-lean { margin: 0 0 .5rem; }
 .lean { font-weight: 600; }
 .lean.home_win { color: var(--ink); }
-.lean.away_win { color: var(--win); }
+.lean.away_win { color: var(--ink-mute); }
 .lean.draw, .lean.none { color: var(--ink-soft); }
 
 .review { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; border: 1px solid var(--line); font-size: .92rem; }
@@ -325,9 +326,9 @@ h2 { font-size: 1.1rem; }
 .mini-bars { display: flex; gap: 2px; height: .6rem; border-radius: 3px; overflow: hidden; }
 .mini-bars .home { background: var(--ink); }
 .mini-bars .draw { background: var(--draw); }
-.mini-bars .away { background: var(--win); }
+.mini-bars .away { background: var(--ink-soft); }
 .tendency-small { font-weight: 600; font-size: .9rem; }
-.tendency-small.away_win { color: var(--win); }
+.tendency-small.away_win { color: var(--ink-mute); }
 .tendency-small.draw { color: var(--ink-soft); }
 @media (max-width: 700px) { .forecast-row { grid-template-columns: 1fr; gap: .3rem; } }
 
@@ -346,7 +347,7 @@ h2 { font-size: 1.1rem; }
 .forecast-marker { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
 .forecast-marker.is-empty { display: none; }
 .forecast-marker.home_win { color: var(--ink); }
-.forecast-marker.away_win { color: var(--win); }
+.forecast-marker.away_win { color: var(--ink-mute); }
 .forecast-marker.draw { color: var(--ink-soft); }
 
 /* club page */
