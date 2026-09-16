@@ -104,7 +104,7 @@ sequenceDiagram
     S->>S: ForecastParameters.current()
     S->>MF: situationOf(matchId, parameters.formMatches)
     MF-->>S: MatchSituation (Form, Tabelle, Bilanzen, Direktduelle)
-    S->>S: Prüfungen: live nur ungespielt; Rücktest nur gespielt und laufende Saison
+    S->>S: Prüfungen: live nur ungespielt, Rücktest nur gespielt und laufende Saison
     S->>S: FactSheet.render(situation), FactSheet.parameters(parameters)
     S->>RF: retrospectiveFor(matchId)
     RF-->>S: Optional<String> (leer bei < 3 Vergleichsfällen)  [siehe Ablauf 5]
