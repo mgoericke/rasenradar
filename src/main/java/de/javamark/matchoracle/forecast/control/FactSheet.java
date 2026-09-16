@@ -42,7 +42,7 @@ final class FactSheet {
         sb.append('\n').append(team(s.awayTeam(), s.kickoff()));
         sb.append("\nDirekte Duelle (aus Sicht von ").append(s.homeTeam().name()).append(", neueste zuerst):\n");
         if (s.previousMeetings().isEmpty()) {
-            sb.append("  keine Begegnungen im Datenbestand (laufende und zwei vorangegangene Saisons)\n");
+            sb.append("  keine Begegnungen im importierten Datenbestand\n");
         }
         for (Meeting m : s.previousMeetings()) {
             sb.append("  ").append(SHORT.format(m.kickoff().atZone(ZONE))).append(' ')
