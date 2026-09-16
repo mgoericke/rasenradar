@@ -1,4 +1,4 @@
-# Architektur „Bundesliga aktuell – mit KI-Vorschau"
+# Architektur „Bundesliga aktuell – mit KI-Vorschau“
 
 Stand: September 2026. Quarkus 3.39, Java 21, Maven Wrapper. Basispackage `de.javamark.matchoracle`.
 

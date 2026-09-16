@@ -82,17 +82,17 @@ einer einzigen, nicht offiziell garantierten Quelle; fällt sie aus, arbeitet da
 letzten bekannten Stand weiter (Spec 01, Regeln) und weist dessen Alter aus. Die Frist von 24 h
 ist ein Bewertungsmaßstab und ohne Deployment änderbar (Konfigurationswert, nicht Code).
 
-## Ableitungen: Form pro Saison, Direktduelle über alle Saisons, Tabelle „vor Spieltag N"
+## Ableitungen: Form pro Saison, Direktduelle über alle Saisons, Tabelle „vor Spieltag N“
 
 **Kontext:** Form soll die aktuelle Verfassung einer Mannschaft zeigen, nicht durch
 Auf-/Abstieg oder Kaderwechsel verzerrt werden; Direktduelle sollen dagegen die ganze
 gehaltene Historie zeigen.
 
 **Entscheidung:** `FormCalculator.form` begrenzt sich auf die laufende Saison — „neue Liga,
-neuer Kader", kein Übertrag über Saisongrenzen (`matchoracle.matchday.form-matches`,
+neuer Kader“, kein Übertrag über Saisongrenzen (`matchoracle.matchday.form-matches`,
 Standard 5). `HeadToHeadCalculator.headToHeadBefore` sucht dagegen über alle gehaltenen
 Saisons und Ligen hinweg. Tabellenstände werden nie global vorgehalten, sondern immer als
-„Tabelle vor Spieltag N" berechnet (`StandingsCalculator`), damit Prognose und Rückschau den
+„Tabelle vor Spieltag N“ berechnet (`StandingsCalculator`), damit Prognose und Rückschau den
 Stand zum jeweiligen Zeitpunkt sehen, nicht den heutigen.
 
 **Konsequenzen:** Konsistente, nachvollziehbare Fakten für Bewerter-Agenten und Rückschau;
@@ -174,7 +174,7 @@ langsamer (~1 min statt Sekunden je Vorschau).
 
 ## Rücktests nur für die laufende Saison, getrennt ausgewiesen
 
-**Kontext:** Um die Prognosequalität schneller zu beurteilen als „eine Saison abwarten",
+**Kontext:** Um die Prognosequalität schneller zu beurteilen als „eine Saison abwarten“,
 sollen auch bereits gespielte Begegnungen prognostiziert werden können — aber ohne das
 Ergebnis zu leaken und ohne die Trefferbilanz der echten (Live-)Prognosen zu verfälschen.
 
@@ -200,13 +200,13 @@ stammen dürfen (kein Blick in die Zukunft).
 `Situation.findBefore(kickoff)` (nur Spiele vor dem Anstoß der zu prognostizierenden
 Begegnung), mindestens 3, höchstens 5 (`matchoracle.review.min-similar-cases`/`max-similar-cases`).
 Weniger als 3 Fälle → `Optional.empty()`, der Prognostiker bekommt „Keine belastbare Rückschau
-verfügbar" statt erfundener Fälle. Die Trefferbilanz zeigt Trefferquote/Brier/Skill-Score erst
+verfügbar“ statt erfundener Fälle. Die Trefferbilanz zeigt Trefferquote/Brier/Skill-Score erst
 ab 10 Bewertungen (`matchoracle.review.min-evaluations`), sonst `null` mit Hinweis auf dünne
 Datenlage. Als Maßstab dient `BaselineForecast`, eine Poisson-Schätzung aus den
 Tor-Durchschnitten vor Anstoß mit Schrumpfung Richtung Liga-Mittelwert (`PRIOR_WEIGHT = 5`
 Spiele wiegen wie der Liga-Prior) — nicht nur die KI-Vorschau gegen sich selbst gemessen.
 Zusätzlich zeigt eine einfache Trefferverlauf-Sicht (`AccuracyReport.recent`, „plain hit/miss
-timeline", Commit `c8cceab`) die letzten Bewertungen als Treffer/Fehlschlag ohne
+timeline“, Commit `c8cceab`) die letzten Bewertungen als Treffer/Fehlschlag ohne
 Statistik-Schwelle — auch unterhalb von 10 Bewertungen lesbar.
 
 **Konsequenzen:** Ehrlicher Umgang mit Datenmangel statt Pseudo-Genauigkeit (Spec-3-Regel
@@ -254,14 +254,14 @@ Hintergrundinformation ist, kein Kernweg des Betrachters (der ist: Liga → Spie
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine
   Tabelle — beides trägt das gesamte Datenmodell (`Matchday.number` je Liga/Saison,
   `StandingsCalculator`). Eine Aufnahme würde das Modell verbiegen statt erweitern
-  (Spec 01, Abgrenzung: „Keine weiteren Wettbewerbe").
+  (Spec 01, Abgrenzung: „Keine weiteren Wettbewerbe“).
 - **Aufstellungen:** nicht aufgenommen. OpenLigaDB liefert dazu keine Daten — `OpenLigaDbMatch`
   bildet nur Tore (mit Schütze und Minute), keine Kader oder Positionen ab; eine andere Quelle
   wäre nötig und ist nicht vorgesehen (Spec 01, Abgrenzung: „Keine Spielerstatistiken über die
-  Torschützen hinaus").
+  Torschützen hinaus“).
 - **Champions League:** offen, nicht abgelehnt. Die Ligaphase (seit 2024/25 eine gemeinsame
   Tabelle) würde technisch ins bestehende Modell passen (ein Spieltagszähler, eine Tabelle),
   im Unterschied zum Pokal. Bisher nicht umgesetzt, weil Spec 01 den Umfang bewusst auf beide
   Bundesligen begrenzt (Abgrenzung: „Keine weiteren Wettbewerbe (Pokal, europäische
-  Wettbewerbe) in dieser Ausbaustufe") — eine spätere Ausbaustufe müsste das im Spec-Interview
+  Wettbewerbe) in dieser Ausbaustufe“) — eine spätere Ausbaustufe müsste das im Spec-Interview
   klären, unter anderem wie K.-o.-Runden nach der Ligaphase gehandhabt würden.

@@ -148,7 +148,7 @@ Details:
 
 - **Ausfallsicherheit der Bewerter:** `ResilientAssessors.guarded` ruft den eigentlichen Bewerter auf, versucht es bei einer Exception genau einmal erneut und liefert danach `AssessmentResult.failed(...)` statt den Lauf abzubrechen. Der Prognostiker wird per Prompt angewiesen, bei Ausfall breiter zu verteilen.
 - **Sicherheitsgrad:** nicht vom Modell erfragt, sondern `ForecastService.confidence` = Wahrscheinlichkeit der Tendenz × 0,75 je ausgefallener Bewertung.
-- **Prüfer-Ergebnis:** `revised` = `reviewNote` nicht leer; `objectionRemains` = Urteil nach der letzten Runde noch `REVISE`. War der Prüfer nie dran (`NOT_REVIEWED` im Scope), wird `ACCEPTED` mit Hinweis „Keine Prüfung erfolgt." gespeichert.
+- **Prüfer-Ergebnis:** `revised` = `reviewNote` nicht leer; `objectionRemains` = Urteil nach der letzten Runde noch `REVISE`. War der Prüfer nie dran (`NOT_REVIEWED` im Scope), wird `ACCEPTED` mit Hinweis „Keine Prüfung erfolgt.“ gespeichert.
 - **Modellwahl:** jeder der fünf Agenten liefert per `@ChatModelSupplier` `FallbackChatModel.resilient()`. Der Aufruf geht zuerst an das benannte Modell `cloud` (`claude-sonnet-5`, `response-format=json`, Temperatur 0,3, gecachte Systemprompts) und bei einer RuntimeException (nicht erreichbar, kein Key, Guthaben leer, Timeout) an das Ollama-Standardmodell `gemma4:12b`. `ModelUsage` sammelt, welche Modelle geantwortet haben; das Ergebnis landet in `Forecast.modelName`. `matchoracle.forecast.cloud-enabled=false` schaltet die Cloud ab.
 - **Fortschritt:** `ForecastProgress` beobachtet die LangChain4j-Events `AiServiceStartedEvent`, `AiServiceCompletedEvent`, `AiServiceErrorEvent` und `AiServiceResponseReceivedEvent`, ordnet sie über den Interface-Namen dem Schritt (Formbewerter, Duellbewerter, Umfeldbewerter, Prognostiker, Prüfer) zu und zählt Tokens. Da Läufe sequenziell sind, reicht ein `current`-Zeiger auf den laufenden Match.
 - **Ganzer Spieltag:** `POST /{league}/{season}/{number}/forecasts` stellt alle ungespielten Begegnungen in die Queue; `/backtests` alle gespielten der laufenden Saison ohne Prognose.
@@ -201,7 +201,7 @@ flowchart LR
     Sit[Situation.findByMatchIds] --> A
     A[accuracy: je Bewertung] --> H[Treffer, Brier, Sicherheit<br/>der KI-Vorschau]
     A --> B[Basisprognose der Situation:<br/>Treffer, Brier auf denselben Spielen]
-    A --> AH[„immer Heimsieg" mit Ligaraten<br/>44/25/31: Treffer, Brier]
+    A --> AH[„immer Heimsieg“ mit Ligaraten<br/>44/25/31: Treffer, Brier]
     H & B --> SK[Skill-Score = 1 − Brier_KI / Brier_Basis]
     H & B & AH --> R[AccuracyReport<br/>je Spieltag: hits, baselineHits]
     R --> N{≥ 10 Bewertungen?<br/>min-evaluations}
@@ -223,12 +223,12 @@ flowchart TD
     E -- ja --> F[nach Distanz sortieren, höchstens 5<br/>max-similar-cases]
     F --> G[je Fall: ForecastEvaluation.findByMatch → damalige Prognose]
     G --> H{≥ 3 Fälle?<br/>min-similar-cases}
-    H -- nein --> N[Optional.empty → Prognostiker bekommt<br/>„Keine belastbare Rückschau verfügbar"]
+    H -- nein --> N[Optional.empty → Prognostiker bekommt<br/>„Keine belastbare Rückschau verfügbar“]
     H -- ja --> T[RetrospectiveText.render<br/>Verteilung Heimsieg/Unentschieden/Auswärtssieg,<br/>Liste der Fälle, damalige Treffer und Übermut]
     T --> R[Retrospective cases, summary<br/>Text landet in Forecast.retrospective]
 ```
 
-Die Vergleichbarkeit meint die Konstellation, nicht die Vereine; der Text sagt das dem Prognostiker ausdrücklich („als Basisrate zu lesen"). Fälle aus der anderen Liga werden mit „andere Liga" gekennzeichnet.
+Die Vergleichbarkeit meint die Konstellation, nicht die Vereine; der Text sagt das dem Prognostiker ausdrücklich („als Basisrate zu lesen“). Fälle aus der anderen Liga werden mit „andere Liga“ gekennzeichnet.
 
 ## 6. UI-Rendering
 
@@ -244,15 +244,15 @@ sequenceDiagram
 
     V->>M: GET /bl1/matches/{id}
     M-->>V: match.html (base.html, hx-boost)<br/>+ <script id="chart-data" type="application/json">
-    Note over V: match.js liest JSON, zeichnet Chart.js-Linie „Tabellenplatz je Spieltag"
+    Note over V: match.js liest JSON, zeichnet Chart.js-Linie „Tabellenplatz je Spieltag“
     V->>F: hx-get .../forecast/summary?played=… (hx-trigger="load")
-    F-->>V: summary.html → innerHTML: Tendenz, Balken, Richtwert, Sicherheit oder „KI-Vorschau erstellen"
+    F-->>V: summary.html → innerHTML: Tendenz, Balken, Richtwert, Sicherheit oder „KI-Vorschau erstellen“
 
     V->>M: GET /bl1/{season}/{number}
     M-->>V: matchday.html (Paarungen nach Tag, Tabelle)
     V->>F: hx-get .../forecasts/markers (hx-trigger="load", hx-swap="none")
     F-->>V: markers.html: je Spiel ein <span hx-swap-oob="true" id="forecast-marker-{matchId}">
-    Note over V: Out-of-band-Swap setzt „KI 1 / X / 2"-Marker in die Paarungsliste
+    Note over V: Out-of-band-Swap setzt „KI 1 / X / 2“-Marker in die Paarungsliste
 
     V->>F: GET /bl1/matches/{id}/forecast
     F-->>V: forecast.html inkl. progressSection (hx-trigger="every 2s" solange nicht fertig)
@@ -268,7 +268,7 @@ sequenceDiagram
 
 Bausteine:
 
-- `base.html`: Kopf mit Navigation (`Nav`-Record aus `matchday.boundary.MatchdayPageModels`, von allen Features genutzt), Fußzeile mit Datenherkunft und Alter (`DataInfo`, „das kann veraltet sein" ab 1 h), `hx-boost="true"` für Navigationslinks, Slots `title`, `body`, `scripts`.
+- `base.html`: Kopf mit Navigation (`Nav`-Record aus `matchday.boundary.MatchdayPageModels`, von allen Features genutzt), Fußzeile mit Datenherkunft und Alter (`DataInfo`, „das kann veraltet sein“ ab 1 h), `hx-boost="true"` für Navigationslinks, Slots `title`, `body`, `scripts`.
 - Chart-Daten werden als JSON in einem `<script type="application/json">`-Block ausgegeben (`{page.chartJson.raw}`) und von `match.js` / `accuracy.js` gelesen; kein Inline-Rendering im Template.
 - htmx und Chart.js liegen lokal unter `META-INF/resources/vendor/`; die Schriften kommen von Google Fonts.
 - Gestaltung nach `docs/styleguide.md` (heller Grund, eine dunkle Bühne, Messing als einziger Akzent für die KI-Vorschau).
