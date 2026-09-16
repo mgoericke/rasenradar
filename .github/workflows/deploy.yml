@@ -24,7 +24,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "deployment/"
-          target: "/opt/markserver-cloud/rasenradar"
+          target: ${{ secrets.DEPLOY_PATH }}
           strip_components: 1
           overwrite: true
 
@@ -35,7 +35,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd /opt/markserver-cloud/rasenradar
+            cd "${{ secrets.DEPLOY_PATH }}"
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.DEPLOY_USER }} --password-stdin
             IMAGE_TAG=${{ inputs.image_tag }} docker compose pull
             IMAGE_TAG=${{ inputs.image_tag }} docker compose up -d --remove-orphans

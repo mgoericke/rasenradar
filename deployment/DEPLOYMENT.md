@@ -38,7 +38,7 @@ sieht das im Fortschritt und kann es erneut versuchen.
 
 **Gewählter Ansatz: `.env`-Datei auf dem Server** (wie beim Referenzprojekt).
 
-- DB-Passwort und Anthropic-Key leben in `/opt/markserver-cloud/rasenradar/.env`
+- DB-Passwort und Anthropic-Key leben in `<deploy-path>/.env`
 - `docker compose` liest die Datei automatisch ein
 - Datei niemals ins Git-Repository committen
 
@@ -49,6 +49,7 @@ GitHub Secrets werden nur für **SSH-Zugang, GHCR-Login und den Cache-Purge** be
 | `DEPLOY_HOST` | IP oder FQDN des Zielservers |
 | `DEPLOY_USER` | SSH-Benutzername |
 | `DEPLOY_SSH_KEY` | Privater SSH-Key (PEM-Format; passender Public Key muss in `~/.ssh/authorized_keys` stehen) |
+| `DEPLOY_PATH` | Absoluter Pfad auf dem Server, in den `deployment/` kopiert wird, z. B. `<dein-pfad>/rasenradar` |
 | `GHCR_TOKEN` | GitHub PAT mit `read:packages`-Scope — für `docker login ghcr.io` auf dem Server |
 
 Cloudflare-Cache-Purge nach dem Deploy ist vorerst nicht eingerichtet — bei Bedarf später mit
@@ -63,7 +64,7 @@ Namen bewusst generisch gehalten, damit der Hosting-Anbieter nicht aus dem Repo 
 ## `.env`-Datei auf dem Server
 
 Vorlage: `deployment/.env.example`. Die Datei liegt auf dem Server unter:
-`/opt/markserver-cloud/rasenradar/.env`
+`<deploy-path>/.env`
 
 ```bash
 MATCHORACLE_DB_PASSWORD=<sicheres-passwort>
@@ -72,7 +73,7 @@ ANTHROPIC_API_KEY=<api-key>
 
 Berechtigungen setzen:
 ```bash
-chmod 600 /opt/markserver-cloud/rasenradar/.env
+chmod 600 <deploy-path>/.env
 ```
 
 ---
@@ -103,7 +104,7 @@ Danach `docker compose up -d` — Traefik übernimmt es sofort, kein Neustart vo
 ### 1. Verzeichnis anlegen
 
 ```bash
-mkdir -p /opt/markserver-cloud/rasenradar
+mkdir -p <deploy-path>
 ```
 
 ### 2. Traefik-Netzwerk sicherstellen
@@ -121,14 +122,14 @@ Siehe Abschnitt oben. Werte aus dem Passwort-Manager übernehmen.
 Beim ersten Mal manuell — danach übernimmt CI/CD automatisch:
 
 ```bash
-scp -r deployment/. <user>@<host>:/opt/markserver-cloud/rasenradar/
+scp -r deployment/. <user>@<host>:<deploy-path>/
 ```
 
 ### 5. Ersten Start testen
 
 ```bash
 ssh <user>@<host>
-cd /opt/markserver-cloud/rasenradar
+cd <deploy-path>
 docker compose pull
 docker compose up -d
 docker compose ps
@@ -176,7 +177,7 @@ je Liga von OpenLigaDB (`importMissingSeasons`) — das kann beim ersten Hochfah
 
 ```bash
 # Auf dem Server
-cd /opt/markserver-cloud/rasenradar
+cd <deploy-path>
 IMAGE_TAG=v1.2.2 docker compose up -d
 ```
 
