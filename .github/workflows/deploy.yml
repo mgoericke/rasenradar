@@ -40,11 +40,3 @@ jobs:
             IMAGE_TAG=${{ inputs.image_tag }} docker compose pull
             IMAGE_TAG=${{ inputs.image_tag }} docker compose up -d --remove-orphans
             docker image prune -f
-
-      - name: Purge Cloudflare cache
-        run: |
-          curl -s -X POST \
-            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \
-            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"files":["https://rasenradar.markserver.de/app.css","https://rasenradar.markserver.de/match.js","https://rasenradar.markserver.de/accuracy.js"]}'

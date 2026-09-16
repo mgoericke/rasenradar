@@ -50,8 +50,9 @@ GitHub Secrets werden nur für **SSH-Zugang, GHCR-Login und den Cache-Purge** be
 | `DEPLOY_USER` | SSH-Benutzername |
 | `DEPLOY_SSH_KEY` | Privater SSH-Key (PEM-Format; passender Public Key muss in `~/.ssh/authorized_keys` stehen) |
 | `GHCR_TOKEN` | GitHub PAT mit `read:packages`-Scope — für `docker login ghcr.io` auf dem Server |
-| `CF_ZONE_ID` | Cloudflare Zone-ID von `markserver.de` (für den Cache-Purge nach dem Deploy) |
-| `CF_API_TOKEN` | Cloudflare API-Token mit `Zone.Cache Purge`-Recht |
+
+Cloudflare-Cache-Purge nach dem Deploy ist vorerst nicht eingerichtet — bei Bedarf später mit
+`CF_ZONE_ID`/`CF_API_TOKEN` nachrüsten (Zone-ID und ein API-Token mit `Zone.Cache Purge`-Recht).
 
 `DEPLOY_HOST`/`_USER`/`_SSH_KEY` und `GHCR_TOKEN` existieren vermutlich schon als Secrets in
 anderen Repos auf demselben Server/Account — ggf. dieselben Werte wiederverwenden.
@@ -154,7 +155,6 @@ docker compose logs -f rasenradar
    - Kopiert `deployment/`-Verzeichnis via SCP auf den Server (aktualisiert `docker-compose.yml` etc.)
    - Führt `docker compose pull` + `docker compose up -d` aus
    - Räumt alte Images auf (`docker image prune -f`)
-   - Leert den Cloudflare-Cache für die statischen Dateien (`app.css`, `match.js`, `accuracy.js`)
 
 Die `.env`-Datei auf dem Server bleibt unberührt — sie wird nur manuell gepflegt.
 
