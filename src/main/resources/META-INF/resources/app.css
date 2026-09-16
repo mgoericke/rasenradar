@@ -280,13 +280,19 @@ h2 { font-size: 1.1rem; }
 @media (prefers-reduced-motion: reduce) { .step.running .dot { animation: none; } }
 
 .forecast { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem 1.5rem 1.1rem; }
-.forecast-head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.tendency { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; }
+.forecast-head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; margin-bottom: .3rem; }
+/* the result is the headline; tendency is a qualifier phrase next to it, not a competing headline —
+   they can point in different directions on a close match (see .tendency-explainer) */
+.forecast-headline { display: flex; align-items: baseline; gap: .5rem; }
+.headline-label { color: var(--ink-soft); }
+.headline-score { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; color: var(--ink); }
+.tendency { font-weight: 600; }
 .tendency.home_win { color: var(--ink); }
 .tendency.away_win { color: var(--ink-mute); }
 .tendency.draw { color: var(--ink-soft); }
-.expected, .confidence { color: var(--ink-soft); }
-.expected strong, .confidence strong { color: var(--ink); font-family: var(--display); font-size: 1.2rem; }
+.confidence { color: var(--ink-soft); }
+.confidence strong { color: var(--ink); font-family: var(--display); font-size: 1.2rem; }
+.tendency-explainer { font-size: .82rem; max-width: 60ch; margin: 0 0 1.1rem; }
 
 /* the probability bars: one row, widths are the probabilities */
 .bars { display: flex; gap: 3px; height: 2.6rem; border-radius: 8px; overflow: hidden; }

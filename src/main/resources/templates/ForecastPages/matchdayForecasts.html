@@ -26,7 +26,7 @@
         <span class="mini-bars" aria-label="{m.forecast.homeWin}/{m.forecast.draw}/{m.forecast.awayWin}">
           <span class="home" style="flex-basis: {m.forecast.homeWin}%"></span><span class="draw" style="flex-basis: {m.forecast.draw}%"></span><span class="away" style="flex-basis: {m.forecast.awayWin}%"></span>
         </span>
-        <span class="tendency-small {m.forecast.tendencyClass}">{m.forecast.tendency} · {m.forecast.expectedScore}{#if m.forecast.backtest} <span class="backtest-badge">Rücktest</span>{/if}</span>
+        <span class="tendency-small {m.forecast.tendencyClass}">{m.forecast.expectedScore} · Tendenz {m.forecast.tendency}{#if m.forecast.backtest} <span class="backtest-badge">Rücktest</span>{/if}</span>
         {#else if m.running}
         <span class="muted">wird bewertet …</span>
         {#else}

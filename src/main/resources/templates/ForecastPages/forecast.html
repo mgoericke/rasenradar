@@ -27,10 +27,14 @@
   {#let f=page.latest}
   <section class="forecast">
     <header class="forecast-head">
-      <div class="tendency {f.tendencyClass}">{f.tendency}{#if f.backtest} <span class="backtest-badge">Rücktest</span>{/if}</div>
-      <div class="expected" title="Das wahrscheinlichste Ergebnis, berechnet aus den erwarteten Toren beider Mannschaften">Ergebnis <strong>{f.expectedScore}</strong></div>
+      <div class="forecast-headline" title="Das wahrscheinlichste einzelne Ergebnis, berechnet aus den erwarteten Toren beider Mannschaften">
+        <span class="headline-label">Wahrscheinliches Ergebnis</span>
+        <strong class="headline-score">{f.expectedScore}</strong>
+      </div>
+      <div class="tendency {f.tendencyClass}">mit Tendenz zum {f.tendency}{#if f.backtest} <span class="backtest-badge">Rücktest</span>{/if}</div>
       <div class="confidence" title="Die Wahrscheinlichkeit, dass genau dieses Ergebnis eintritt">Sicherheit <strong>{f.confidencePercent} %</strong></div>
     </header>
+    <p class="tendency-explainer muted">„Ergebnis" ist das wahrscheinlichste einzelne Resultat, „Tendenz" die Summe aller Ergebnisse mit diesem Ausgang (Balken unten) — bei knappen Spielen können beide auseinandergehen.</p>
     <div class="bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
       <span class="bar home" style="flex-basis: {f.homeWin}%"><b>{f.homeWin} %</b> {page.homeTeam}</span>
       <span class="bar draw" style="flex-basis: {f.draw}%"><b>{f.draw} %</b> Remis</span>
@@ -75,7 +79,7 @@
     <h2>Frühere Vorschauen</h2>
     <ul>
       {#for f in page.older}
-      <li><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}{f.tendency} {f.homeWin}/{f.draw}/{f.awayWin}, Ergebnis {f.expectedScore}, Sicherheit {f.confidencePercent} %</li>
+      <li><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}Ergebnis {f.expectedScore}, Tendenz {f.tendency} ({f.homeWin}/{f.draw}/{f.awayWin}), Sicherheit {f.confidencePercent} %</li>
       {/for}
     </ul>
   </section>
