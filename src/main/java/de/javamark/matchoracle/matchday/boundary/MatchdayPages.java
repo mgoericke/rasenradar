@@ -4,6 +4,8 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayPage;
@@ -63,6 +65,7 @@ public class MatchdayPages {
         static native TemplateInstance matchday(MatchdayPage page);
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance team(TeamPage page);
+        static native TemplateInstance leagueScorers(LeagueScorersPage page);
     }
 
     @Inject
@@ -123,6 +126,20 @@ public class MatchdayPages {
     public TemplateInstance team(@PathParam("league") String league, @PathParam("season") int season, @PathParam("id") long id) {
         Team team = Team.<Team>findByIdOptional(id).orElseThrow(() -> new NotFoundException("team not found"));
         return Templates.team(teamPage(team, league(league), season));
+    }
+
+    /** Liga-Torschützenliste: current season, every club. */
+    @GET
+    @Path("/{league}/torschuetzen")
+    public TemplateInstance leagueScorers(@PathParam("league") String league) {
+        League l = league(league);
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<LeagueScorerRow> rows = new ArrayList<>();
+        int rank = 0;
+        for (var s : scorerCalculator.leagueScorersFor(l, season)) {
+            rows.add(new LeagueScorerRow(++rank, s.name(), s.team(), s.goals(), s.penalties()));
+        }
+        return Templates.leagueScorers(new LeagueScorersPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), rows));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {

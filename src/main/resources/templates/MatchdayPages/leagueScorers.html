@@ -1,0 +1,31 @@
+{#include base nav=page.nav}
+{#title}Torschützen – {page.nav.leagueName}{/title}
+{#body}
+<section class="forecast-page">
+  <h1 class="page-title">Torschützen</h1>
+  <p class="muted">{page.nav.leagueName} {page.season}</p>
+
+  <div class="standings">
+    {#if page.scorers.isEmpty}
+    <p class="muted">Noch kein Tor in dieser Saison.</p>
+    {#else}
+    <table>
+      <thead>
+      <tr><th class="pos"></th><th class="team">Name</th><th class="team">Verein</th><th>Tore</th><th>davon Elfm.</th></tr>
+      </thead>
+      <tbody>
+      {#for s in page.scorers}
+      <tr>
+        <td class="pos">{s.rank}.</td>
+        <td class="team">{s.name}</td>
+        <td class="team">{s.team}</td>
+        <td class="points">{s.goals}</td>
+        <td>{#if s.penalties > 0}{s.penalties}{#else}–{/if}</td>
+      </tr>
+      {/for}
+      </tbody>
+    </table>
+    {/if}
+  </div>
+</section>
+{/body}

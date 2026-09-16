@@ -337,7 +337,7 @@ h2 { font-size: 1.1rem; }
 .param-form label .muted { font-weight: 400; font-size: .85rem; }
 .param-form input { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 6px; width: 8rem; }
 .param-form input:focus-visible { outline: 3px solid var(--win); outline-offset: 1px; }
-.matchday-actions, .match-actions { margin: .8rem 0 0; }
+.matchday-actions, .match-actions { margin: .8rem 0 0; display: flex; flex-wrap: wrap; gap: .6rem; }
 
 /* existing forecasts, composed into the matchday pages via htmx fragments */
 .forecast-summary { display: flex; align-items: center; justify-content: center; gap: .8rem; flex-wrap: wrap; margin: .8rem 0 0; }
