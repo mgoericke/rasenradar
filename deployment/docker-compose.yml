@@ -1,5 +1,6 @@
-# Deployment stack for Bundesliga aktuell – mit KI-Vorschau (rasenradar.markserver.de).
+# Deployment stack for Rasen-Radar – mit KI-Vorschau (rasen-radar.de).
 # Traefik reverse proxy is expected to run in the "proxy" network (external).
+# rasenradar.markserver.de is the old host; it now only exists to 301-redirect to rasen-radar.de.
 
 services:
 
@@ -36,7 +37,7 @@ services:
       - "traefik.http.services.rasenradar.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.rasenradar-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       # Public router: the whole site (viewing matchdays, matches, clubs, forecasts, hit rate) stays open.
-      - "traefik.http.routers.rasenradar.rule=Host(`rasenradar.markserver.de`)"
+      - "traefik.http.routers.rasenradar.rule=Host(`rasen-radar.de`)"
       - "traefik.http.routers.rasenradar.entrypoints=websecure"
       - "traefik.http.routers.rasenradar.tls.certresolver=letsencrypt"
       - "traefik.http.routers.rasenradar.service=rasenradar"
@@ -45,7 +46,7 @@ services:
       # Write router: every POST (create a forecast/backtest, change the forecast parameters — the
       # only actions that cost money or change shared state) needs Basic Auth. Higher priority wins
       # over the public router above for the same request.
-      - "traefik.http.routers.rasenradar-write.rule=Host(`rasenradar.markserver.de`) && Method(`POST`)"
+      - "traefik.http.routers.rasenradar-write.rule=Host(`rasen-radar.de`) && Method(`POST`)"
       - "traefik.http.routers.rasenradar-write.entrypoints=websecure"
       - "traefik.http.routers.rasenradar-write.tls.certresolver=letsencrypt"
       - "traefik.http.routers.rasenradar-write.service=rasenradar"
@@ -53,7 +54,18 @@ services:
       - "traefik.http.routers.rasenradar-write.priority=10"
       # Basic Auth (htpasswd-Format, $-Zeichen in .env nicht escapen — siehe .env.example)
       - "traefik.http.middlewares.rasenradar-auth.basicauth.users=${BASIC_AUTH_USERS}"
-      - "traefik.http.middlewares.rasenradar-auth.basicauth.realm=Rasenradar KI-Vorschau ausloesen"
+      - "traefik.http.middlewares.rasenradar-auth.basicauth.realm=Rasen-Radar KI-Vorschau ausloesen"
+      # Old domain (previous SEO decision, kept for anyone with an old bookmark/link):
+      # a plain 301 to the same path on the new domain. No Basic Auth needed here — POSTs
+      # coming through this redirect land on rasen-radar.de and get checked there.
+      - "traefik.http.middlewares.rasenradar-old-domain-redirect.redirectregex.regex=^https://rasenradar\\.markserver\\.de/(.*)"
+      - "traefik.http.middlewares.rasenradar-old-domain-redirect.redirectregex.replacement=https://rasen-radar.de/$${1}"
+      - "traefik.http.middlewares.rasenradar-old-domain-redirect.redirectregex.permanent=true"
+      - "traefik.http.routers.rasenradar-old-domain.rule=Host(`rasenradar.markserver.de`)"
+      - "traefik.http.routers.rasenradar-old-domain.entrypoints=websecure"
+      - "traefik.http.routers.rasenradar-old-domain.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rasenradar-old-domain.service=rasenradar"
+      - "traefik.http.routers.rasenradar-old-domain.middlewares=rasenradar-old-domain-redirect"
 
   # ─────────────────────────────────────────────────────────────────────────────
   # PostgreSQL — plain, no extensions needed (dev uses the same image)
