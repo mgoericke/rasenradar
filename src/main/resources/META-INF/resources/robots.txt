@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /leagues/
+Disallow: /forecasts/
+Disallow: /review/
+
+Sitemap: https://rasen-radar.de/sitemap.xml
