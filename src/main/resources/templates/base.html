@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#101B16">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Rasenradar">
+  <meta name="apple-mobile-web-app-title" content="Rasen-Radar">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
 <body hx-boost="true">
   <header class="topnav">
     <nav class="topnav-inner" aria-label="Hauptnavigation">
-      <a class="brand" href="/">Bundesliga aktuell <span class="tagline">mit KI-Vorschau</span></a>
+      <a class="brand" href="/">Rasen-Radar <span class="tagline">mit KI-Vorschau</span></a>
       <ul class="nav-links">
         {#for l in nav.leagues}
         <li><a class="nav-link {#if l.active}is-active{/if}" href="/{l.shortcut}" {#if l.active}aria-current="page"{/if}><span class="badge">{l.badge}</span>{l.name}</a></li>
@@ -48,7 +48,7 @@
 
       <div class="footer-main">
         <div class="footer-identity">
-          <p class="footer-wordmark">Rasenradar</p>
+          <p class="footer-wordmark">Rasen-Radar</p>
           <p class="footer-tagline">Ein privates, nicht kommerzielles Hobbyprojekt von Mark Göricke</p>
         </div>
 
