@@ -25,11 +25,17 @@
     <li>
       <a class="fixture" href="{m.link}">
         <span class="time">{m.time}</span>
-        <span class="home">{m.home}{#if m.homeIcon} <img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}</span>
+        <span class="home">
+          <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+          {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+        </span>
         <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if}">
           {#if m.played}{m.score}{#else}–:–{/if}
         </span>
-        <span class="away">{#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy"> {/if}{m.away}</span>
+        <span class="away">
+          {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+          <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+        </span>
         <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if !m.played && page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
     </li>

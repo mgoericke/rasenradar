@@ -36,6 +36,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--win); outline-o
 h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.015em; margin: 0; }
 h2 { font-size: 1.1rem; }
 .muted { color: var(--ink-mute); font-weight: 400; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* top navigation: the dark stage — brand left, links right, wrapping on narrow screens */
 .topnav {
@@ -100,9 +101,22 @@ h2 { font-size: 1.1rem; }
 }
 .fixture:hover { background: var(--zone); }
 .fixture .time { color: var(--ink-mute); font-size: .85rem; }
-.fixture .home { text-align: right; font-weight: 500; }
-.fixture .away { text-align: left; font-weight: 500; }
+.fixture .home, .fixture .away { display: flex; align-items: center; gap: .4rem; min-width: 0; font-weight: 500; }
+.fixture .home { justify-content: flex-end; }
+.fixture .away { justify-content: flex-start; }
 .fixture .half { color: var(--ink-mute); font-size: .8rem; }
+/* team names truncate instead of wrapping to a second line, which broke the row height at narrow widths */
+.fixture .team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fixture .team-name.short { display: none; }
+@media (max-width: 560px) {
+  .fixture { grid-template-columns: 2.5rem minmax(0, 1fr) auto minmax(0, 1fr) 2.1rem; gap: .4rem; padding: .55rem .6rem; }
+  .fixture .team-name.full { display: none; }
+  .fixture .team-name.short { display: block; }
+  /* decorative crests (alt="") are the first thing to go — narrow columns need the room for the name */
+  .fixture .crest { display: none; }
+  .fixture .time { font-size: .8rem; }
+  .score { min-width: 2.9rem; font-size: 1.05rem; }
+}
 
 /* the score cell: solid when final, outlined while provisional, quiet before kickoff */
 .score {
@@ -258,6 +272,58 @@ h2 { font-size: 1.1rem; }
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--accent); border-color: var(--accent); color: var(--stage); }
 
+/* --- landing page ------------------------------------------------------------------ */
+.landing { grid-column: 1 / -1; }
+.landing-title { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; margin: 0; }
+.landing-intro { margin: .5rem 0 0; color: var(--ink-soft); font-size: 1.05rem; max-width: 60ch; }
+
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+
+.landing-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.4rem 1.5rem 1.5rem; display: flex; flex-direction: column;
+}
+.landing-card-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.landing-card-head h2 { display: flex; align-items: center; gap: .5rem; font-size: 1.3rem; font-weight: 700; margin: 0; }
+.landing-card-link {
+  display: inline-flex; align-items: center; gap: .4rem; margin-top: 1.2rem; font-weight: 500;
+  color: var(--ink-soft);
+}
+.landing-card-link:hover { color: var(--ink); }
+.landing-card-link span { transition: transform .15s ease; }
+.landing-card-link:hover span { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) { .landing-card-link:hover span { transform: none; } }
+
+/* CSS-only tabs: radios hidden but focusable, labels act as tab buttons, `~` shows the matching panel */
+.landing-tabs { border: 0; margin: 1.1rem 0 0; padding: 0; }
+.landing-tab-input {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.landing-tab-input:focus-visible + .landing-tab-label { outline: 3px solid var(--win); outline-offset: 2px; }
+.landing-tab-label {
+  display: inline-block; cursor: pointer; padding: .35rem .85rem; margin: 0 .4rem .4rem 0;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--ground);
+  font-size: .82rem; font-weight: 500; color: var(--ink-soft);
+}
+.landing-tab-label:hover { border-color: var(--ink); color: var(--ink); }
+.landing-tab-input:checked + .landing-tab-label { background: var(--ink); color: #fff; border-color: var(--ink); }
+.landing-panel { display: none; margin-top: .9rem; }
+.landing-tab-input.matches:checked ~ .landing-panel.matches { display: block; }
+.landing-tab-input.table:checked ~ .landing-panel.table { display: block; }
+
+.landing-day { font-size: .85rem; font-weight: 500; color: var(--ink-soft); margin: .9rem 0 .35rem; }
+.landing-day:first-child { margin-top: 0; }
+.fixtures.compact .fixture { padding: .45rem .6rem; font-size: .92rem; }
+
+.landing-panel.table table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.landing-panel.table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .35rem; border-bottom: 1px solid var(--line); }
+.landing-panel.table td { text-align: right; padding: .4rem .35rem; border-bottom: 1px solid var(--line); }
+.landing-panel.table tbody tr:last-child td { border-bottom: 0; }
+.landing-panel.table th.team, .landing-panel.table td.team { text-align: left; }
+.landing-panel.table td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .5rem; }
+.landing-panel.table .points { font-family: var(--display); font-weight: 700; }
+
 /* --- forecast pages --------------------------------------------------------------- */
 .forecast-page { grid-column: 1 / -1; max-width: 960px; }
 .page-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; }
@@ -350,11 +416,12 @@ h2 { font-size: 1.1rem; }
 .forecast-summary .mini-bars { flex: 0 0 6rem; width: 6rem; }
 .forecast-summary .summary-figures { color: var(--ink-soft); font-size: .85rem; }
 .forecast-summary .summary-figures strong { color: var(--ink); font-family: var(--display); font-size: 1rem; }
-.forecast-marker { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.forecast-marker {
+  display: inline-block; font-size: .78rem; font-weight: 500; color: var(--ink-mute); white-space: nowrap;
+  border-bottom: 1px dotted var(--ink-mute); cursor: help;
+}
 .forecast-marker.is-empty { display: none; }
-.forecast-marker.home_win { color: var(--ink); }
-.forecast-marker.away_win { color: var(--ink-mute); }
-.forecast-marker.draw { color: var(--ink-soft); }
+.forecast-marker:hover, .forecast-marker:focus-visible { color: var(--ink); border-color: var(--ink); }
 
 /* club page */
 .club { grid-column: 1 / -1; max-width: 1100px; }
@@ -397,10 +464,10 @@ h2 { font-size: 1.1rem; }
 .fixture .home { justify-content: flex-end; }
 
 /* table zones: thin marker at the position, full = direct, dimmed = play-off */
-.standings tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
-.standings tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
-.standings tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
-.standings tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
+.standings tr.zone-top td.pos, .landing-panel.table tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
+.standings tr.zone-top-playoff td.pos, .landing-panel.table tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
+.standings tr.zone-bottom td.pos, .landing-panel.table tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
+.standings tr.zone-bottom-playoff td.pos, .landing-panel.table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
 
 /* retrospective on the forecast page */
 .retrospective { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; background: var(--ground); font-size: .92rem; }

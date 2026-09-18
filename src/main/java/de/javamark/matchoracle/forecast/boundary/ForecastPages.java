@@ -126,11 +126,19 @@ public class ForecastPages {
     record SummaryFragment(String forecastLink, boolean played, boolean running, ForecastView forecast) {
     }
 
-    /** One out-of-band marker per match of a matchday that already has a forecast, swapped into the fixture list. */
-    record MarkerView(long matchId, String label, String tendency, String tendencyClass, int homeWin, int draw, int awayWin) {
+    /**
+     * One out-of-band marker per match of a matchday that already has a forecast, swapped into the
+     * fixture list: the expected score, with the tendency and its probability as a tooltip.
+     */
+    record MarkerView(long matchId, String expectedScore, String tendency, int probabilityPercent) {
         static MarkerView of(Forecast f) {
             ForecastView v = ForecastView.of(f);
-            return new MarkerView(f.matchId, "KI " + ForecastPages.abbreviation(f.tendency()), v.tendency(), v.tendencyClass(), v.homeWin(), v.draw(), v.awayWin());
+            int probability = switch (f.tendency()) {
+                case HOME_WIN -> v.homeWin();
+                case DRAW -> v.draw();
+                case AWAY_WIN -> v.awayWin();
+            };
+            return new MarkerView(f.matchId, v.expectedScore(), v.tendency(), probability);
         }
     }
 
@@ -293,15 +301,6 @@ public class ForecastPages {
             case HOME_WIN -> "Heimsieg";
             case DRAW -> "Unentschieden";
             case AWAY_WIN -> "Auswärtssieg";
-        };
-    }
-
-    /** Toto-style abbreviation of the tendency, for the small markers in the fixture list. */
-    static String abbreviation(Outcome outcome) {
-        return switch (outcome) {
-            case HOME_WIN -> "1";
-            case DRAW -> "X";
-            case AWAY_WIN -> "2";
         };
     }
 

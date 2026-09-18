@@ -4,6 +4,8 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagueSection;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
@@ -42,9 +44,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +62,7 @@ public class MatchdayPages {
 
     @CheckedTemplate
     static class Templates {
+        static native TemplateInstance home(LandingPage page);
         static native TemplateInstance matchday(MatchdayPage page);
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance team(TeamPage page);
@@ -83,9 +84,37 @@ public class MatchdayPages {
     @Inject
     GoalTimingCalculator goalTimingCalculator;
 
+    /** Landing page: current matchday of both Bundesligas in short form, so a first visit shows both leagues. */
     @GET
-    public Response home() {
-        return Response.seeOther(URI.create("/bl1")).build();
+    public TemplateInstance home() {
+        List<LandingLeagueSection> sections = new ArrayList<>();
+        for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
+            Matchday.findCurrent(l).ifPresent(matchday -> sections.add(landingSection(matchday)));
+        }
+        return Templates.home(new LandingPage(Nav.page("home"), sections));
+    }
+
+    private static final int LANDING_TABLE_ROWS = 6;
+
+    private LandingLeagueSection landingSection(Matchday matchday) {
+        String shortcut = matchday.league.sourceShortcut();
+        List<Match> matches = Match.findByMatchday(matchday);
+        matches.sort((a, b) -> a.kickoff.compareTo(b.kickoff));
+
+        Map<String, List<MatchRow>> byDay = new LinkedHashMap<>();
+        for (Match m : matches) {
+            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut));
+        }
+        List<DayGroup> days = byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
+
+        Standings standings = standingsCalculator.standingsBefore(matchday.league, matchday.season, matchday.number + 1);
+        List<StandingRow> tableTop = standings.positions().stream()
+                .limit(LANDING_TABLE_ROWS).map(p -> StandingRow.of(p, matchday.league)).toList();
+
+        String base = "/" + shortcut + "/" + matchday.season + "/" + matchday.number;
+        return new LandingLeagueSection(MatchdayPageModels.badge(matchday.league), MatchdayPageModels.leagueName(matchday.league),
+                "/" + shortcut, base + "/forecasts", base + "/forecasts/markers", matchday.number, days,
+                tableTop, standings.includesProvisional());
     }
 
     @GET
