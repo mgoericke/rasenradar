@@ -102,10 +102,10 @@ public class MatchdayFacade {
                 .orElse(List.of());
     }
 
-    /** Unplayed matches of a matchday, for the "forecast the whole matchday" action. */
+    /** Unplayed matches of the current matchday, for the automatic KI-Vorschau (spec 02, "Terminplanung"). */
     @Transactional(Transactional.TxType.SUPPORTS)
-    public List<Long> unplayedMatchIds(String league, int season, int number) {
-        return League.bySourceShortcut(league).flatMap(l -> Matchday.find(l, season, number))
+    public List<Long> currentUnplayedMatchIds(String league) {
+        return League.bySourceShortcut(league).flatMap(Matchday::findCurrent)
                 .map(md -> Match.findByMatchday(md).stream().filter(m -> !m.isPlayed()).map(m -> m.id).toList())
                 .orElse(List.of());
     }

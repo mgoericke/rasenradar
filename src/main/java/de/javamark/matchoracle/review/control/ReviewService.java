@@ -150,12 +150,22 @@ public class ReviewService {
 
     // --- evaluating ---------------------------------------------------------------
 
+    /**
+     * Spec 02, rule: a match can be forecast again automatically before kickoff — only the last
+     * one counts. Backtests are unaffected (a distinct, separately-tracked kind of forecast).
+     */
+    static List<RecordedForecast> forecastsToEvaluate(List<RecordedForecast> recorded) {
+        RecordedForecast latestLive = recorded.stream().filter(r -> !r.backtest)
+                .max(Comparator.comparing(r -> r.createdAt)).orElse(null);
+        return recorded.stream().filter(r -> r.backtest || r == latestLive).toList();
+    }
+
     /** Spec 03, steps 1-2: on a final result, evaluate every recorded forecast of the match once. */
     @Transactional
     public List<ForecastEvaluation> evaluate(long matchId, int homeGoals, int awayGoals) {
         Outcome actual = Outcome.of(homeGoals, awayGoals);
         List<ForecastEvaluation> evaluations = new ArrayList<>();
-        for (RecordedForecast r : RecordedForecast.findByMatch(matchId)) {
+        for (RecordedForecast r : forecastsToEvaluate(RecordedForecast.findByMatch(matchId))) {
             if (ForecastEvaluation.exists(r.forecastId)) {
                 continue;
             }

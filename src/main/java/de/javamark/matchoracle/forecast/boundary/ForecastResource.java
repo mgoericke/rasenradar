@@ -9,7 +9,6 @@ import de.javamark.matchoracle.forecast.entity.Forecast;
 import de.javamark.matchoracle.forecast.entity.ForecastParameters;
 import de.javamark.matchoracle.forecast.entity.Outcome;
 import de.javamark.matchoracle.forecast.entity.Verdict;
-import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -44,9 +43,6 @@ public class ForecastResource {
     @Inject
     ForecastParametersService parameters;
 
-    @Inject
-    MatchdayFacade matchday;
-
     record AssessmentRep(AssessmentKind kind, Outcome lean, Double confidence, String summary, boolean failed) {
         static AssessmentRep of(Assessment a) {
             return new AssessmentRep(a.kind, a.lean, a.confidence, a.summary, a.failed);
@@ -77,22 +73,19 @@ public class ForecastResource {
                        ForecastProgress.Tokens tokens) {
     }
 
-    /** Starts a new forecast for the match; 202 with the progress location. */
-    /** Live forecast; {@code ?backtest=true} for a played match of the current season. */
+    /**
+     * Starts a backtest for a played match of the current season; 202 with the progress
+     * location. Live forecasts are no longer triggered by a caller (spec 02, "Terminplanung")
+     * — this rejects {@code backtest=false}.
+     */
     @POST
     @Path("/matches/{id}")
     public Response start(@PathParam("id") long matchId, @QueryParam("backtest") @DefaultValue("false") boolean backtest) {
-        queue.enqueue(matchId, backtest);
+        if (!backtest) {
+            throw new jakarta.ws.rs.BadRequestException("Live forecasts are created automatically, not triggered");
+        }
+        queue.enqueue(matchId, true);
         return Response.accepted().location(URI.create("/forecasts/matches/" + matchId + "/progress")).build();
-    }
-
-    /** Starts forecasts for every unplayed match of the matchday. */
-    @POST
-    @Path("/leagues/{league}/seasons/{season}/matchdays/{number}")
-    public Response startMatchday(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
-        List<Long> ids = matchday.unplayedMatchIds(league(league), season, number);
-        ids.forEach(queue::enqueue);
-        return Response.accepted().entity(ids).build();
     }
 
     @GET
@@ -127,9 +120,5 @@ public class ForecastResource {
     @Path("/parameters")
     public ParametersRep updateParameters(ParametersRep rep) {
         return ParametersRep.of(parameters.update(rep.homeAdvantage(), rep.formMatches(), rep.promotedTeamMalus()));
-    }
-
-    private String league(String shortcut) {
-        return matchday.leagueShortcut(shortcut).orElseThrow(() -> new NotFoundException("unknown league " + shortcut));
     }
 }
