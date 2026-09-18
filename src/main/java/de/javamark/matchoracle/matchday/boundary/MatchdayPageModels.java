@@ -165,6 +165,18 @@ public final class MatchdayPageModels {
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data) {
     }
 
+    /**
+     * One league's short-form overview on the landing page: same day-grouped fixtures as the full
+     * matchday page, plus a short table preview (top {@code tableTop.size()} rows only — the full
+     * table lives on the matchday page behind {@code matchdayLink}).
+     */
+    record LandingLeagueSection(String badge, String name, String matchdayLink, String forecastsLink, String markersPath,
+                                int matchdayNumber, List<DayGroup> days, List<StandingRow> tableTop, boolean tableProvisional) {
+    }
+
+    record LandingPage(Nav nav, List<LandingLeagueSection> leagues) {
+    }
+
     /** One entry of a form strip or head-to-head list. */
     record ResultRow(String date, String opponent, boolean home, String score, TeamResult result, boolean provisional, String link) {
         static ResultRow of(TeamMatchView v, String leagueShortcut) {
