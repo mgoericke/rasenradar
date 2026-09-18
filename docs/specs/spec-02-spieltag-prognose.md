@@ -10,7 +10,9 @@ Sicherheit und sichtbarem Zustandekommen.
 
 ## Akteure
 
-- **Betrachter** — stößt eine Prognose an und sieht das Ergebnis
+- **Betrachter** — sieht die Prognose, kann einen Rücktest anstoßen
+- **Terminplanung** (systemintern) — löst die Prognose aus, ohne dass der
+  Betrachter das anstoßen muss
 - **Formbewerter** (systeminterner Analyseagent)
 - **Duellbewerter** (systeminterner Analyseagent)
 - **Umfeldbewerter** (systeminterner Analyseagent)
@@ -19,7 +21,9 @@ Sicherheit und sichtbarem Zustandekommen.
 
 ## Ablauf
 
-1. Der Betrachter wählt eine Liga und einen kommenden Spieltag.
+1. Die Terminplanung erkennt eine Begegnung, für die eine Prognose fällig ist,
+   und stößt sie an — der Betrachter muss dafür nichts tun (Ausnahme: der
+   Rücktest, den der Betrachter gezielt selbst anstößt).
 2. Je Begegnung stellt das System die bekannten Fakten zusammen: Form beider
    Mannschaften, Tabellenlage, Heim- und Auswärtsbilanz, bisherige direkte Duelle.
 3. Drei Bewertungen laufen **gleichzeitig**:
@@ -58,6 +62,15 @@ Sicherheit und sichtbarem Zustandekommen.
   unzulässig, weil die Ergebnisse den Modellen bekannt sein könnten.
 - Eine einmal festgeschriebene Prognose wird nie nachträglich geändert. Eine
   erneute Prognose zur selben Begegnung entsteht als eigener Eintrag.
+- Für eine bevorstehende Begegnung kann die Terminplanung mehrfach neu
+  prognostizieren, solange sich die Lage noch ändern kann (Form, Ausfälle,
+  Trainerwechsel). Maßgeblich für Anzeige und Rückschau ist jeweils die zuletzt
+  vor dem Anstoß entstandene Prognose; frühere bleiben erhalten und sind
+  nachvollziehbar einsehbar, zählen aber nicht als „die" Prognose der Begegnung.
+- Begegnungen ohne Prognose, die sich angesammelt haben (z. B. nach einer
+  Pause der Terminplanung), werden nachgeholt, aber je Lauf nur bis zu einer
+  Obergrenze — der Rest folgt beim nächsten Lauf. Das hält die Zahl gleichzeitig
+  ausgelöster Prognosen kalkulierbar.
 - Die fachlichen Bewertungsmaßstäbe (Gewicht des Heimvorteils, Länge des
   betrachteten Formzeitraums, Umgang mit Aufsteigern) sind ohne Eingriff in die
   Anwendung änderbar und wirken sofort auf die nächste Prognose.
@@ -76,12 +89,18 @@ Sicherheit und sichtbarem Zustandekommen.
   ist ein Bewertungsmaßstab.
 - **Bewertungsmaßstäbe:** Der Betrachter kann sie einsehen und selbst ändern;
   eine Änderung wirkt auf die nächste Prognose.
-- **Granularität:** Eine Prognose entsteht je Begegnung. Der Betrachter kann für
-  einen Spieltag alle noch offenen Begegnungen gesammelt anstoßen; der
-  Fortschritt ist je Begegnung sichtbar.
+- **Granularität:** Eine Prognose entsteht je Begegnung. Die Terminplanung
+  stößt für einen fälligen Spieltag alle noch offenen Begegnungen gesammelt an;
+  der Fortschritt ist je Begegnung sichtbar.
 - **Umfeld:** Vorerst nur aus dem, was die Spieldaten hergeben (Belastung durch
   dichte Spielfolge, Aufsteiger, Anstoßzeit, Saisonphase). Externe Nachrichten
   sind eine spätere Ausbaustufe.
+- **Auslöser:** Die Terminplanung, nicht der Betrachter, löst die Prognose aus.
+  Bevorstehende Begegnungen können bis zum Anstoß mehrfach neu prognostiziert
+  werden; nachzuholende Lücken in bereits vergangenen, aber noch offenen
+  Begegnungen der laufenden Saison folgen einem eigenen, wiederkehrenden Takt
+  mit fester Obergrenze je Lauf. Der Rücktest bleibt die einzige vom Betrachter
+  gezielt angestoßene Prognoseart.
 
 ## Abnahmekriterien
 

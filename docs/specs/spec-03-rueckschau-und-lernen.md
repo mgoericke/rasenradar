@@ -75,6 +75,20 @@ samt damaligem Ausgang bereit.
 - **Anzahl:** Der Prognostiker erhält höchstens die fünf ähnlichsten Fälle.
 - **Sichtbarkeit:** Die Trefferbilanz ist öffentlich einsehbar.
 
+## Im Spec-Interview zu klären (spätere Ausbaustufe)
+
+- **Kalibrierung sichtbar machen:** Zusätzlich zur Trefferquote könnte die
+  Trefferbilanz ausweisen, ob ein ausgewiesener Sicherheitsgrad auch in der
+  Praxis stimmt (z. B.: von allen Prognosen mit hoher Sicherheit für Heimsieg
+  trat er auch tatsächlich in einem entsprechenden Anteil der Fälle ein). Noch
+  offen: welche Gruppierung der Sicherheitsgrade dafür sinnvoll ist und ab
+  welcher Fallzahl das belastbar wird.
+- **Rückblick in Textform:** Eine kurze, automatisch erstellte Einordnung je
+  abgeschlossenem Spieltag (wie lag das System insgesamt, was fiel auf) könnte
+  die reinen Zahlen ergänzen. Noch offen: ob das ein eigener Agent wird und wie
+  verhindert wird, dass er über Sicherheiten oder Wettbezüge spekuliert
+  (Abgrenzung wie in Spec 2).
+
 ## Abnahmekriterien
 
 - Nach Endgültigwerden eines Ergebnisses liegt die Bewertung der zugehörigen

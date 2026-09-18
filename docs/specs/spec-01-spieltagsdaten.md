@@ -50,6 +50,13 @@ frühere Begegnungen bewerten zu können.
 
 - **Historie:** Vorgehalten werden die laufende Saison und die zwei
   vorangegangenen Saisonen beider Ligen.
+- **Reichweite der Quelle:** Wie weit sich die Historie über die aktuell
+  vorgehaltenen Saisonen hinaus ausbauen ließe, hängt an der externen Quelle:
+  vollständige Saisondaten liegen für die 1. Bundesliga ab 2003/04, für die
+  2. Bundesliga ab 2006/07 vor (Stand: Prüfung 2026). Eine tiefere Historie
+  (mehr Saisonen auf der Vereinsseite, in Direktduellen, in einer möglichen
+  Torschützen-Ewigkeitsliste) ist damit möglich, aber eine eigene spätere
+  Ausbaustufe — noch nicht entschieden, ob und wie weit.
 - **Frist für endgültig:** Ein Ergebnis gilt als endgültig, wenn seit dem Anstoß
   24 Stunden vergangen sind und es sich in dieser Zeit nicht mehr geändert hat.
   Die Frist ist ein Bewertungsmaßstab und ohne Neuauslieferung änderbar.

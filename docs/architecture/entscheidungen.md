@@ -277,6 +277,30 @@ weiterem Wachstum (z. B. dynamische Sitemap mit Vereins-/Spieltag-URLs) sollte n
 ob ein eigenes Package den Schnitt sauberer hält. Die Sitemap muss von Hand erweitert werden, wenn
 neue feste Seiten dazukommen; Vereinsseiten tauchen dort vorerst gar nicht auf.
 
+## Prognose-Auslösung: Terminplanung statt Knopfdruck
+
+**Kontext:** Spec 02 sah den Betrachter als Auslöser jeder Prognose vor
+(Basic-Auth-geschützter Knopfdruck, siehe „Rate Limiting" in der
+Deployment-Doku). Das begrenzt die tatsächliche Aktualität auf die Anwesenheit
+eines Menschen und passt nicht zum Anspruch, dass die KI-Vorschau möglichst
+zeitnah zum Anstoß mit dem aktuellen Wissensstand entsteht.
+
+**Entscheidung:** Ein systeminterner Akteur „Terminplanung" löst Prognosen aus,
+nicht mehr der Betrachter. Zwei Fälle: (1) bevorstehende Begegnungen dürfen bis
+zum Anstoß mehrfach neu prognostiziert werden, maßgeblich ist die zuletzt vor
+dem Anstoß entstandene Prognose; (2) unprognostiziert gebliebene, aber bereits
+fällige Begegnungen der laufenden Saison werden in einem eigenen, wiederkehrenden
+Takt nachgeholt, gedeckelt auf eine feste Obergrenze je Lauf. Der Rücktest bleibt
+die einzige vom Betrachter selbst angestoßene Prognoseart. Details siehe Spec 02,
+Abschnitt „Auslöser".
+
+**Konsequenzen:** Die bestehende Kostenschutz-Kette (Basic Auth, Cloudflare
+Rate-Limiting-Regel auf die POST-Route) sichert weiterhin fremden Zugriff auf
+die manuellen Auslöser (insbesondere den Rücktest) ab, schützt aber nicht mehr
+gegen die eigene Automatik — das übernimmt stattdessen die feste Obergrenze je
+Lauf. Die Umsetzung (welcher Scheduler-Typ, welcher Takt, welche Obergrenze
+konkret) ist noch offen und wird beim Bau entschieden, nicht in der Spec.
+
 ## Verschoben / abgelehnt
 
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine
@@ -293,3 +317,8 @@ neue feste Seiten dazukommen; Vereinsseiten tauchen dort vorerst gar nicht auf.
   Bundesligen begrenzt (Abgrenzung: „Keine weiteren Wettbewerbe (Pokal, europäische
   Wettbewerbe) in dieser Ausbaustufe“) — eine spätere Ausbaustufe müsste das im Spec-Interview
   klären, unter anderem wie K.-o.-Runden nach der Ligaphase gehandhabt würden.
+- **Saisonaussicht (Spec 04):** offen, nicht abgelehnt. Entwurf für eine saisonweite
+  Wahrscheinlichkeitseinschätzung (Meisterschaft, europäische Plätze, Abstieg) liegt als
+  Diskussionsstand in `docs/specs/spec-04-saisonaussicht.md` vor, mit mehreren offenen
+  Modellierungsfragen (Abhängigkeit von Spec 02, Ausdrucksform, Aktualisierungsanlass,
+  Rückschau-Bezug). Kein Termin für ein Spec-Interview dazu.
