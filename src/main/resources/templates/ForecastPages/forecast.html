@@ -15,11 +15,10 @@
   </form>
   {#else if page.played}
   <p class="note">Rücktests gibt es nur für Spiele der laufenden Saison – ältere Ergebnisse könnten die Modelle kennen.</p>
+  {#else if page.latest}
+  <p class="note">Bis zum Anstoß kann eine neue Vorschau entstehen, sobald sich die Lage ändert – die bisherige bleibt erhalten.</p>
   {#else}
-  <form method="post" action="{page.matchLink}/forecast" class="start">
-    <button type="submit" class="button">{#if page.latest}Neue Vorschau erstellen{#else}Vorschau erstellen{/if}</button>
-    {#if page.latest}<span class="muted">Die bisherige bleibt erhalten – Vorschauen werden nie geändert.</span>{/if}
-  </form>
+  <p class="note">Die KI-Vorschau entsteht automatisch, spätestens einen Tag vor Anpfiff.</p>
   {/if}
 
   {#include ForecastPages/progressSection fragment=page.progress matchLink=page.matchLink /}

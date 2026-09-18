@@ -115,7 +115,7 @@ public class ForecastPages {
     record MatchRow(long matchId, String link, String kickoff, String homeTeam, String awayTeam, ForecastView forecast, boolean running) {
     }
 
-    record MatchdayForecastsPage(Nav nav, int season, int number, String matchdayLink, String startAllLink, List<MatchRow> matches, int openCount,
+    record MatchdayForecastsPage(Nav nav, int season, int number, String matchdayLink, List<MatchRow> matches, int openCount,
                                  int backtestCount) {
     }
 
@@ -157,12 +157,18 @@ public class ForecastPages {
         return s.played() && matchday.currentSeason(s.league()).map(season -> season == s.season()).orElse(false);
     }
 
-    /** Starts a forecast (or, for a played match, a backtest) from the page's button; the page then polls the progress. */
+    /**
+     * Starts a backtest from the page's button; the page then polls the progress. Live forecasts
+     * are no longer viewer-triggered (spec 02, "Terminplanung") — this rejects them.
+     */
     @POST
     @Path("/{league}/matches/{id}/forecast")
     public Response start(@PathParam("league") String league, @PathParam("id") long matchId) {
         boolean played = matchday.situationOf(matchId, 1).map(MatchSituation::played).orElse(false);
-        queue.enqueue(matchId, played);
+        if (!played) {
+            throw new jakarta.ws.rs.BadRequestException("Die KI-Vorschau für bevorstehende Begegnungen entsteht automatisch");
+        }
+        queue.enqueue(matchId, true);
         return Response.seeOther(URI.create("/" + league + "/matches/" + matchId + "/forecast")).build();
     }
 
@@ -217,16 +223,7 @@ public class ForecastPages {
         long open = situations.stream().filter(s -> !s.played()).count();
         long backtestable = situations.stream().filter(this::backtestAllowed).filter(s -> !latest.containsKey(s.matchId())).count();
         String base = "/" + l + "/" + season + "/" + number;
-        return Templates.matchdayForecasts(new MatchdayForecastsPage(Nav.of(l), season, number, base, base + "/forecasts", rows, (int) open,
-                (int) backtestable));
-    }
-
-    /** Starts forecasts for every unplayed match of the matchday. */
-    @POST
-    @Path("/{league}/{season}/{number}/forecasts")
-    public Response startAll(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
-        matchday.unplayedMatchIds(league(league), season, number).forEach(queue::enqueue);
-        return Response.seeOther(URI.create("/" + league + "/" + season + "/" + number + "/forecasts")).build();
+        return Templates.matchdayForecasts(new MatchdayForecastsPage(Nav.of(l), season, number, base, rows, (int) open, (int) backtestable));
     }
 
     /** Backtests for every played match of the matchday that has no forecast yet (current season only). */

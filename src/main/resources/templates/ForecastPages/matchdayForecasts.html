@@ -6,10 +6,7 @@
   <p class="breadcrumb"><a href="{page.matchdayLink}">{page.number}. Spieltag</a></p>
   <h1 class="page-title">KI-Vorschau zum {page.number}. Spieltag</h1>
   {#if page.openCount > 0}
-  <form method="post" action="{page.startAllLink}" class="start">
-    <button type="submit" class="button">Vorschau für alle {page.openCount} offenen Spiele erstellen</button>
-    <span class="muted">Die Spiele werden nacheinander bewertet.</span>
-  </form>
+  <p class="note">Für {page.openCount} offene Spiele entsteht die KI-Vorschau automatisch, spätestens einen Tag vor Anpfiff.</p>
   {/if}
   {#if page.backtestCount > 0}
   <form method="post" action="{page.matchdayLink}/backtests" class="start">

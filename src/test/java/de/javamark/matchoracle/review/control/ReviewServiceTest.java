@@ -3,9 +3,11 @@ package de.javamark.matchoracle.review.control;
 import de.javamark.matchoracle.review.entity.AccuracyReport;
 import de.javamark.matchoracle.review.entity.ForecastEvaluation;
 import de.javamark.matchoracle.review.entity.Outcome;
+import de.javamark.matchoracle.review.entity.RecordedForecast;
 import de.javamark.matchoracle.review.entity.Situation;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,6 +112,32 @@ class ReviewServiceTest {
         assertEquals(AccuracyReport.HitLevel.EXACT, report.recent().get(0).level());
         assertEquals(AccuracyReport.HitLevel.TENDENCY, report.recent().get(1).level());
         assertEquals(AccuracyReport.HitLevel.MISS, report.recent().get(2).level());
+    }
+
+    /** Spec 02, rule: repeated automatic forecasts before kickoff — only the last live one counts. */
+    @Test
+    void onlyTheLastLiveForecastBeforeKickoffIsEvaluated() {
+        RecordedForecast first = recordedForecast(false, Instant.parse("2026-01-01T10:00:00Z"));
+        RecordedForecast second = recordedForecast(false, Instant.parse("2026-01-02T10:00:00Z"));
+        RecordedForecast backtest = recordedForecast(true, Instant.parse("2026-01-01T09:00:00Z"));
+
+        List<RecordedForecast> toEvaluate = ReviewService.forecastsToEvaluate(List.of(first, second, backtest));
+
+        assertEquals(List.of(second, backtest), toEvaluate);
+    }
+
+    @Test
+    void aSingleLiveForecastIsStillEvaluated() {
+        RecordedForecast only = recordedForecast(false, Instant.parse("2026-01-01T10:00:00Z"));
+
+        assertEquals(List.of(only), ReviewService.forecastsToEvaluate(List.of(only)));
+    }
+
+    private static RecordedForecast recordedForecast(boolean backtest, Instant createdAt) {
+        RecordedForecast r = new RecordedForecast();
+        r.backtest = backtest;
+        r.createdAt = createdAt;
+        return r;
     }
 
     private static Situation namedSituation(String home, String away) {
