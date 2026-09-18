@@ -114,6 +114,31 @@ class ReviewServiceTest {
         assertEquals(AccuracyReport.HitLevel.MISS, report.recent().get(2).level());
     }
 
+    /** Spec 03: is the stated confidence honest? Three broad groups, each judged like the overall hit rate. */
+    @Test
+    void calibrationGroupsConfidenceIntoThreeBandsWithTheirOwnReliabilityThreshold() {
+        List<ForecastEvaluation> evaluations = new ArrayList<>();
+        evaluations.addAll(withConfidence(0.3, 10, 5));  // niedrig: 5/10 = 0.5, reliable
+        evaluations.addAll(withConfidence(0.6, 10, 7));  // mittel: 7/10 = 0.7, reliable
+        evaluations.addAll(withConfidence(0.9, 5, 5));   // hoch: 5/5, below the required 10 -> unreliable
+
+        List<AccuracyReport.CalibrationGroup> groups = ReviewService.calibration(evaluations, 10);
+
+        assertEquals(3, groups.size());
+        assertEquals(10, groups.get(0).comparison().evaluated());
+        assertEquals(0.5, groups.get(0).comparison().hitRate(), 1e-9);
+        assertEquals(10, groups.get(1).comparison().evaluated());
+        assertEquals(0.7, groups.get(1).comparison().hitRate(), 1e-9);
+        assertEquals(5, groups.get(2).comparison().evaluated());
+        assertNull(groups.get(2).comparison().hitRate()); // too few cases in this group
+    }
+
+    private static List<ForecastEvaluation> withConfidence(double confidence, int count, int hits) {
+        List<ForecastEvaluation> list = evaluations(count, hits);
+        list.forEach(e -> e.confidence = confidence);
+        return list;
+    }
+
     /** Spec 02, rule: repeated automatic forecasts before kickoff — only the last live one counts. */
     @Test
     void onlyTheLastLiveForecastBeforeKickoffIsEvaluated() {

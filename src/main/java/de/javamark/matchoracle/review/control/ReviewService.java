@@ -275,7 +275,25 @@ public class ReviewService {
                         reliable ? (double) alwaysHomeHits / evaluations.size() : null,
                         reliable ? alwaysHomeBrier / evaluations.size() : null),
                 baselineReliable && meanBaselineBrier > 0 ? 1 - (oracleBrierOnSameMatches / baselineEvaluated) / meanBaselineBrier : null,
-                recent(evaluations, situations));
+                recent(evaluations, situations), calibration(evaluations, required));
+    }
+
+    /** Spec 03: is the stated confidence honest? Three broad confidence bands, each judged like the overall hit rate. */
+    static List<AccuracyReport.CalibrationGroup> calibration(List<ForecastEvaluation> evaluations, int required) {
+        return List.of(
+                calibrationGroup("niedrige Sicherheit (unter 50 %)", evaluations, e -> e.confidence < 0.5, required),
+                calibrationGroup("mittlere Sicherheit (50 bis 70 %)", evaluations, e -> e.confidence >= 0.5 && e.confidence < 0.7, required),
+                calibrationGroup("hohe Sicherheit (70 % oder mehr)", evaluations, e -> e.confidence >= 0.7, required));
+    }
+
+    private static AccuracyReport.CalibrationGroup calibrationGroup(String label, List<ForecastEvaluation> evaluations,
+                                                                     java.util.function.Predicate<ForecastEvaluation> inGroup, int required) {
+        List<ForecastEvaluation> group = evaluations.stream().filter(inGroup).toList();
+        int hits = (int) group.stream().filter(e -> e.tendencyHit).count();
+        boolean reliable = group.size() >= required;
+        Double averageBrier = reliable ? group.stream().mapToDouble(e -> e.brierScore).average().orElse(0) : null;
+        return new AccuracyReport.CalibrationGroup(label,
+                new AccuracyReport.Comparison(group.size(), hits, reliable ? (double) hits / group.size() : null, averageBrier));
     }
 
     /**
