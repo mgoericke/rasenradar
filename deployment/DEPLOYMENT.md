@@ -1,4 +1,4 @@
-# Deployment — Bundesliga aktuell mit KI-Vorschau (rasenradar)
+# Deployment — Rasen-Radar mit KI-Vorschau (rasenradar)
 
 Zielplattform: **eigener Server** (SSH-Zugriff) mit Traefik als Reverse Proxy.
 Container-Registry: **GitHub Container Registry (GHCR)**.
@@ -20,7 +20,9 @@ Internet → Traefik (proxy-Netz, :443) → rasenradar (:8080)
 - `proxy`-Netz: extern, wird von Traefik verwaltet — muss auf dem Server existieren.
 - `internal`-Netz: bridge, isoliert Postgres vom Internet.
 - TLS: Let's Encrypt via Traefik (`letsencrypt`-certresolver).
-- Domain: `rasenradar.markserver.de`
+- Domain: `rasen-radar.de` (kanonisch). `rasenradar.markserver.de` ist der alte Host und
+  leitet per 301 (`redirectregex`-Middleware) 1:1 auf `rasen-radar.de` weiter — kein doppelt
+  indexierter Content unter zwei Hosts.
 - Die Ansicht (alle GET-Routen) bleibt frei zugänglich. Nur POST-Routen — KI-Vorschau/Rücktest
   auslösen, Bewertungsmaßstäbe ändern — sind per Basic Auth geschützt (zweiter Traefik-Router mit
   `Method(\`POST\`)`, siehe `docker-compose.yml`). Kostenschutz, kein Login-System in der App.
@@ -31,6 +33,22 @@ Bewerter bzw. Prognoseschritt schlägt fehl, statt auf ein lokales Modell auszuw
 Bewerter sind dank `ResilientAssessors` (ein Retry, dann Ausfall statt Abbruch) robust dagegen;
 ein Ausfall des Prognostikers oder Prüfers lässt die einzelne Prognose fehlschlagen — der Nutzer
 sieht das im Fortschritt und kann es erneut versuchen.
+
+---
+
+## Domain-Umzug auf `rasen-radar.de`
+
+Einmalig nötig, bevor der nächste Deploy live geht:
+
+1. Bei der Registrierung von `rasen-radar.de`: A-Record (und AAAA, falls IPv6) auf die Server-IP setzen,
+   genau wie für `rasenradar.markserver.de` — Traefik entscheidet rein über den `Host()`-Header, DNS
+   muss für beide Hosts auf denselben Server zeigen.
+2. `docker compose up -d` ausführen (bzw. den "Deploy to Production"-Workflow anstoßen) — Traefik zieht
+   sich für `rasen-radar.de` automatisch ein neues Let's-Encrypt-Zertifikat.
+3. Prüfen: `https://rasen-radar.de` liefert die Seite aus, `https://rasenradar.markserver.de` leitet
+   (Status 301) auf denselben Pfad unter `rasen-radar.de` weiter.
+4. Sitemap/robots.txt (siehe unten) referenzieren bereits `rasen-radar.de` — nach dem Umzug bei Google
+   Search Console als neue Property anlegen und die alte Domain dort als "Adressänderung" markieren.
 
 ---
 
@@ -189,8 +207,8 @@ Oder über den "Deploy to Production"-Workflow mit explizitem Tag.
 
 | Endpunkt | Beschreibung |
 |----------|-------------|
-| `https://rasenradar.markserver.de/q/health/live` | Liveness-Check |
-| `https://rasenradar.markserver.de/q/health/ready` | Readiness-Check (wartet auf DB) |
+| `https://rasen-radar.de/q/health/live` | Liveness-Check |
+| `https://rasen-radar.de/q/health/ready` | Readiness-Check (wartet auf DB) |
 
 Der Readiness-Check ist auch als Docker-Healthcheck konfiguriert.
 

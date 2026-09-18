@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Static for now (see "SEO/GEO-Basics" in docs/architecture/entscheidungen.md): only the fixed,
+  league-scoped pages.
+  Club pages, single matchdays and single-match pages are dynamic per season/matchday/team and not
+  listed here yet — add a generated sitemap once the static one proves worthwhile.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://rasen-radar.de/bl1</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://rasen-radar.de/bl2</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://rasen-radar.de/bl1/torschuetzen</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://rasen-radar.de/bl2/torschuetzen</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://rasen-radar.de/trefferbilanz</loc>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://rasen-radar.de/forecast-parameters</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+</urlset>

@@ -1,6 +1,6 @@
 {
-  "name": "Rasenradar",
-  "short_name": "Rasenradar",
+  "name": "Rasen-Radar",
+  "short_name": "Rasen-Radar",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#101B16",

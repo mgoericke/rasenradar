@@ -1,4 +1,4 @@
-# Styleguide „Bundesliga aktuell – mit KI-Vorschau"
+# Styleguide „Rasen-Radar – mit KI-Vorschau"
 
 Gilt für alle Seiten (Qute-Templates unter `src/main/resources/templates/`, Stylesheet
 `src/main/resources/META-INF/resources/app.css`). Neue Seiten und Fragmente halten sich an

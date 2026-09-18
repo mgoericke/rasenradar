@@ -1,6 +1,6 @@
-# Rasenradar
+# Rasen-Radar
 
-**Bundesliga aktuell – mit KI-Vorschau**
+**Rasen-Radar – mit KI-Vorschau**
 
 [![Build](https://github.com/mgoericke/rasenradar/actions/workflows/build.yml/badge.svg)](https://github.com/mgoericke/rasenradar/actions/workflows/build.yml)
 [![Security Scan](https://github.com/mgoericke/rasenradar/actions/workflows/security.yml/badge.svg)](https://github.com/mgoericke/rasenradar/actions/workflows/security.yml)

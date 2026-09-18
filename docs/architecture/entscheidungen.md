@@ -249,6 +249,34 @@ Die Fußzeilen-Platzierung von Trefferbilanz/Bewertungsmaßstäben drückt aus, 
 Hintergrundinformation ist, kein Kernweg des Betrachters (der ist: Liga → Spieltag → Begegnung
 → Vorschau).
 
+## SEO/GEO-Basics: statische Sitemap, `SiteGlobals` in `matchday.boundary`
+
+**Kontext:** Die Marke wurde auf „Rasen-Radar" vereinheitlicht (vorher parallel „Bundesliga
+aktuell" im UI, „Rasenradar" in Manifest/Footer/Repo); Domain wird `rasen-radar.de`,
+`rasenradar.markserver.de` bleibt als 301-Redirect bestehen. Für Auffindbarkeit (klassische
+Suche und KI-Suchmaschinen wie ChatGPT/Perplexity) fehlten technische Grundlagen: Meta-Description,
+Canonical-URL, Open-Graph-Tags, `robots.txt`, `sitemap.xml`. `base.html` wird von allen drei
+Features eingebunden, ist also naturgemäß fachübergreifend.
+
+**Entscheidung:** `base.html` bekommt `{#insert description}` (analog zum bestehenden
+`{#insert title}`), jede Content-Seite überschreibt es mit `{#description}...{/description}`.
+Canonical- und Open-Graph-URL werden aus einem neuen `matchoracle.site.base-url` (Config,
+`%prod` auf `https://rasen-radar.de`) plus dem aktuellen Pfad (`{inject:vertxRequest.path()}`,
+Qutes eingebauter `inject`-Namensraum) zusammengesetzt; `base-url` selbst ist ein Qute-`@TemplateGlobal`
+(`SiteGlobals`). Die Klasse liegt in `matchday.boundary`, nicht in einem neuen Top-Level-Package —
+dorthin greifen `forecast` und `review` bereits für geteilte Seiten-Bausteine (`MatchdayPageModels.Nav`)
+zu, `matchday.boundary` ist also schon der De-facto-Ort für fachübergreifende Template-Belange.
+`robots.txt`/`sitemap.xml` sind vorerst statische Dateien unter `META-INF/resources` mit nur den
+festen, ligabezogenen Seiten (`/bl1`, `/bl2`, Torschützen, Trefferbilanz, Bewertungsmaßstäbe) —
+keine dynamische Erzeugung für die ~36 Vereins- oder die Spieltag-Seiten, bis sich die SEO-Nische
+als lohnend erweist.
+
+**Konsequenzen:** Kein neues Package nur für einen Cross-Cutting-Concern, aber `matchday.boundary`
+trägt jetzt auch eine Zuständigkeit, die inhaltlich zu keinem der drei Features gehört — bei
+weiterem Wachstum (z. B. dynamische Sitemap mit Vereins-/Spieltag-URLs) sollte neu bewertet werden,
+ob ein eigenes Package den Schnitt sauberer hält. Die Sitemap muss von Hand erweitert werden, wenn
+neue feste Seiten dazukommen; Vereinsseiten tauchen dort vorerst gar nicht auf.
+
 ## Verschoben / abgelehnt
 
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine
