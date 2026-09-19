@@ -35,10 +35,19 @@ public class ReviewPages {
         }
     }
 
+    /** One confidence band of the calibration breakdown (Spec 03): its own hit rate, or "too thin" below the threshold. */
+    record CalibrationRow(String label, int evaluated, Integer hitRatePercent) {
+        static CalibrationRow of(AccuracyReport.CalibrationGroup g) {
+            AccuracyReport.Comparison c = g.comparison();
+            return new CalibrationRow(g.label(), c.evaluated(), c.hitRate() == null ? null : (int) Math.round(c.hitRate() * 100));
+        }
+    }
+
     record LeagueAccuracy(String shortcut, String name, boolean backtest, int evaluated, int hits, Integer hitRatePercent, Integer averageConfidencePercent,
                           String averageBrier, int required, List<AccuracyReport.MatchdayPoint> perMatchday, String chartJson,
                           List<YardstickRow> yardsticks, Integer skillScorePercent, int baselineEvaluated,
-                          List<AccuracyReport.RecentResult> recent, int recentHits, int recentTotal) {
+                          List<AccuracyReport.RecentResult> recent, int recentHits, int recentTotal,
+                          List<CalibrationRow> calibrationGroups) {
 
         /** For the template: the CSS/label class of one recent dot. */
         public String dotClass(AccuracyReport.RecentResult r) {
@@ -99,7 +108,8 @@ public class ReviewPages {
                     oracleBrier, r.required(), r.perMatchday(),
                     "{\"labels\":[" + labels + "],\"rates\":[" + rates + "],\"baselineRates\":[" + baselineRates + "],\"counts\":[" + counts + "]}",
                     yardsticks, r.skillScore() == null ? null : (int) Math.round(r.skillScore() * 100), r.baseline().evaluated(),
-                    r.recent(), (int) r.recent().stream().filter(x -> x.level() != AccuracyReport.HitLevel.MISS).count(), r.recent().size());
+                    r.recent(), (int) r.recent().stream().filter(x -> x.level() != AccuracyReport.HitLevel.MISS).count(), r.recent().size(),
+                    r.calibration().stream().map(CalibrationRow::of).toList());
         }
     }
 

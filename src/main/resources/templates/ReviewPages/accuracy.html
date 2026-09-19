@@ -35,6 +35,15 @@
         {#else}
         <p class="note">Sicherheit und Trefferquote passen zusammen.</p>
         {/if}
+        <table class="yardsticks calibration">
+          <caption class="muted">Kalibrierung nach Sicherheitsgrad</caption>
+          <thead><tr><th>Sicherheitsgrad</th><th>Tendenz</th></tr></thead>
+          <tbody>
+          {#for c in l.calibrationGroups}
+            <tr><th>{c.label}</th><td>{#if c.hitRatePercent}{c.hitRatePercent} %{#else}<span class="muted">{c.evaluated} von {l.required}</span>{/if}</td></tr>
+          {/for}
+          </tbody>
+        </table>
         {#else}
         <p class="big-number muted">noch keine Quote</p>
         <p class="accuracy-facts">{l.evaluated} von mindestens {l.required} Vorschauen bewertet{#if l.evaluated > 0} ({l.hits} getroffen){/if}. Die Datenlage ist zu dünn für eine Zahl.</p>
