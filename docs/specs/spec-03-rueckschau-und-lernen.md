@@ -30,6 +30,10 @@ samt damaligem Ausgang bereit.
 6. Über alle Prognosen hinweg weist das System eine Trefferbilanz aus:
    Trefferquote je Liga, Verlauf über die Spieltage und die Frage, ob die
    angegebene Sicherheit zur tatsächlichen Trefferquote passt.
+7. Zu jedem abgeschlossenen Spieltag stellt das System einen kurzen Rückblick in
+   Textform bereit: wie viele Tendenzen und wie viele genaue Ergebnisse
+   getroffen wurden, die durchschnittliche Sicherheit, und welche Begegnung am
+   deutlichsten danebenlag.
 
 ## Regeln
 
@@ -54,6 +58,15 @@ samt damaligem Ausgang bereit.
   (Tendenztreffer und Brier-Score) sowie einen Skill-Score (Verbesserung des
   Brier-Scores gegenüber der Basisprognose). Für den Vergleich gilt dieselbe
   Mindestanzahl wie für die Trefferquote.
+- Die Trefferbilanz weist zusätzlich aus, ob der ausgewiesene Sicherheitsgrad zur
+  tatsächlichen Trefferquote passt (Kalibrierung): Prognosen werden in niedrige,
+  mittlere und hohe Sicherheit gruppiert, und für jede Gruppe wird die
+  tatsächliche Trefferquote der tatsächlich ausgewiesenen gegenübergestellt. Für
+  jede Gruppe gilt dieselbe Mindestanzahl wie für die Trefferquote insgesamt.
+- Der Rückblick je Spieltag ist reiner Text aus bereits erfassten Zahlen
+  (Treffer, Fehlschläge, Sicherheit, größte Abweichung) — kein KI-Agent, keine
+  Einschätzung, die über diese Zahlen hinausgeht. Dieselbe Abgrenzung wie bei
+  der Prognose gilt auch hier: keine Quoten, keine Wettsprache.
 
 ## Abgrenzung
 
@@ -74,20 +87,12 @@ samt damaligem Ausgang bereit.
   Hinweis auf die zu dünne Datenlage.
 - **Anzahl:** Der Prognostiker erhält höchstens die fünf ähnlichsten Fälle.
 - **Sichtbarkeit:** Die Trefferbilanz ist öffentlich einsehbar.
-
-## Im Spec-Interview zu klären (spätere Ausbaustufe)
-
-- **Kalibrierung sichtbar machen:** Zusätzlich zur Trefferquote könnte die
-  Trefferbilanz ausweisen, ob ein ausgewiesener Sicherheitsgrad auch in der
-  Praxis stimmt (z. B.: von allen Prognosen mit hoher Sicherheit für Heimsieg
-  trat er auch tatsächlich in einem entsprechenden Anteil der Fälle ein). Noch
-  offen: welche Gruppierung der Sicherheitsgrade dafür sinnvoll ist und ab
-  welcher Fallzahl das belastbar wird.
-- **Rückblick in Textform:** Eine kurze, automatisch erstellte Einordnung je
-  abgeschlossenem Spieltag (wie lag das System insgesamt, was fiel auf) könnte
-  die reinen Zahlen ergänzen. Noch offen: ob das ein eigener Agent wird und wie
-  verhindert wird, dass er über Sicherheiten oder Wettbezüge spekuliert
-  (Abgrenzung wie in Spec 2).
+- **Kalibrierungs-Gruppen:** Drei breite Gruppen (niedrige, mittlere, hohe
+  Sicherheit) statt feiner Abstufungen — bei einer Saison mit einigen hundert
+  Prognosen sind feinere Gruppen zu dünn, um belastbar zu sein.
+- **Rückblick-Erzeugung:** Regelbasiert aus bereits vorhandenen Zahlen
+  zusammengesetzt, kein eigener Agent — analog zur bestehenden Rückschau für
+  den Prognostiker, die ebenfalls ohne KI reinen Text aus Zahlen bildet.
 
 ## Abnahmekriterien
 
@@ -98,3 +103,9 @@ samt damaligem Ausgang bereit.
 - Die Trefferbilanz ist je Liga und im Verlauf über die Spieltage einsehbar.
 - Bei zu dünner Datenlage erscheint ausdrücklich der Hinweis darauf statt einer
   Zahl.
+- Die Trefferbilanz zeigt zu jeder der drei Sicherheitsgruppen die tatsächliche
+  Trefferquote, sobald genug Fälle vorliegen — sonst den Hinweis auf zu dünne
+  Datenlage für diese Gruppe.
+- Zu jedem abgeschlossenen Spieltag mit mindestens einer bewerteten Prognose
+  liegt ein Rückblick in Textform vor, der ausschließlich Zahlen aus der
+  Trefferbilanz wiedergibt.

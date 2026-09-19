@@ -492,6 +492,7 @@ h2 { font-size: 1.1rem; }
 .yardsticks thead th + th { text-align: right; }
 .yardsticks tr.is-oracle th, .yardsticks tr.is-oracle td { color: var(--ink); font-weight: 600; }
 .yardsticks tr.is-oracle th { box-shadow: inset 2px 0 0 var(--accent); padding-left: .5rem; }
+.yardsticks caption { text-align: left; font-size: .85rem; margin: .9rem 0 .3rem; }
 
 /* the simple view: a plain hit/miss timeline, no statistics required to read it */
 .hit-strip-caption { margin: .1rem 0 .5rem; color: var(--ink-soft); }
@@ -500,6 +501,11 @@ h2 { font-size: 1.1rem; }
 .hit-dot.is-exact { background: var(--win); border-color: var(--win); }
 .hit-dot.is-tendency { background: color-mix(in srgb, var(--win) 40%, var(--surface)); border-color: var(--win); }
 .hit-dot.is-miss { background: var(--surface); border-color: var(--loss); }
+
+/* rule-based per-matchday recap, most recent first */
+.recap-heading { margin: 1.3rem 0 .4rem; font-size: .85rem; }
+.recaps { list-style: none; margin: 0; padding: 0; font-size: .88rem; color: var(--ink-soft); display: grid; gap: .5rem; }
+.recaps strong { color: var(--ink); font-weight: 600; }
 
 /* the detailed view is opt-in: quote, calibration and the statistical comparison */
 .accuracy-details { margin-top: 1.1rem; border-top: 1px solid var(--line); padding-top: .9rem; }
