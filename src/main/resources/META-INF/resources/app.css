@@ -315,6 +315,10 @@ h2 { font-size: 1.1rem; }
 .landing-day { font-size: .85rem; font-weight: 500; color: var(--ink-soft); margin: .9rem 0 .35rem; }
 .landing-day:first-child { margin-top: 0; }
 .fixtures.compact .fixture { padding: .45rem .6rem; font-size: .92rem; }
+/* two cards side by side leave less room per name than the full matchday page ever does —
+   short team names here regardless of viewport width, not just as a narrow-screen fallback */
+.fixtures.compact .team-name.full { display: none; }
+.fixtures.compact .team-name.short { display: block; }
 
 .landing-panel.table table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .landing-panel.table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .35rem; border-bottom: 1px solid var(--line); }
