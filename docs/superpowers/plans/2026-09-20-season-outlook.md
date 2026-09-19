@@ -937,7 +937,7 @@ public class SeasonOutlookObserver {
 - [ ] **Step 2: Compile and run the architecture tests**
 
 Run: `./mvnw test -Dtest=ArchitectureTest`
-Expected: PASS — `season.boundary` depending on `matchday.boundary` is boundary-to-boundary, always allowed regardless of the `FEATURES` ignore-list (that list only matters for `season`'s *control/entity* layers reaching across, which Task 4 already registered).
+Expected: PASS — the `bce_layers` layered-architecture rule flags a dependency into a `..boundary..` package from any other layer unless the two features are on the `ignoreDependency` list, and that applies to every layer combination (boundary-to-boundary included), not just control/entity. `season`'s membership in `FEATURES` (added in Task 4) already covers this dependency in both directions.
 
 - [ ] **Step 3: Commit**
 
