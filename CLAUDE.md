@@ -51,8 +51,9 @@ Die Features ergeben sich aus den Specs in `docs/specs/`:
 | 01 Spieltagsdaten | Begegnungen/Ergebnisse beider Bundesligen aus externer Quelle laden, vorläufig → endgültig, Form/Tabelle/Direktduelle ableiten | `matchday` |
 | 02 Spieltag-Prognose | Drei parallele Bewerter-Agenten (Form, Duell, Umfeld) → Prognostiker → Prüfer mit max. einer Überarbeitungsrunde; Prognose ist danach unveränderlich | `forecast` |
 | 03 Rückschau und Lernen | Prognosen gegen endgültige Ergebnisse abgleichen, Ausgangslagen speichern, Vergleichsfälle für neue Prognosen liefern, Trefferbilanz | `review` |
+| 04 Saisonaussicht | Je Mannschaft Wahrscheinlichkeiten für Platzierungsziele der Restsaison, statistisch simuliert, neu berechnet nach jedem beendeten Spieltag | `season` |
 
-Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rückschau aus `review`; `review` reagiert darauf, dass ein Ergebnis in `matchday` endgültig wird und auf festgeschriebene Prognosen aus `forecast`.
+Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rückschau aus `review`; `review` reagiert darauf, dass ein Ergebnis in `matchday` endgültig wird und auf festgeschriebene Prognosen aus `forecast`; `season` reagiert ebenfalls darauf, dass ein Ergebnis in `matchday` endgültig wird (eigenständig von `forecast`/`review`, keine Abhängigkeit zwischen den beiden).
 
 ### Glossar Spec (deutsch) → Code (englisch)
 
@@ -91,6 +92,8 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Saison einer Liga (z. B. 2. Bundesliga 2024/25) | `LeagueSeason` |
 | Vereinsseite (Spielplan, Saisonverlauf, Bilanz, Torschützen) | `TeamPage` / `ScheduleRow` |
 | Champions-League-Ligaphase | `League.CHAMPIONS_LEAGUE` (nur Anzeige, keine KI-Vorschau) |
+| Saisonaussicht | `SeasonOutlook` (Package `season`) |
+| Platzierungsziel (Meisterschaft, Europapokal, Auf-/Abstieg, Play-off, K.-o.-Runde, Ausscheiden) | `PlacementGoal` — Definition der Schwellenwerte je Liga lebt in `matchday`, da sie dieselbe ist wie bei den Tabellenzonen-Farben |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
