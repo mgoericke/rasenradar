@@ -10,12 +10,16 @@
 
 Aktuelle Spieltage, Tabellen und Vereinsdaten der 1./2. Bundesliga und der Champions-League-Ligaphase — plus eine KI-Vorschau je Begegnung, die sich selbst an ihrer eigenen Trefferbilanz messen lässt.
 
-**Live:** [rasenradar.markserver.de](https://rasenradar.markserver.de)
+**Live:** [rasen-radar.de](https://rasen-radar.de)
 
 > [!NOTE]
 > Ein privates, nicht kommerzielles Hobbyprojekt eines Bundesliga-Fans. Keine Quoten, keine Wettempfehlungen — die KI-Vorschau ist eine Einschätzung, kein Rat.
 
 ## Screenshots
+
+**Startseite** — aktueller Spieltag beider Ligen nebeneinander, mit Tabellen-Vorschau je Karte:
+
+![Startseite mit dem aktuellen Spieltag beider Ligen und einer Tabellen-Vorschau je Karte](docs/screenshots/landing.jpg)
 
 | Spieltag | Begegnung |
 |---|---|
