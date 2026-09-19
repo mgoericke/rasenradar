@@ -14,7 +14,7 @@
     <p class="half">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
     {#if page.nav.forecastSupported}
     <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML">
-      <a class="link-button ai" href="{page.forecastLink}">KI-Vorschau{#if !page.match.played} erstellen{/if}</a>
+      <a class="link-button ai" href="{page.forecastLink}">{#if !page.match.played}Noch keine KI-Vorschau{#else}KI-Vorschau{/if}</a>
     </div>
     {/if}
   </div>
