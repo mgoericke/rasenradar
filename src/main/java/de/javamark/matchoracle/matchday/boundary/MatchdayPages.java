@@ -6,6 +6,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagueSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Spotlight;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
@@ -44,14 +45,18 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** HTML pages for the viewer (spec 01). The JSON API lives in {@link MatchdayResource}. */
@@ -84,26 +89,57 @@ public class MatchdayPages {
     @Inject
     GoalTimingCalculator goalTimingCalculator;
 
+    /** How long after kickoff a match still counts as "läuft" in the UI — never a live score, just the label (Spec 1). */
+    @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
+    Duration liveWindow;
+
+    /** One match together with the league shortcut it needs for its links — the landing page's spotlight candidates. */
+    record CandidateMatch(Match match, String shortcut) {
+    }
+
+    /** Spec 1: a currently live match takes priority over a merely upcoming one; earliest kickoff breaks ties either way. */
+    static Optional<CandidateMatch> pickSpotlight(List<CandidateMatch> candidates, Instant now, Duration liveWindow) {
+        Comparator<CandidateMatch> byKickoff = Comparator.comparing(c -> c.match().kickoff);
+        return candidates.stream().filter(c -> MatchdayPageModels.isLive(c.match().kickoff, c.match().isPlayed(), now, liveWindow))
+                .min(byKickoff)
+                .or(() -> candidates.stream().filter(c -> !c.match().isPlayed() && c.match().kickoff.isAfter(now)).min(byKickoff));
+    }
+
     /** Landing page: current matchday of both Bundesligas in short form, so a first visit shows both leagues. */
     @GET
     public TemplateInstance home() {
+        Instant now = Instant.now();
         List<LandingLeagueSection> sections = new ArrayList<>();
+        List<CandidateMatch> candidates = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            Matchday.findCurrent(l).ifPresent(matchday -> sections.add(landingSection(matchday)));
+            Matchday.findCurrent(l).ifPresent(matchday -> {
+                String shortcut = matchday.league.sourceShortcut();
+                List<Match> matches = Match.findByMatchday(matchday);
+                sections.add(landingSection(matchday, matches, shortcut, now));
+                matches.forEach(m -> candidates.add(new CandidateMatch(m, shortcut)));
+            });
         }
-        return Templates.home(new LandingPage(Nav.page("home"), sections));
+        Spotlight spotlight = pickSpotlight(candidates, now, liveWindow).map(c -> spotlight(c, now)).orElse(null);
+        return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections));
+    }
+
+    private Spotlight spotlight(CandidateMatch c, Instant now) {
+        Match m = c.match();
+        String base = "/" + c.shortcut() + "/matches/" + m.id;
+        return new Spotlight(base, base + "/forecast", m.homeTeam.name, m.awayTeam.name, m.homeTeam.iconUrl, m.awayTeam.iconUrl,
+                MatchdayPageModels.time(m.kickoff), MatchdayPageModels.dayLabel(m.kickoff),
+                MatchdayPageModels.isLive(m.kickoff, m.isPlayed(), now, liveWindow));
     }
 
     private static final int LANDING_TABLE_ROWS = 6;
 
-    private LandingLeagueSection landingSection(Matchday matchday) {
-        String shortcut = matchday.league.sourceShortcut();
-        List<Match> matches = Match.findByMatchday(matchday);
+    private LandingLeagueSection landingSection(Matchday matchday, List<Match> matches, String shortcut, Instant now) {
+        matches = new ArrayList<>(matches);
         matches.sort((a, b) -> a.kickoff.compareTo(b.kickoff));
 
         Map<String, List<MatchRow>> byDay = new LinkedHashMap<>();
         for (Match m : matches) {
-            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut));
+            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut, now, liveWindow));
         }
         List<DayGroup> days = byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
 
@@ -175,10 +211,11 @@ public class MatchdayPages {
         String shortcut = matchday.league.sourceShortcut();
         List<Match> matches = Match.findByMatchday(matchday);
         matches.sort((a, b) -> a.kickoff.compareTo(b.kickoff));
+        Instant now = Instant.now();
 
         Map<String, List<MatchRow>> byDay = new LinkedHashMap<>();
         for (Match m : matches) {
-            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut));
+            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut, now, liveWindow));
         }
         List<DayGroup> days = byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
 
@@ -210,7 +247,7 @@ public class MatchdayPages {
         return new MatchPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.number,
                 "/" + shortcut + "/" + matchday.season + "/" + matchday.number,
                 "/" + shortcut + "/matches/" + match.id + "/forecast",
-                MatchdayPageModels.dayLabel(match.kickoff), MatchRow.of(match, shortcut), goals,
+                MatchdayPageModels.dayLabel(match.kickoff), MatchRow.of(match, shortcut, Instant.now(), liveWindow), goals,
                 situation(match.homeTeam, matchday, standings, shortcut),
                 situation(match.awayTeam, matchday, standings, shortcut),
                 h2h.matches().stream().map(v -> ResultRow.of(v, shortcut)).toList(),

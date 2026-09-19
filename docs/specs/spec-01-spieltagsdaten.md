@@ -62,6 +62,12 @@ frühere Begegnungen bewerten zu können.
   Die Frist ist ein Bewertungsmaßstab und ohne Neuauslieferung änderbar.
 - **Prüftakt:** Das System prüft alle 15 Minuten, ob sich an einem Spieltag
   etwas geändert hat. Der Takt ist ohne Neuauslieferung änderbar.
+- **Kennzeichnung laufender Spiele:** Ein Spiel gilt als „läuft" innerhalb eines
+  großzügigen Zeitfensters nach dem Anstoß, solange noch kein Endstand vorliegt
+  — rein aus der Anstoßzeit abgeleitet, ohne Live-Ergebnis. Das Zeitfenster ist
+  ein Bewertungsmaßstab und ohne Neuauslieferung änderbar. Bleibt innerhalb der
+  Abgrenzung „Keine Live-Ergebnisse während laufender Spiele" — es wird
+  angezeigt, *dass* ein Spiel läuft, nicht *wie* es gerade steht.
 - **Identität von Mannschaften:** Eine Mannschaft wird über eine stabile
   Kennung der Spieldatenquelle identifiziert, die Saisonwechsel sowie Auf- und
   Abstieg überdauert. Name und Kürzel sind änderbare Eigenschaften, keine

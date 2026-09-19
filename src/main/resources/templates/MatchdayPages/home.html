@@ -3,75 +3,96 @@
 {#description}Rasen-Radar: Ergebnisse, Tabellen und Formkurven aus 1. und 2. Bundesliga – dazu eine KI-Vorschau je Spieltag, ohne Quoten oder Wettempfehlungen.{/description}
 {#body}
 <section class="landing" aria-labelledby="landing-heading">
-  <h1 id="landing-heading" class="landing-title">Rasen-Radar</h1>
-  <p class="landing-intro">1. und 2. Bundesliga im Überblick: aktueller Spieltag, Tabelle und KI-Vorschau.</p>
+  <div class="masthead">
+    <h1 id="landing-heading" class="landing-title">Rasen-Radar</h1>
+    <p class="landing-intro">1. und 2. Bundesliga im Überblick: aktueller Spieltag, Tabelle und KI-Vorschau.</p>
+  </div>
+
+  {#if page.spotlight}
+  <section class="spotlight" aria-labelledby="spotlight-heading">
+    <p class="spotlight-eyebrow {#if page.spotlight.live}is-live{/if}" id="spotlight-heading">{#if page.spotlight.live}Läuft gerade{#else}Nächster Anstoß{/if}</p>
+    <div class="spotlight-teams">
+      <div class="spotlight-side">
+        {#if page.spotlight.homeIcon}<img class="crest" src="{page.spotlight.homeIcon}" alt="" loading="lazy">{/if}
+        <span class="team-name">{page.spotlight.homeTeam}</span>
+      </div>
+      <div class="spotlight-kickoff">
+        <span class="time">{page.spotlight.time}</span>
+        <span class="date">{page.spotlight.date}</span>
+      </div>
+      <div class="spotlight-side">
+        {#if page.spotlight.awayIcon}<img class="crest" src="{page.spotlight.awayIcon}" alt="" loading="lazy">{/if}
+        <span class="team-name">{page.spotlight.awayTeam}</span>
+      </div>
+    </div>
+    <div class="spotlight-forecast" hx-get="{page.spotlight.forecastLink}/summary?played=false" hx-trigger="load" hx-swap="innerHTML"></div>
+  </section>
+  {/if}
 
   <div class="landing-grid">
-    {#for l in page.leagues}
-    <section class="landing-card" aria-labelledby="landing-league-{l.badge}">
-      <div class="landing-card-head">
-        <h2 id="landing-league-{l.badge}"><span class="badge">{l.badge}</span> {l.name}</h2>
-        {#if page.nav.forecastSupported}<a class="link-button ai" href="{l.forecastsLink}">KI-Vorschau</a>{/if}
+  {#for l in page.leagues}
+  <section class="landing-league" aria-labelledby="landing-league-{l.badge}">
+    <div class="landing-league-head">
+      <h2 id="landing-league-{l.badge}"><span class="badge">{l.badge}</span> {l.name}</h2>
+      <a class="landing-league-link" href="{l.matchdayLink}">Zum {l.matchdayNumber}. Spieltag →</a>
+    </div>
+
+    <fieldset class="landing-tabs">
+      <legend class="sr-only">Ansicht wählen: {l.name}</legend>
+      <input class="landing-tab-input matches" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-matches" checked>
+      <label class="landing-tab-label" for="landing-view-{l.badge}-matches">{l.matchdayNumber}. Spieltag</label>
+      <input class="landing-tab-input table" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-table">
+      <label class="landing-tab-label" for="landing-view-{l.badge}-table">Tabelle</label>
+
+      <div class="landing-panel matches">
+        {#for day in l.days}
+        <p class="landing-day">{day.label}</p>
+        <ol class="fixtures compact">
+          {#for m in day.matches}
+          <li>
+            <a class="fixture" href="{m.link}">
+              <span class="time">{m.time}</span>
+              <span class="home">
+                <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+                {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+              </span>
+              <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+                {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+              </span>
+              <span class="away">
+                {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+                <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+              </span>
+              <span class="half">{#if !m.played}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+            </a>
+          </li>
+          {/for}
+        </ol>
+        {/for}
+        <div hx-get="{l.markersPath}" hx-trigger="load" hx-swap="none"></div>
       </div>
 
-      <fieldset class="landing-tabs">
-        <legend class="sr-only">Ansicht wählen: {l.name}</legend>
-        <input class="landing-tab-input matches" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-matches" checked>
-        <label class="landing-tab-label" for="landing-view-{l.badge}-matches">{l.matchdayNumber}. Spieltag</label>
-        <input class="landing-tab-input table" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-table">
-        <label class="landing-tab-label" for="landing-view-{l.badge}-table">Tabelle</label>
-
-        <div class="landing-panel matches">
-          {#for day in l.days}
-          <p class="landing-day">{day.label}</p>
-          <ol class="fixtures compact">
-            {#for m in day.matches}
-            <li>
-              <a class="fixture" href="{m.link}">
-                <span class="time">{m.time}</span>
-                <span class="home">
-                  <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-                  {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
-                </span>
-                <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if}">
-                  {#if m.played}{m.score}{#else}–:–{/if}
-                </span>
-                <span class="away">
-                  {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
-                  <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
-                </span>
-                <span class="half">{#if !m.played}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
-              </a>
-            </li>
+      <div class="landing-panel table">
+        <table>
+          <thead>
+            <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr>
+          </thead>
+          <tbody>
+            {#for r in l.tableTop}
+            <tr class="{r.zone}">
+              <td class="pos">{r.position}</td>
+              <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
+              <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+            </tr>
             {/for}
-          </ol>
-          {/for}
-          <div hx-get="{l.markersPath}" hx-trigger="load" hx-swap="none"></div>
-        </div>
-
-        <div class="landing-panel table">
-          <table>
-            <thead>
-              <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr>
-            </thead>
-            <tbody>
-              {#for r in l.tableTop}
-              <tr class="{r.zone}">
-                <td class="pos">{r.position}</td>
-                <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
-                <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
-              </tr>
-              {/for}
-            </tbody>
-          </table>
-          {#if l.tableProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
-          <p class="note"><a href="{l.matchdayLink}">Ganze Tabelle ansehen</a></p>
-        </div>
-      </fieldset>
-
-      <a class="landing-card-link" href="{l.matchdayLink}">Zum {l.matchdayNumber}. Spieltag <span aria-hidden="true">→</span></a>
-    </section>
-    {/for}
+          </tbody>
+        </table>
+        {#if l.tableProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
+        <p class="note"><a href="{l.matchdayLink}">Ganze Tabelle ansehen</a></p>
+      </div>
+    </fieldset>
+  </section>
+  {/for}
   </div>
 </section>
 {/body}

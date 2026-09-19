@@ -66,7 +66,10 @@ Regeln:
   Haarlinie `1px solid var(--line)`, Radius 12 px, Innenabstand ≥ 1,1 rem. Kein Schatten.
 - **Pillen** (`.pill`, `.score`): Radius 6 px, Display-Schrift 700. Endgültige Ergebnisse
   gefüllt (`--ink`, auf der Bühne weiß), vorläufige gestrichelt und ungefüllt, offene
-  Spiele leise (`--ink-mute`, nur Rahmen).
+  Spiele leise (`--ink-mute`, nur Rahmen). Läuft eine Begegnung gerade (`.score.is-live`,
+  rein aus der Anstoßzeit abgeleitet, siehe Spec 1), ersetzt „Läuft" den Platzhalter —
+  Text-Schrift statt Display, `--loss`-Rahmen ohne Füllung: auffällig, aber erkennbar kein
+  Ergebnis.
 - **Tabellenzonen**: 2 px-Marker links an der Platzziffer, durchgezogen = direkt,
   gedämpft (60 % Deckkraft) = Relegation/Play-off.
 - **Wappen**: `object-fit: contain`, auf der Bühne auf einer weißen runden Scheibe
@@ -76,12 +79,18 @@ Regeln:
   Rahmen). Wege zur KI-Vorschau tragen den Messing-Rahmen (`.link-button.ai`).
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
-- **Kartenraster** (`.landing-grid`, Landingpage): `repeat(auto-fit, minmax(320px, 1fr))` —
-  bricht ohne eigene Media-Query auf eine Spalte um, sobald zwei Karten nicht mehr
-  nebeneinander passen.
+- **Zentrierter Einstieg über vollbreitem Karten-Grid** (Landingpage): Titel/Einleitung
+  und die Spotlight-Begegnung sind auf 700px zentriert (`.masthead`, `.spotlight`) — ein
+  ruhiger Fokuspunkt. Darunter geht `.landing` wieder auf volle Breite, die Liga-Karten
+  (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) stehen nebeneinander, nicht
+  in derselben schmalen Spalte — sie sollen die Seitenbreite nutzen.
+- **Spotlight** (`.spotlight`): eine einzelne hervorgehobene Begegnung über der
+  Liga-Übersicht — die zeitlich nächste über beide Ligen hinweg, oder eine gerade laufende
+  mit Vorrang. Helle Karte wie jede andere, kein eigener Bühnen-Auftritt; die KI-Vorschau
+  darin (Balken, Richtwert, Sicherheit) ist dieselbe Fragment-Ansicht wie auf der Spielseite.
 - **CSS-only Tabs** (`.landing-tabs`): versteckte, aber fokussierbare Radio-Buttons mit
   Label als Umschalter zwischen zwei Ansichten (Landingpage: Spieltag/Tabelle je
-  Liga-Karte); sichtbarer Zustand über `:checked` und den `~`-Geschwister-Selektor, kein
+  Liga-Abschnitt); sichtbarer Zustand über `:checked` und den `~`-Geschwister-Selektor, kein
   JavaScript. Native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters, das eigene
   Tastatursteuerung (Pfeiltasten, Roving Tabindex) per Skript bräuchte.
 

@@ -330,6 +330,39 @@ auch die angepasste Farbregel im Styleguide. Damit ist ein erster Baustein aus d
 Konkurrenzanalyse umgesetzt: Tabs innerhalb einer Karte, nicht als Seiten-weite
 Reiter (die „Navigationsstruktur"-Frage unten bleibt davon unberührt offen).
 
+## Landingpage: zentrierter Spotlight über einem vollbreiten Karten-Grid
+
+**Kontext:** Ein eigener Entwurf (statt der ursprünglichen Konkurrenzanalyse) regte zwei
+Ideen an: eine einzelne, hervorgehobene „Was steht als Nächstes an"-Begegnung, und ein
+ruhigerer, zentrierter Eindruck als das bisherige Karten-Grid. Eine erste Umsetzung machte
+die ganze Seite zu einer 800px-Spalte mit den Ligen untereinander — das nutzte die
+Seitenbreite aber schlechter aus als das ursprüngliche Karten-Grid und wirkte im
+Vergleich zum eigenen Entwurf blasser. Die Idee, die den Ausschlag gab: den Spotlight
+zentriert lassen, darunter aber zum vollbreiten Karten-Grid zurückkehren.
+
+**Entscheidung:** `.landing` bleibt vollbreit (keine eigene `max-width`). Titel/Einleitung
+(`.masthead`) und die Spotlight-Begegnung (`.spotlight`) sind auf 700px zentriert — ein
+ruhiger, fokussierter Einstieg. Darunter stehen beide Ligen wieder nebeneinander als Karten
+(`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`), wie vor dem ersten Anlauf. Der
+Spotlight zeigt die zeitlich nächste Begegnung über beide Ligen hinweg, mit KI-Vorschau
+(dieselbe `forecast/summary`-Fragment-Route wie auf der Spielseite, per htmx nachgeladen —
+keine neue Schnittstelle im `forecast`-Feature nötig). Läuft gerade eine Begegnung, ersetzt
+sie den Spotlight („Läuft gerade" statt „Nächster Anstoß") — ein Spiel gilt dabei als
+„läuft", wenn der Anstoß innerhalb eines konfigurierbaren Zeitfensters
+(`matchoracle.matchday.live-window`, Standard 2:30 h) liegt und noch kein Endstand
+vorliegt (Spec 1, „Kennzeichnung laufender Spiele") — kein Live-Ergebnis, nur der Hinweis.
+Dieselbe Kennzeichnung ersetzt in den Paarungslisten (Landingpage wie volle Spieltagsseite)
+den „–:–"-Platzhalter durch „Läuft", solange die Begegnung im Zeitfenster liegt. Weil die
+Karten wieder schmaler sind als die volle Spieltagsseite, gilt die erzwungene Kurzform aus
+dem vorigen Eintrag (`.fixtures.compact`) unverändert weiter.
+
+**Konsequenzen:** `MatchdayPages.pickSpotlight` ist reine, getestete Auswahllogik
+(bevorzugt eine laufende Begegnung, sonst der nächste Anstoß) — unabhängig vom `forecast`-
+Feature, das nur über die bestehende Fragment-Route eingebunden wird. `MatchRow` trägt jetzt
+ein `live`-Feld, das auch der vollen Spieltagsseite zugutekommt. Die Tabs- und
+Karten-Klassen (`.landing-tabs`, `.landing-league`, `.landing-grid`) blieben aus dem
+vorigen Anlauf wiederverwendbar, nur `.spotlight`/`.masthead` sind neu.
+
 ## Saisonaussicht (Spec 04): eigenständige Statistik-Simulation, keine Historie
 
 **Kontext:** Der Diskussionsstand in `docs/specs/spec-04-saisonaussicht.md` hatte sechs offene
