@@ -330,6 +330,31 @@ auch die angepasste Farbregel im Styleguide. Damit ist ein erster Baustein aus d
 Konkurrenzanalyse umgesetzt: Tabs innerhalb einer Karte, nicht als Seiten-weite
 Reiter (die „Navigationsstruktur"-Frage unten bleibt davon unberührt offen).
 
+## Saisonaussicht (Spec 04): eigenständige Statistik-Simulation, keine Historie
+
+**Kontext:** Der Diskussionsstand in `docs/specs/spec-04-saisonaussicht.md` hatte sechs offene
+Modellierungsfragen: Abhängigkeit von den Einzelspiel-Prognosen aus Spec 2, Ausdrucksform,
+Aktualisierungsanlass, Unveränderlichkeit, Rückschau-Bezug und ob die Champions-League-Ligaphase
+mit einbezogen wird.
+
+**Entscheidung:** Die Saisonaussicht rechnet eigenständig auf Basis von Tabellenlage und bisheriger
+Punkt-/Torausbeute, unabhängig von den KI-Vorschauen aus Spec 2 — läuft ohne KI-Kosten und
+unabhängig davon, wie viele Restbegegnungen bereits eine Prognose haben. Ausdrucksform ist eine
+einzelne Wahrscheinlichkeit je Platzierungsziel (nicht als Bandbreite). Neuberechnung nach jedem
+beendeten Spieltag der jeweiligen Liga; jede Neuberechnung ersetzt den vorherigen Stand vollständig
+— eine Momentaufnahme ohne Historie, kein Rückschau-Bezug zu Spec 3. Die Champions-League-Ligaphase
+bekommt ebenfalls eine Saisonaussicht, auf derselben statistischen Grundlage. Details siehe
+Spec 04, Abschnitt „Im Spec-Interview geklärt".
+
+**Konsequenzen:** Spec 4 hängt an keiner Stelle von Spec 2 ab — beide Features können unabhängig
+voneinander ausfallen oder fehlen, ohne einander zu blockieren. Die Platzierungsziele je Liga sind
+dieselben Tabellenzonen, die `MatchdayPageModels.zone()` (Spec 1) bereits für die Tabellendarstellung
+kennt (Meisterschaft/Europapokal/Abstieg bzw. Auf-/Abstieg, Play-offs) — kein neuer Begriff, nur eine
+neue Verwendung. Ohne Historie entfällt jede spätere Möglichkeit zu zeigen, wie sich eine
+Saisonaussicht über Zeit entwickelt hat oder wie gut sie am Saisonende lag; das war eine bewusste
+Abwägung gegen den zusätzlichen Nutzen einer Historie. Noch nicht umgesetzt — dieser ADR hält den
+Ausgang des Spec-Interviews fest, bevor gebaut wird.
+
 ## Verschoben / abgelehnt
 
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine
@@ -346,11 +371,6 @@ Reiter (die „Navigationsstruktur"-Frage unten bleibt davon unberührt offen).
   Bundesligen begrenzt (Abgrenzung: „Keine weiteren Wettbewerbe (Pokal, europäische
   Wettbewerbe) in dieser Ausbaustufe“) — eine spätere Ausbaustufe müsste das im Spec-Interview
   klären, unter anderem wie K.-o.-Runden nach der Ligaphase gehandhabt würden.
-- **Saisonaussicht (Spec 04):** offen, nicht abgelehnt. Entwurf für eine saisonweite
-  Wahrscheinlichkeitseinschätzung (Meisterschaft, europäische Plätze, Abstieg) liegt als
-  Diskussionsstand in `docs/specs/spec-04-saisonaussicht.md` vor, mit mehreren offenen
-  Modellierungsfragen (Abhängigkeit von Spec 02, Ausdrucksform, Aktualisierungsanlass,
-  Rückschau-Bezug). Kein Termin für ein Spec-Interview dazu.
 - **Navigationsstruktur — mehr Übersichten als Reiter statt Fußzeilen-Links:** offen, nicht
   entschieden. Aktuell: Top-Navigation nur Liga-Wechsel (bl1/bl2), Trefferbilanz und
   Bewertungsmaßstäbe liegen in der Fußzeile (siehe „UI: serverseitiges Qute…" oben). Eine
