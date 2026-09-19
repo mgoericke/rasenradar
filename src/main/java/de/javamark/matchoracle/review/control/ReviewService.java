@@ -240,10 +240,13 @@ public class ReviewService {
         int hits = (int) evaluations.stream().filter(e -> e.tendencyHit).count();
         boolean reliable = evaluations.size() >= required;
         Map<String, int[]> perMatchday = new LinkedHashMap<>();
+        Map<String, List<ForecastEvaluation>> evaluationsByMatchday = new LinkedHashMap<>();
         int baselineEvaluated = 0, baselineHits = 0, alwaysHomeHits = 0;
         double baselineBrier = 0, oracleBrierOnSameMatches = 0, alwaysHomeBrier = 0;
         for (ForecastEvaluation e : evaluations) {
-            int[] counts = perMatchday.computeIfAbsent(e.season + "/" + e.matchday, k -> new int[]{e.season, e.matchday, 0, 0, 0});
+            String key = e.season + "/" + e.matchday;
+            int[] counts = perMatchday.computeIfAbsent(key, k -> new int[]{e.season, e.matchday, 0, 0, 0});
+            evaluationsByMatchday.computeIfAbsent(key, k -> new ArrayList<>()).add(e);
             counts[2]++;
             if (e.tendencyHit) counts[3]++;
             if (e.actualOutcome == Outcome.HOME_WIN) alwaysHomeHits++;
@@ -260,8 +263,12 @@ public class ReviewService {
                 }
             }
         }
-        List<AccuracyReport.MatchdayPoint> points = perMatchday.values().stream()
-                .map(c -> new AccuracyReport.MatchdayPoint(c[0], c[1], c[2], c[3], c[4])).toList();
+        List<AccuracyReport.MatchdayPoint> points = perMatchday.entrySet().stream()
+                .map(en -> {
+                    int[] c = en.getValue();
+                    return new AccuracyReport.MatchdayPoint(c[0], c[1], c[2], c[3], c[4],
+                            MatchdayRecap.render(evaluationsByMatchday.get(en.getKey()), situations));
+                }).toList();
         boolean baselineReliable = baselineEvaluated >= required;
         Double meanBaselineBrier = baselineReliable ? baselineBrier / baselineEvaluated : null;
         return new AccuracyReport(league, backtest, evaluations.size(), hits,

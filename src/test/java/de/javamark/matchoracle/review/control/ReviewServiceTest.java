@@ -41,6 +41,14 @@ class ReviewServiceTest {
         assertEquals(10, report.perMatchday().get(0).evaluated());
     }
 
+    /** Spec 03, step 7: each matchday point carries its own rule-based recap text. */
+    @Test
+    void perMatchdayPointsIncludeARuleBasedRecap() {
+        AccuracyReport report = ReviewService.accuracy("bl1", false, evaluations(10, 6), Map.of(), 10);
+
+        assertTrue(report.perMatchday().get(0).recap().contains("6 von 10 Tendenzen getroffen"));
+    }
+
     /** Spec 03: the oracle is measured against the baseline forecast on the same matches — a skill score of 0 means no better than plain statistics. */
     @Test
     void comparesTheOracleWithTheBaselineOnTheSameMatches() {

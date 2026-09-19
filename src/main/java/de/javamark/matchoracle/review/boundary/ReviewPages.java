@@ -36,6 +36,13 @@ public class ReviewPages {
     }
 
     /** One confidence band of the calibration breakdown (Spec 03): its own hit rate, or "too thin" below the threshold. */
+    /** One matchday's rule-based recap (Spec 03, step 7), with a ready-formatted heading. */
+    record RecapRow(String heading, String text) {
+        static RecapRow of(AccuracyReport.MatchdayPoint p) {
+            return new RecapRow(p.matchday() + ". Spieltag " + p.season() % 100 + "/" + (p.season() + 1) % 100, p.recap());
+        }
+    }
+
     record CalibrationRow(String label, int evaluated, Integer hitRatePercent) {
         static CalibrationRow of(AccuracyReport.CalibrationGroup g) {
             AccuracyReport.Comparison c = g.comparison();
@@ -47,7 +54,7 @@ public class ReviewPages {
                           String averageBrier, int required, List<AccuracyReport.MatchdayPoint> perMatchday, String chartJson,
                           List<YardstickRow> yardsticks, Integer skillScorePercent, int baselineEvaluated,
                           List<AccuracyReport.RecentResult> recent, int recentHits, int recentTotal,
-                          List<CalibrationRow> calibrationGroups) {
+                          List<CalibrationRow> calibrationGroups, List<RecapRow> recaps) {
 
         /** For the template: the CSS/label class of one recent dot. */
         public String dotClass(AccuracyReport.RecentResult r) {
@@ -109,11 +116,19 @@ public class ReviewPages {
                     "{\"labels\":[" + labels + "],\"rates\":[" + rates + "],\"baselineRates\":[" + baselineRates + "],\"counts\":[" + counts + "]}",
                     yardsticks, r.skillScore() == null ? null : (int) Math.round(r.skillScore() * 100), r.baseline().evaluated(),
                     r.recent(), (int) r.recent().stream().filter(x -> x.level() != AccuracyReport.HitLevel.MISS).count(), r.recent().size(),
-                    r.calibration().stream().map(CalibrationRow::of).toList());
+                    r.calibration().stream().map(CalibrationRow::of).toList(),
+                    reversed(r.perMatchday()).stream().map(RecapRow::of).toList());
         }
     }
 
     record AccuracyPage(Nav nav, List<LeagueAccuracy> leagues) {
+    }
+
+    /** For the recap list: most recent matchday first, opposite of the chart's chronological order. */
+    private static <T> List<T> reversed(List<T> list) {
+        List<T> copy = new java.util.ArrayList<>(list);
+        java.util.Collections.reverse(copy);
+        return copy;
     }
 
     @GET

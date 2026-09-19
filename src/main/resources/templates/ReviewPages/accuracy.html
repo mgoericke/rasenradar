@@ -70,6 +70,12 @@
         {#if l.perMatchday}
         <div class="chart"><canvas id="accuracy-{l.id}" aria-label="Trefferquote je Spieltag"></canvas></div>
         <script id="accuracy-data-{l.id}" type="application/json">{l.chartJson.raw}</script>
+        <p class="muted recap-heading">Rückblick je Spieltag</p>
+        <ol class="recaps">
+          {#for p in l.recaps}
+          <li><strong>{p.heading}</strong> {p.text}</li>
+          {/for}
+        </ol>
         {/if}
       </details>
     </section>

@@ -11,7 +11,7 @@ public record AccuracyReport(String league, boolean backtest, int evaluated, int
                              Comparison baseline, Comparison alwaysHome, Double skillScore, List<RecentResult> recent,
                              List<CalibrationGroup> calibration) {
 
-    public record MatchdayPoint(int season, int matchday, int evaluated, int hits, int baselineHits) {
+    public record MatchdayPoint(int season, int matchday, int evaluated, int hits, int baselineHits, String recap) {
     }
 
     /**
