@@ -7,6 +7,7 @@ import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.Team;
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -183,9 +184,15 @@ public class MatchdaySynchronizer {
         return team;
     }
 
-    /** The goal sequence is replaced as a whole; orphanRemoval on Match.goals deletes the old rows. */
+    /**
+     * The goal sequence is replaced as a whole; orphanRemoval on Match.goals deletes the old rows.
+     * Flushing right after {@code clear()} forces those deletes to execute before the new goals are
+     * inserted — without it, Hibernate can insert a new goal at position 0 before deleting the old
+     * one at position 0, and the (match_id, position) unique constraint rejects it.
+     */
     private static void replaceGoals(Match match, List<OpenLigaDbMatch.Goal> sourceGoals) {
         match.goals.clear();
+        Panache.getEntityManager().flush();
         int position = 0;
         for (OpenLigaDbMatch.Goal g : sourceGoals) {
             Goal goal = new Goal();
