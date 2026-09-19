@@ -249,8 +249,9 @@ sequenceDiagram
     F-->>V: summary.html → innerHTML: Tendenz, Balken, Richtwert, Sicherheit oder „KI-Vorschau erstellen“
 
     V->>M: GET /
-    M-->>V: home.html (je Liga eine Karte: Paarungen des aktuellen Spieltags,<br/>CSS-only Tab auf eine Tabellen-Vorschau, kein JS)
-    V->>F: hx-get .../forecasts/markers je Liga-Karte (hx-trigger="load", hx-swap="none")
+    M-->>V: home.html (zentrierte Spotlight-Begegnung, darunter je Liga eine Karte<br/>mit Paarungen des aktuellen Spieltags, CSS-only Tab auf eine Tabellen-Vorschau, kein JS)
+    V->>F: hx-get .../forecast/summary?played=false fürs Spotlight (hx-trigger="load")
+    V->>F: hx-get .../forecasts/markers je Liga-Abschnitt (hx-trigger="load", hx-swap="none")
 
     V->>M: GET /bl1/{season}/{number}
     M-->>V: matchday.html (Paarungen nach Tag, Tabelle)

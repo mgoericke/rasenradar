@@ -52,6 +52,14 @@ public final class MatchdayPageModels {
         return season + "/" + String.format("%02d", (season + 1) % 100);
     }
 
+    /**
+     * Whether a match currently counts as "läuft" — inferred purely from its kickoff time, never a
+     * live score (Spec 1, Abgrenzung: keine Live-Ergebnisse während laufender Spiele).
+     */
+    static boolean isLive(Instant kickoff, boolean played, Instant now, Duration liveWindow) {
+        return !played && !kickoff.isAfter(now) && now.isBefore(kickoff.plus(liveWindow));
+    }
+
     /** "vor 12 Minuten", "vor 3 Stunden" — the age of the data. */
     public static String age(Instant checkedAt, Instant now) {
         if (checkedAt == null) {
@@ -112,15 +120,16 @@ public final class MatchdayPageModels {
 
     record MatchRow(long id, String link, String time, String home, String away, String homeShort, String awayShort,
                     String homeIcon, String awayIcon,
-                    String score, String halfTime, boolean played, boolean provisional) {
-        static MatchRow of(Match m, String leagueShortcut) {
+                    String score, String halfTime, boolean played, boolean provisional, boolean live) {
+        static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
             return new MatchRow(m.id, "/" + leagueShortcut + "/matches/" + m.id,
                     TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
                     m.homeTeam.name, m.awayTeam.name, m.homeTeam.shortName, m.awayTeam.shortName,
                     m.homeTeam.iconUrl, m.awayTeam.iconUrl,
                     m.fullTimeScore == null ? null : m.fullTimeScore.home + ":" + m.fullTimeScore.away,
                     m.halfTimeScore == null ? null : m.halfTimeScore.home + ":" + m.halfTimeScore.away,
-                    m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL);
+                    m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
+                    isLive(m.kickoff, m.isPlayed(), now, liveWindow));
         }
     }
 
@@ -174,7 +183,12 @@ public final class MatchdayPageModels {
                                 int matchdayNumber, List<DayGroup> days, List<StandingRow> tableTop, boolean tableProvisional) {
     }
 
-    record LandingPage(Nav nav, List<LandingLeagueSection> leagues) {
+    /** The one match closest to kickoff (or currently live) across both leagues, ahead of the league sections. */
+    record Spotlight(String matchLink, String forecastLink, String homeTeam, String awayTeam, String homeIcon, String awayIcon,
+                     String time, String date, boolean live) {
+    }
+
+    record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues) {
     }
 
     /** One entry of a form strip or head-to-head list. */
@@ -271,5 +285,9 @@ public final class MatchdayPageModels {
 
     static String dayLabel(Instant kickoff) {
         return DAY.format(kickoff.atZone(DISPLAY_ZONE));
+    }
+
+    static String time(Instant kickoff) {
+        return TIME.format(kickoff.atZone(DISPLAY_ZONE));
     }
 }
