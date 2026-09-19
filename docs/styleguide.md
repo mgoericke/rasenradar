@@ -44,7 +44,10 @@ Regeln:
   KI-Vorschau: Schaltflächen zur Vorschau, aktive Markierung in der dunklen Navigation,
   der Skill-Score. Nicht für Überschriften, nicht für Rahmen um Inhalte.
 - Heimsieg-Tendenz ist `--ink`, Auswärtssieg `--win`, Unentschieden `--ink-soft` —
-  überall gleich (Balken, Pillen, Marker).
+  so in Balken und Pillen. Die knappen KI-Vorschau-Marker in Paarungslisten (Richtwert
+  wie „2:1" statt Toto-Symbol) verzichten bewusst auf die Farbcodierung — bei einer
+  einzelnen Zahl in Fließtextgröße wäre sie kaum lesbar; Tendenz und Wahrscheinlichkeit
+  stehen stattdessen im Tooltip.
 
 ## Typografie
 
@@ -73,6 +76,14 @@ Regeln:
   Rahmen). Wege zur KI-Vorschau tragen den Messing-Rahmen (`.link-button.ai`).
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
+- **Kartenraster** (`.landing-grid`, Landingpage): `repeat(auto-fit, minmax(320px, 1fr))` —
+  bricht ohne eigene Media-Query auf eine Spalte um, sobald zwei Karten nicht mehr
+  nebeneinander passen.
+- **CSS-only Tabs** (`.landing-tabs`): versteckte, aber fokussierbare Radio-Buttons mit
+  Label als Umschalter zwischen zwei Ansichten (Landingpage: Spieltag/Tabelle je
+  Liga-Karte); sichtbarer Zustand über `:checked` und den `~`-Geschwister-Selektor, kein
+  JavaScript. Native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters, das eigene
+  Tastatursteuerung (Pfeiltasten, Roving Tabindex) per Skript bräuchte.
 
 ## Sprache im UI
 

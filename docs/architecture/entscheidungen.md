@@ -301,6 +301,35 @@ gegen die eigene Automatik — das übernimmt stattdessen die feste Obergrenze j
 Lauf. Die Umsetzung (welcher Scheduler-Typ, welcher Takt, welche Obergrenze
 konkret) ist noch offen und wird beim Bau entschieden, nicht in der Spec.
 
+## Landingpage statt Redirect auf /bl1
+
+**Kontext:** `/` leitete bisher direkt auf `/bl1` weiter — kein neutraler Einstiegspunkt,
+keine Sicht auf beide Ligen auf einen Blick. Für den ersten Eindruck und die
+Auffindbarkeit (siehe SEO/GEO-Basics oben) reicht eine reine Weiterleitung nicht:
+Besucher landen sofort auf einer liga-spezifischen Seite ohne Kontext.
+
+**Entscheidung:** `/` rendert jetzt eine eigene Landingpage (`MatchdayPages.home`,
+Template `home.html`): je Liga eine Karte mit dem aktuellen Spieltag
+(tagesgruppierte Paarungen, dieselben KI-Vorschau-Marker wie auf der vollen
+Spieltagsseite) und einer kompakten Tabellen-Vorschau (oberste sechs Plätze, Link
+zur vollständigen Tabelle). Zwischen beiden Ansichten schaltet ein CSS-only-Tab um
+(siehe Styleguide, „CSS-only Tabs") — kein JavaScript, mit Tastatur bedienbar. Auf
+schmalen Bildschirmen fällt das Karten-Grid per `auto-fit`/`minmax` ohne eigene
+Media-Query auf eine Spalte zurück.
+
+**Konsequenzen:** `MatchdayPageModels.LandingLeagueSection` und
+`MatchdayPages.landingSection` sind ein zusätzlicher, dünner Formatierungspfad
+neben `matchdayPage` — beide teilen sich `DayGroup`/`MatchRow`/`StandingRow`,
+keine doppelte Fachlogik. Nebeneffekt, der auch der vollen Spieltagsseite
+zugutekommt: Mannschaftsnamen in Paarungszeilen kürzen jetzt mit Ellipsis statt in
+eine zweite Zeile umzubrechen (brach zuvor das Zeilenraster auf schmalen
+Bildschirmen), unter 560 px zusätzlich mit dem kurzen statt vollen Mannschaftsnamen.
+Die KI-Vorschau-Marker zeigen dabei den Richtwert („2:1") statt der bisherigen
+Toto-Kürzel („KI 1/X/2"), Tendenz und Wahrscheinlichkeit stehen im Tooltip — siehe
+auch die angepasste Farbregel im Styleguide. Damit ist ein erster Baustein aus der
+Konkurrenzanalyse umgesetzt: Tabs innerhalb einer Karte, nicht als Seiten-weite
+Reiter (die „Navigationsstruktur"-Frage unten bleibt davon unberührt offen).
+
 ## Verschoben / abgelehnt
 
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine
@@ -322,3 +351,18 @@ konkret) ist noch offen und wird beim Bau entschieden, nicht in der Spec.
   Diskussionsstand in `docs/specs/spec-04-saisonaussicht.md` vor, mit mehreren offenen
   Modellierungsfragen (Abhängigkeit von Spec 02, Ausdrucksform, Aktualisierungsanlass,
   Rückschau-Bezug). Kein Termin für ein Spec-Interview dazu.
+- **Navigationsstruktur — mehr Übersichten als Reiter statt Fußzeilen-Links:** offen, nicht
+  entschieden. Aktuell: Top-Navigation nur Liga-Wechsel (bl1/bl2), Trefferbilanz und
+  Bewertungsmaßstäbe liegen in der Fußzeile (siehe „UI: serverseitiges Qute…" oben). Eine
+  Konkurrenzanalyse zeigte eine Gliederung mit klar getrennten Reitern (Start, Tabelle,
+  Spieltag, Prognose, Trefferbilanz, Lernkurve, Historie, Statistik) als lernenswertes Vorbild
+  für die Struktur — nicht für Optik/Wortwahl. Für uns nicht 1:1 übertragbar, weil `matchday.html`
+  Tabelle und Spieltag heute bewusst auf einer Seite zusammenführt (Kernweg „Liga → Spieltag →
+  Begegnung → Vorschau", siehe UI-ADR). Eine Aufteilung in mehr Reiter berührt sowohl den
+  Styleguide (`docs/styleguide.md`, Navigation bisher nicht dokumentiert) als auch die Frage,
+  wo eine künftige Saisonaussicht (Spec 04) und die Trefferbilanz-Erweiterungen (Spec 03) einen
+  Platz bekämen. Kein Spec-Interview, kein Termin — festgehalten, damit die Idee nicht verloren
+  geht. Ein erstes Stück davon steckt inzwischen in der Landingpage („Landingpage statt Redirect
+  auf /bl1" oben): Spieltag/Tabelle als Tabs innerhalb einer Liga-Karte, mit demselben
+  CSS-only-Muster, das sich auch für eine seitenweite Reiter-Navigation eignen würde — die
+  grundsätzliche Frage bleibt aber offen.

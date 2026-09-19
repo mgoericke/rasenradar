@@ -248,11 +248,15 @@ sequenceDiagram
     V->>F: hx-get .../forecast/summary?played=… (hx-trigger="load")
     F-->>V: summary.html → innerHTML: Tendenz, Balken, Richtwert, Sicherheit oder „KI-Vorschau erstellen“
 
+    V->>M: GET /
+    M-->>V: home.html (je Liga eine Karte: Paarungen des aktuellen Spieltags,<br/>CSS-only Tab auf eine Tabellen-Vorschau, kein JS)
+    V->>F: hx-get .../forecasts/markers je Liga-Karte (hx-trigger="load", hx-swap="none")
+
     V->>M: GET /bl1/{season}/{number}
     M-->>V: matchday.html (Paarungen nach Tag, Tabelle)
     V->>F: hx-get .../forecasts/markers (hx-trigger="load", hx-swap="none")
     F-->>V: markers.html: je Spiel ein <span hx-swap-oob="true" id="forecast-marker-{matchId}">
-    Note over V: Out-of-band-Swap setzt „KI 1 / X / 2“-Marker in die Paarungsliste
+    Note over V: Out-of-band-Swap setzt den Richtwert („2:1“) in die Paarungsliste,<br/>Tendenz und Wahrscheinlichkeit als title-Tooltip
 
     V->>F: GET /bl1/matches/{id}/forecast
     F-->>V: forecast.html inkl. progressSection (hx-trigger="every 2s" solange nicht fertig)
