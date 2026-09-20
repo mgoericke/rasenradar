@@ -380,6 +380,9 @@ h2 { font-size: 1.1rem; }
 .confidence { color: var(--ink-soft); }
 .confidence strong { color: var(--ink); font-family: var(--display); font-size: 1.2rem; }
 .tendency-explainer { font-size: .82rem; max-width: 60ch; margin: 0 0 1.1rem; }
+.objection-flag { font-size: .85rem; margin: .5rem 0 0; font-weight: 500; }
+.objection-flag.stands { color: var(--loss); }
+.objection-flag.resolved { color: var(--ink-soft); }
 
 /* the probability bars: one row, widths are the probabilities */
 .bars { display: flex; gap: 3px; height: 2.6rem; border-radius: 8px; overflow: hidden; }
@@ -391,6 +394,10 @@ h2 { font-size: 1.1rem; }
 .bar.away { background: var(--ink-soft); }
 .reasoning { font-size: 1.05rem; line-height: 1.55; margin: 1.2rem 0; max-width: 70ch; }
 
+.trace { margin-top: 1.1rem; border-top: 1px solid var(--line); padding-top: .9rem; }
+.trace summary { cursor: pointer; font-weight: 500; color: var(--ink-soft); }
+.trace summary:hover { color: var(--ink); }
+.trace[open] summary { color: var(--ink); margin-bottom: .9rem; }
 .assessments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 @media (max-width: 800px) { .assessments { grid-template-columns: 1fr; } }
 .assessment { background: var(--ground); border-radius: 10px; padding: 1rem 1.1rem; font-size: .92rem; }
@@ -408,7 +415,12 @@ h2 { font-size: 1.1rem; }
 .review.objection { border-color: var(--loss); }
 .forecast-meta { color: var(--ink-mute); font-size: .8rem; margin: 1rem 0 0; }
 .older { margin-top: 1.5rem; }
-.older ul { padding-left: 1.2rem; }
+.older-forecast + .older-forecast { border-top: 1px solid var(--line); }
+.older-forecast summary { cursor: pointer; padding: .5rem 0; color: var(--ink-soft); }
+.older-forecast summary:hover { color: var(--ink); }
+.older-forecast[open] summary { color: var(--ink); }
+.older-forecast .forecast { margin: .8rem 0 1rem; }
+.objection-badge { display: inline-block; font-family: var(--text); font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--loss); border: 1px solid var(--loss); border-radius: 4px; padding: .05rem .35rem; vertical-align: middle; }
 
 .forecast-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 .forecast-list li + li { border-top: 1px solid var(--line); }

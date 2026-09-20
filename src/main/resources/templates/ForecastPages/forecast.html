@@ -24,64 +24,18 @@
   {#include ForecastPages/progressSection fragment=page.progress matchLink=page.matchLink /}
 
   {#if page.latest}
-  {#let f=page.latest}
-  <section class="forecast">
-    <header class="forecast-head">
-      <div class="forecast-headline" title="Das wahrscheinlichste einzelne Ergebnis, berechnet aus den erwarteten Toren beider Mannschaften">
-        <span class="headline-label">Wahrscheinliches Ergebnis</span>
-        <strong class="headline-score">{f.expectedScore}</strong>
-      </div>
-      <div class="tendency {f.tendencyClass}">mit Tendenz zum {f.tendency}{#if f.backtest} <span class="backtest-badge">Rücktest</span>{/if}</div>
-      <div class="confidence" title="Die Wahrscheinlichkeit, dass genau dieses Ergebnis eintritt">Sicherheit <strong>{f.confidencePercent} %</strong></div>
-    </header>
-    <p class="tendency-explainer muted">„Ergebnis" ist das wahrscheinlichste einzelne Resultat, „Tendenz" die Summe aller Ergebnisse mit diesem Ausgang (Balken unten) — bei knappen Spielen können beide auseinandergehen.</p>
-    <div class="bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
-      <span class="bar home" style="flex-basis: {f.homeWin}%"><b>{f.homeWin} %</b> {page.homeTeam}</span>
-      <span class="bar draw" style="flex-basis: {f.draw}%"><b>{f.draw} %</b> Remis</span>
-      <span class="bar away" style="flex-basis: {f.awayWin}%"><b>{f.awayWin} %</b> {page.awayTeam}</span>
-    </div>
-    <p class="reasoning">{f.reasoning}</p>
-
-    <div class="assessments">
-      {#for a in f.assessments}
-      <section class="assessment {#if a.failed}is-failed{/if}">
-        <h2>{a.title}</h2>
-        <p class="assessment-lean"><span class="lean {a.leanClass}">{a.lean}</span>{#if a.confidencePercent} <span class="muted">Sicherheit {a.confidencePercent} %</span>{/if}</p>
-        <p>{a.summary}</p>
-      </section>
-      {/for}
-    </div>
-
-    <section class="review {f.verdictClass}">
-      <h2>Prüfung: {f.verdict}{#if f.revised} <span class="muted">nach einer Überarbeitung</span>{/if}</h2>
-      <p>{f.verdictReason}</p>
-      {#if f.objectionRemains}<p class="note">Der Prüfer hatte auch nach der Überarbeitung Einwände; die Vorschau wird trotzdem ausgegeben.</p>{/if}
-    </section>
-
-    <section class="retrospective">
-      <h2>Rückschau <span class="muted">Begegnungen mit ähnlicher Ausgangslage – Tabellenabstand, Form, Heim-/Auswärtsstärke – unabhängig von den Vereinen</span></h2>
-      {#if f.retrospectiveLines}
-      <ul>
-        {#for line in f.retrospectiveLines}<li>{line}</li>{/for}
-      </ul>
-      {#else}
-      <p class="muted">Keine belastbare Rückschau – zu wenige vergleichbare Fälle.</p>
-      {/if}
-    </section>
-
-    <p class="forecast-meta">Erstellt am {f.createdAt} · Modell {f.modelName} · {f.parameters}</p>
-  </section>
-  {/let}
+  {#include ForecastPages/forecastSection f=page.latest homeTeam=page.homeTeam awayTeam=page.awayTeam /}
   {/if}
 
   {#if page.older}
   <section class="older">
     <h2>Frühere Vorschauen</h2>
-    <ul>
-      {#for f in page.older}
-      <li><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}Ergebnis {f.expectedScore}, Tendenz {f.tendency} ({f.homeWin}/{f.draw}/{f.awayWin}), Sicherheit {f.confidencePercent} %</li>
-      {/for}
-    </ul>
+    {#for f in page.older}
+    <details class="older-forecast">
+      <summary><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}Ergebnis {f.expectedScore}, Tendenz {f.tendency} ({f.homeWin}/{f.draw}/{f.awayWin}), Sicherheit {f.confidencePercent} %{#if f.revised} <span class="objection-badge">Einwand</span>{/if}</summary>
+      {#include ForecastPages/forecastSection f=f homeTeam=page.homeTeam awayTeam=page.awayTeam /}
+    </details>
+    {/for}
   </section>
   {/if}
 </article>

@@ -1,0 +1,53 @@
+{! One forecast, fully rendered: reused for the latest forecast and for each earlier one in the history (spec 05). !}
+<section class="forecast">
+  <header class="forecast-head">
+    <div class="forecast-headline" title="Das wahrscheinlichste einzelne Ergebnis, berechnet aus den erwarteten Toren beider Mannschaften">
+      <span class="headline-label">Wahrscheinliches Ergebnis</span>
+      <strong class="headline-score">{f.expectedScore}</strong>
+    </div>
+    <div class="tendency {f.tendencyClass}">mit Tendenz zum {f.tendency}{#if f.backtest} <span class="backtest-badge">Rücktest</span>{/if}</div>
+    <div class="confidence" title="Die Wahrscheinlichkeit, dass genau dieses Ergebnis eintritt">Sicherheit <strong>{f.confidencePercent} %</strong></div>
+  </header>
+  {#if f.revised}
+  <p class="objection-flag {#if f.objectionRemains}stands{#else}resolved{/if}">Der Prüfer hat widersprochen{#if f.objectionRemains} – der Einwand bleibt bestehen{#else} – die Überarbeitung hat ihn ausgeräumt{/if}.</p>
+  {/if}
+  <p class="tendency-explainer muted">„Ergebnis" ist das wahrscheinlichste einzelne Resultat, „Tendenz" die Summe aller Ergebnisse mit diesem Ausgang (Balken unten) — bei knappen Spielen können beide auseinandergehen.</p>
+  <div class="bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
+    <span class="bar home" style="flex-basis: {f.homeWin}%"><b>{f.homeWin} %</b> {homeTeam}</span>
+    <span class="bar draw" style="flex-basis: {f.draw}%"><b>{f.draw} %</b> Remis</span>
+    <span class="bar away" style="flex-basis: {f.awayWin}%"><b>{f.awayWin} %</b> {awayTeam}</span>
+  </div>
+  <p class="reasoning">{f.reasoning}</p>
+
+  <details class="trace">
+    <summary>Wie kam es zu dieser Einschätzung?</summary>
+    <div class="assessments">
+      {#for a in f.assessments}
+      <section class="assessment {#if a.failed}is-failed{/if}">
+        <h2>{a.title}</h2>
+        <p class="assessment-lean"><span class="lean {a.leanClass}">{a.lean}</span>{#if a.confidencePercent} <span class="muted">Sicherheit {a.confidencePercent} %</span>{/if}</p>
+        <p>{a.summary}</p>
+      </section>
+      {/for}
+    </div>
+
+    <section class="review {f.verdictClass}">
+      <h2>Prüfung: {f.verdict}{#if f.revised} <span class="muted">nach einer Überarbeitung</span>{/if}</h2>
+      <p>{f.verdictReason}</p>
+      {#if f.objectionRemains}<p class="note">Der Prüfer hatte auch nach der Überarbeitung Einwände; die Vorschau wird trotzdem ausgegeben.</p>{/if}
+    </section>
+  </details>
+
+  <section class="retrospective">
+    <h2>Rückschau <span class="muted">Begegnungen mit ähnlicher Ausgangslage – Tabellenabstand, Form, Heim-/Auswärtsstärke – unabhängig von den Vereinen</span></h2>
+    {#if f.retrospectiveLines}
+    <ul>
+      {#for line in f.retrospectiveLines}<li>{line}</li>{/for}
+    </ul>
+    {#else}
+    <p class="muted">Keine belastbare Rückschau – zu wenige vergleichbare Fälle.</p>
+    {/if}
+  </section>
+
+  <p class="forecast-meta">Erstellt am {f.createdAt} · Modell {f.modelName} · {f.parameters}</p>
+</section>
