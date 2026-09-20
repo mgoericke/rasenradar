@@ -6,7 +6,6 @@ import de.javamark.matchoracle.forecast.control.ForecastQueue;
 import de.javamark.matchoracle.forecast.entity.Assessment;
 import de.javamark.matchoracle.forecast.entity.AssessmentKind;
 import de.javamark.matchoracle.forecast.entity.Forecast;
-import de.javamark.matchoracle.forecast.entity.ForecastParameters;
 import de.javamark.matchoracle.forecast.entity.Outcome;
 import de.javamark.matchoracle.forecast.entity.Verdict;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation;
@@ -17,9 +16,7 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
@@ -57,7 +54,6 @@ public class ForecastPages {
         static native TemplateInstance forecast(ForecastPage page);
         static native TemplateInstance progress(ProgressFragment fragment, String matchLink);
         static native TemplateInstance matchdayForecasts(MatchdayForecastsPage page);
-        static native TemplateInstance parameters(ParametersPage page);
         static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
@@ -136,9 +132,6 @@ public class ForecastPages {
 
     record MatchdayForecastsPage(Nav nav, int season, int number, String matchdayLink, List<MatchRow> matches, int openCount,
                                  int backtestCount) {
-    }
-
-    record ParametersPage(Nav nav, int homeAdvantagePercent, int formMatches, int promotedTeamMalusPercent, String message) {
     }
 
     /** Spec 05, step 9: purely static content — no forecast data needed. */
@@ -273,30 +266,7 @@ public class ForecastPages {
         return Response.seeOther(URI.create("/" + l + "/" + season + "/" + number + "/forecasts")).build();
     }
 
-    @GET
-    @Path("/forecast-parameters")
-    public TemplateInstance parameters() {
-        ForecastParameters p = parameters.current();
-        return Templates.parameters(new ParametersPage(Nav.page("parameters"), (int) Math.round(p.homeAdvantage * 100), p.formMatches, (int) Math.round(p.promotedTeamMalus * 100), null));
-    }
-
-    @POST
-    @Path("/forecast-parameters")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public TemplateInstance updateParameters(@FormParam("homeAdvantage") double homeAdvantage, @FormParam("formMatches") int formMatches,
-                                             @FormParam("promotedTeamMalus") double promotedTeamMalus) {
-        String message;
-        try {
-            parameters.update(homeAdvantage / 100, formMatches, promotedTeamMalus / 100);
-            message = "Gespeichert. Gilt ab der nächsten Prognose.";
-        } catch (IllegalArgumentException e) {
-            message = e.getMessage();
-        }
-        ForecastParameters p = parameters.current();
-        return Templates.parameters(new ParametersPage(Nav.page("parameters"), (int) Math.round(p.homeAdvantage * 100), p.formMatches, (int) Math.round(p.promotedTeamMalus * 100), message));
-    }
-
-    /** Spec 05, step 9: describes the procedure, not the current scales — those live at /forecast-parameters. */
+    /** Spec 05, step 9: describes the procedure, not the current scales — those are changed directly in the database now. */
     @GET
     @Path("/so-entsteht-eine-prognose")
     public TemplateInstance howItWorks() {

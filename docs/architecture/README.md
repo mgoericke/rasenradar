@@ -121,7 +121,7 @@ Hibernate läuft mit `schema-management.strategy=validate`; das Schema gehört F
 |---|---|---|
 | `/`, `/{league}`, `/{league}/{season}/{number}`, `/{league}/matches/{id}`, `/{league}/teams/{id}` | matchday | HTML |
 | `/leagues/{league}/...` | matchday | JSON |
-| `/{league}/matches/{id}/forecast` (+ `/progress`, `/summary`), `/{league}/{season}/{number}/forecasts` (+ `/markers`, `/backtests`), `/forecast-parameters` | forecast | HTML / htmx-Fragmente |
+| `/{league}/matches/{id}/forecast` (+ `/progress`, `/summary`), `/{league}/{season}/{number}/forecasts` (+ `/markers`, `/backtests`), `/so-entsteht-eine-prognose` | forecast | HTML / htmx-Fragmente |
 | `/forecasts/...` | forecast | JSON |
 | `/trefferbilanz` | review | HTML |
 | `/review/accuracy/{league}`, `/review/evaluations/{forecastId}` | review | JSON |
