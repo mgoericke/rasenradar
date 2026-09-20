@@ -435,6 +435,23 @@ h2 { font-size: 1.1rem; }
 .older-forecast .forecast { margin: .8rem 0 1rem; }
 .objection-badge { display: inline-block; font-family: var(--text); font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--loss); border: 1px solid var(--loss); border-radius: 4px; padding: .05rem .35rem; vertical-align: middle; }
 .contrarian-badge { display: inline-block; font-family: var(--text); font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 4px; padding: .05rem .35rem; vertical-align: middle; }
+.blindspots-note { font-size: .82rem; margin: .8rem 0 0; }
+
+/* Spec 05, step 9: the static "So entsteht eine Prognose" page */
+.how-it-works .intro { font-size: 1.05rem; max-width: 70ch; margin: 0 0 2rem; color: var(--ink-soft); }
+.role-flow { display: flex; flex-direction: column; align-items: center; gap: .6rem; margin-bottom: 2.2rem; }
+.role-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; width: 100%; }
+@media (max-width: 800px) { .role-row { grid-template-columns: 1fr; } }
+.role-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.2rem; }
+.role-card.wide { width: 100%; max-width: 640px; }
+.role-card h2 { font-size: 1.05rem; margin-bottom: .35rem; }
+.role-card p { color: var(--ink-soft); font-size: .92rem; margin: 0; }
+.role-note { font-size: .82rem; margin: 0; }
+.role-arrow { font-size: 1.3rem; color: var(--ink-mute); line-height: 1; }
+.how-it-works-section { margin-top: 2rem; max-width: 70ch; }
+.how-it-works-section h2 { font-size: 1.3rem; margin-bottom: .5rem; }
+.how-it-works-section p { color: var(--ink-soft); }
+.how-it-works-section p + p { margin-top: .8rem; }
 
 .forecast-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 .forecast-list li + li { border-top: 1px solid var(--line); }

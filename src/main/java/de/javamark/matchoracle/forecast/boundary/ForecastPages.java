@@ -58,6 +58,7 @@ public class ForecastPages {
         static native TemplateInstance progress(ProgressFragment fragment, String matchLink);
         static native TemplateInstance matchdayForecasts(MatchdayForecastsPage page);
         static native TemplateInstance parameters(ParametersPage page);
+        static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
     }
@@ -138,6 +139,10 @@ public class ForecastPages {
     }
 
     record ParametersPage(Nav nav, int homeAdvantagePercent, int formMatches, int promotedTeamMalusPercent, String message) {
+    }
+
+    /** Spec 05, step 9: purely static content — no forecast data needed. */
+    record HowItWorksPage(Nav nav) {
     }
 
     /** Embedded on the match page: the latest forecast in one line, or the way to create one. */
@@ -289,6 +294,13 @@ public class ForecastPages {
         }
         ForecastParameters p = parameters.current();
         return Templates.parameters(new ParametersPage(Nav.page("parameters"), (int) Math.round(p.homeAdvantage * 100), p.formMatches, (int) Math.round(p.promotedTeamMalus * 100), message));
+    }
+
+    /** Spec 05, step 9: describes the procedure, not the current scales — those live at /forecast-parameters. */
+    @GET
+    @Path("/so-entsteht-eine-prognose")
+    public TemplateInstance howItWorks() {
+        return Templates.howItWorks(new HowItWorksPage(Nav.page("howItWorks")));
     }
 
     // --- helpers -----------------------------------------------------------------
