@@ -64,4 +64,9 @@ class MatchdayPageModelsTest {
         assertEquals("zone-top-playoff", MatchdayPageModels.zone(League.CHAMPIONS_LEAGUE, 24));
         assertEquals("zone-bottom", MatchdayPageModels.zone(League.CHAMPIONS_LEAGUE, 25));
     }
+
+    @Test
+    void outlookLinkMatchesSeasonOutlookPagesRoute() {
+        assertEquals("/bl2/2026/teams/28/outlook", MatchdayPageModels.outlookLink("bl2", 2026, 28));
+    }
 }
