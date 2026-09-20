@@ -9,7 +9,7 @@ import java.util.List;
 public record AccuracyReport(String league, boolean backtest, int evaluated, int hits, Double hitRate, Double averageConfidence,
                              Double averageBrier, int required, List<MatchdayPoint> perMatchday,
                              Comparison baseline, Comparison alwaysHome, Double skillScore, List<RecentResult> recent,
-                             List<CalibrationGroup> calibration) {
+                             List<CalibrationGroup> calibration, ContrarianReport contrarian) {
 
     public record MatchdayPoint(int season, int matchday, int evaluated, int hits, int baselineHits, String recap) {
     }

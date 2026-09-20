@@ -530,6 +530,8 @@ h2 { font-size: 1.1rem; }
 .yardsticks tr.is-oracle th, .yardsticks tr.is-oracle td { color: var(--ink); font-weight: 600; }
 .yardsticks tr.is-oracle th { box-shadow: inset 2px 0 0 var(--accent); padding-left: .5rem; }
 .yardsticks caption { text-align: left; font-size: .85rem; margin: .9rem 0 .3rem; }
+.calibration-sentences { list-style: none; margin: .8rem 0; padding: 0; display: grid; gap: .3rem; font-size: .92rem; color: var(--ink-soft); }
+.mut-bilanz { font-size: .92rem; color: var(--ink-soft); margin: .6rem 0 0; }
 
 /* the simple view: a plain hit/miss timeline, no statistics required to read it */
 .hit-strip-caption { margin: .1rem 0 .5rem; color: var(--ink-soft); }

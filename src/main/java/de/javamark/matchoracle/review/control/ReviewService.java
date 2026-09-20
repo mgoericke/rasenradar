@@ -5,6 +5,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
 import de.javamark.matchoracle.matchday.boundary.ScorelineForecast;
 import de.javamark.matchoracle.review.entity.AccuracyReport;
 import de.javamark.matchoracle.review.entity.Baseline;
+import de.javamark.matchoracle.review.entity.ContrarianReport;
 import de.javamark.matchoracle.review.entity.ForecastEvaluation;
 import de.javamark.matchoracle.review.entity.Outcome;
 import de.javamark.matchoracle.review.entity.RecordedForecast;
@@ -106,7 +107,7 @@ public class ReviewService {
     @Transactional
     public void recordForecast(long forecastId, long matchId, String league, int season, int matchdayNumber, Instant createdAt,
                                double homeWin, double draw, double awayWin, double confidence,
-                               int expectedHomeGoals, int expectedAwayGoals, boolean backtest) {
+                               int expectedHomeGoals, int expectedAwayGoals, boolean backtest, Boolean contrarian) {
         if (RecordedForecast.exists(forecastId)) {
             return;
         }
@@ -124,6 +125,7 @@ public class ReviewService {
         r.expectedHomeGoals = expectedHomeGoals;
         r.expectedAwayGoals = expectedAwayGoals;
         r.backtest = backtest;
+        r.contrarian = contrarian;
         r.persist();
         // a backtest (or a late hand-over) concerns a match whose result may already be final: evaluate right away
         recordSituation(matchId).ifPresent(situation -> evaluate(matchId, situation.homeGoals, situation.awayGoals));
@@ -185,6 +187,7 @@ public class ReviewService {
             e.brierScore = Evaluation.brier(r.homeWin, r.draw, r.awayWin, actual);
             e.confidence = r.confidence;
             e.backtest = r.backtest;
+            e.contrarian = r.contrarian;
             e.confidenceVerdict = Evaluation.confidenceVerdict(e.tendencyHit, r.confidence);
             e.persist();
             evaluations.add(e);
@@ -288,7 +291,15 @@ public class ReviewService {
                         reliable ? (double) alwaysHomeHits / evaluations.size() : null,
                         reliable ? alwaysHomeBrier / evaluations.size() : null),
                 baselineReliable && meanBaselineBrier > 0 ? 1 - (oracleBrierOnSameMatches / baselineEvaluated) / meanBaselineBrier : null,
-                recent(evaluations, situations), calibration(evaluations, required));
+                recent(evaluations, situations), calibration(evaluations, required), contrarianReport(evaluations, required));
+    }
+
+    /** Spec 05, "Mut-Bilanz": the hit rate among forecasts that went against the baseline, alone. */
+    static ContrarianReport contrarianReport(List<ForecastEvaluation> evaluations, int required) {
+        List<ForecastEvaluation> contrarian = evaluations.stream().filter(e -> Boolean.TRUE.equals(e.contrarian)).toList();
+        int hits = (int) contrarian.stream().filter(e -> e.tendencyHit).count();
+        boolean reliable = contrarian.size() >= required;
+        return new ContrarianReport(contrarian.size(), hits, reliable ? (double) hits / contrarian.size() : null);
     }
 
     /** Spec 03: is the stated confidence honest? Three broad confidence bands, each judged like the overall hit rate. */

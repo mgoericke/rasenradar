@@ -1,6 +1,7 @@
 package de.javamark.matchoracle.review.control;
 
 import de.javamark.matchoracle.review.entity.AccuracyReport;
+import de.javamark.matchoracle.review.entity.ContrarianReport;
 import de.javamark.matchoracle.review.entity.ForecastEvaluation;
 import de.javamark.matchoracle.review.entity.Outcome;
 import de.javamark.matchoracle.review.entity.RecordedForecast;
@@ -188,6 +189,29 @@ class ReviewServiceTest {
         s.baselineDraw = draw;
         s.baselineAwayWin = away;
         return s;
+    }
+
+    /** Spec 05, "Mut-Bilanz": the contrarian hit rate is counted separately, with its own reliability threshold. */
+    @Test
+    void contrarianHitRateIsCountedAndGatedSeparately() {
+        List<ForecastEvaluation> evaluations = new ArrayList<>();
+        evaluations.addAll(contrarianEvaluations(3, 2));
+        evaluations.addAll(evaluations(10, 6));
+
+        ContrarianReport thin = ReviewService.contrarianReport(evaluations, 10);
+        assertFalse(thin.reliable());
+        assertEquals(3, thin.evaluated());
+        assertEquals(2, thin.hits());
+
+        ContrarianReport reliable = ReviewService.contrarianReport(evaluations, 3);
+        assertTrue(reliable.reliable());
+        assertEquals(2.0 / 3, reliable.hitRate(), 1e-9);
+    }
+
+    private static List<ForecastEvaluation> contrarianEvaluations(int count, int hits) {
+        List<ForecastEvaluation> list = evaluations(count, hits);
+        list.forEach(e -> e.contrarian = true);
+        return list;
     }
 
     private static List<ForecastEvaluation> evaluations(int count, int hits) {

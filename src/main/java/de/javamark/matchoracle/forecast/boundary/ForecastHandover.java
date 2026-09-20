@@ -23,7 +23,7 @@ public class ForecastHandover {
     void handOverAll() {
         for (Forecast f : Forecast.<Forecast>listAll()) {
             review.forecastCommitted(new ReviewFacade.CommittedForecast(f.id, f.matchId, f.league, f.season, f.matchday, f.createdAt,
-                    f.homeWin, f.draw, f.awayWin, f.confidence, f.expectedHomeGoals, f.expectedAwayGoals, f.backtest));
+                    f.homeWin, f.draw, f.awayWin, f.confidence, f.expectedHomeGoals, f.expectedAwayGoals, f.backtest, f.contrarian));
         }
     }
 }

@@ -141,7 +141,7 @@ public class ForecastService {
     void handOver(long forecastId) {
         Forecast f = Forecast.findById(forecastId);
         review.forecastCommitted(new ReviewFacade.CommittedForecast(f.id, f.matchId, f.league, f.season, f.matchday, f.createdAt,
-                f.homeWin, f.draw, f.awayWin, f.confidence, f.expectedHomeGoals, f.expectedAwayGoals, f.backtest));
+                f.homeWin, f.draw, f.awayWin, f.confidence, f.expectedHomeGoals, f.expectedAwayGoals, f.backtest, f.contrarian));
     }
 
     /** Spec 02, step 7: written once, never changed. */
