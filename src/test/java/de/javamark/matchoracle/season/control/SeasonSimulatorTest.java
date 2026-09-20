@@ -31,10 +31,29 @@ class SeasonSimulatorTest {
     }
 
     @Test
-    void aBigLeadWithFewFixturesLeftGivesAHighTitleProbability() {
+    void aBigLeadWithNoFixturesLeftIsCertain() {
         List<SeasonSimulator.TeamState> teams = List.of(
                 new SeasonSimulator.TeamState(1L, 60, 40, 70),
                 new SeasonSimulator.TeamState(2L, 30, 0, 30));
+
+        List<SeasonSimulator.Outcome> outcomes = simulator.simulate(teams, List.of(), List.of("Meisterschaft"),
+                position -> position == 1 ? List.of("Meisterschaft") : List.of(), new Random(42));
+
+        double leaderTitleChance = outcomes.stream().filter(o -> o.teamId() == 1L).findFirst().orElseThrow()
+                .probabilities().get("Meisterschaft");
+        assertEquals(1.0, leaderTitleChance, 1e-9);
+    }
+
+    /**
+     * A small, still-closeable lead with one head-to-head fixture left: the leader only loses the
+     * title if the trailer wins outright (a draw or leader win both leave the leader ahead) — a
+     * real, RNG-dependent event, unlike a lead too big for any single result to close.
+     */
+    @Test
+    void aCloseableLeadGivesAHighButNotCertainTitleProbability() {
+        List<SeasonSimulator.TeamState> teams = List.of(
+                new SeasonSimulator.TeamState(1L, 32, 10, 40),
+                new SeasonSimulator.TeamState(2L, 30, 8, 35));
         List<SeasonSimulator.Fixture> fixtures = List.of(new SeasonSimulator.Fixture(1L, 2L, 1.6, 1.0));
 
         List<SeasonSimulator.Outcome> outcomes = simulator.simulate(teams, fixtures, List.of("Meisterschaft"),
@@ -42,7 +61,7 @@ class SeasonSimulatorTest {
 
         double leaderTitleChance = outcomes.stream().filter(o -> o.teamId() == 1L).findFirst().orElseThrow()
                 .probabilities().get("Meisterschaft");
-        assertTrue(leaderTitleChance > 0.99, "title chance " + leaderTitleChance);
+        assertTrue(leaderTitleChance > 0.7 && leaderTitleChance < 0.95, "title chance " + leaderTitleChance);
     }
 
     @Test

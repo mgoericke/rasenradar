@@ -174,6 +174,11 @@ public final class MatchdayPageModels {
         return "/" + leagueShortcut + "/teams/" + team.id;
     }
 
+    /** Must match {@code SeasonOutlookPages}'s {@code @Path("/{league}/{season}/teams/{id}/outlook")} (spec 04). */
+    static String outlookLink(String leagueShortcut, int season, long teamId) {
+        return "/" + leagueShortcut + "/" + season + "/teams/" + teamId + "/outlook";
+    }
+
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data) {
     }
