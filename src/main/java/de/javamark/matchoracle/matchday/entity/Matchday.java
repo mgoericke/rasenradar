@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -70,5 +72,39 @@ public class Matchday extends PanacheEntity {
             }
             return find(league, season, number);
         });
+    }
+
+    private static final ZoneId DISPLAY_ZONE = ZoneId.of("Europe/Berlin");
+
+    /**
+     * The matchday a viewer should see by default. Like {@link #findCurrent}, except a matchday
+     * that just finished keeps being shown through the rest of its last match's day — the next
+     * one only takes over the day after, so a viewer isn't dropped onto an empty upcoming
+     * matchday the instant the final whistle blows (spec 01, "aktueller Spieltag").
+     */
+    public static Optional<Matchday> findDisplayed(League league, Instant now) {
+        return findCurrent(league).map(current -> {
+            if (current.number <= 1 || isFullyPlayed(current)) {
+                return current;
+            }
+            return find(league, current.season, current.number - 1)
+                    .filter(Matchday::isFullyPlayed)
+                    .filter(previous -> stillShowing(lastKickoff(previous), now))
+                    .orElse(current);
+        });
+    }
+
+    private static boolean isFullyPlayed(Matchday matchday) {
+        List<Match> matches = Match.findByMatchday(matchday);
+        return !matches.isEmpty() && matches.stream().allMatch(Match::isPlayed);
+    }
+
+    private static Instant lastKickoff(Matchday matchday) {
+        return Match.findByMatchday(matchday).stream().map(m -> m.kickoff).max(Instant::compareTo).orElseThrow();
+    }
+
+    /** True through the calendar day (Europe/Berlin) of a finished matchday's last kickoff, false from the day after. */
+    static boolean stillShowing(Instant lastKickoffOfPreviousMatchday, Instant now) {
+        return !now.atZone(DISPLAY_ZONE).toLocalDate().isAfter(lastKickoffOfPreviousMatchday.atZone(DISPLAY_ZONE).toLocalDate());
     }
 }

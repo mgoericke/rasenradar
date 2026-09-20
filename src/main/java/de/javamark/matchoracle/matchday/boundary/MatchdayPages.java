@@ -112,7 +112,7 @@ public class MatchdayPages {
         List<LandingLeagueSection> sections = new ArrayList<>();
         List<CandidateMatch> candidates = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            Matchday.findCurrent(l).ifPresent(matchday -> {
+            Matchday.findDisplayed(l, now).ifPresent(matchday -> {
                 String shortcut = matchday.league.sourceShortcut();
                 List<Match> matches = Match.findByMatchday(matchday);
                 sections.add(landingSection(matchday, matches, shortcut, now));
@@ -156,7 +156,7 @@ public class MatchdayPages {
     @GET
     @Path("/{league}")
     public TemplateInstance currentMatchday(@PathParam("league") String league) {
-        Matchday matchday = Matchday.findCurrent(league(league))
+        Matchday matchday = Matchday.findDisplayed(league(league), Instant.now())
                 .orElseThrow(() -> new NotFoundException("no matchday known yet"));
         return Templates.matchday(matchdayPage(matchday));
     }

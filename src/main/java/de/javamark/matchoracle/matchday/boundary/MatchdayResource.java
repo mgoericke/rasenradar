@@ -27,6 +27,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 /**
@@ -50,7 +51,7 @@ public class MatchdayResource {
     @GET
     @Path("/matchdays/current")
     public MatchdayRep currentMatchday(@PathParam("league") String league) {
-        Matchday matchday = Matchday.findCurrent(league(league))
+        Matchday matchday = Matchday.findDisplayed(league(league), Instant.now())
                 .orElseThrow(() -> new NotFoundException("no matchday known yet for " + league));
         return MatchdayRep.of(matchday, Match.findByMatchday(matchday));
     }
@@ -74,7 +75,7 @@ public class MatchdayResource {
     @GET
     @Path("/standings")
     public StandingsRep currentStandings(@PathParam("league") String league) {
-        Matchday current = Matchday.findCurrent(league(league))
+        Matchday current = Matchday.findDisplayed(league(league), Instant.now())
                 .orElseThrow(() -> new NotFoundException("no matchday known yet for " + league));
         return StandingsRep.of(standingsCalculator.standingsBefore(current.league, current.season, current.number + 1));
     }
