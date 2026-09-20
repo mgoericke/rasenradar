@@ -15,14 +15,15 @@ import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
-import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
+import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
 import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -170,7 +171,7 @@ public class MatchdayFacade {
             return List.of();
         }
         Standings standings = standingsCalculator.standingsBefore(current.get());
-        List<TeamState> states = new java.util.ArrayList<>();
+        List<TeamState> states = new ArrayList<>();
         for (StandingPosition p : standings.positions()) {
             Form form = formCalculator.formBefore(p.team(), current.get());
             states.add(new TeamState(p.team().id, p.balance().points(), p.balance().goalDifference(), p.balance().goalsFor(),

@@ -12,6 +12,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /** Spec 04, step 4: recomputes and fully replaces a league-season's outlook once its matchday is done. */
 @ApplicationScoped
@@ -35,7 +37,7 @@ public class SeasonOutlookService {
             return;
         }
         Map<Long, MatchdayFacade.TeamState> byId = teams.stream()
-                .collect(java.util.stream.Collectors.toMap(MatchdayFacade.TeamState::teamId, t -> t));
+                .collect(Collectors.toMap(MatchdayFacade.TeamState::teamId, Function.identity()));
 
         List<SeasonSimulator.Fixture> fixtures = matchday.remainingFixtures(league).stream()
                 .map(f -> toSimFixture(f, byId))

@@ -45,7 +45,7 @@ class MatchdayPageModelsTest {
     void zoneColorsBundesliga1sChampionsLeagueSpotsAndTheRelegationLadder() {
         assertEquals("zone-top", MatchdayPageModels.zone(League.BUNDESLIGA_1, 1));
         assertEquals("zone-top", MatchdayPageModels.zone(League.BUNDESLIGA_1, 4));
-        assertEquals("", MatchdayPageModels.zone(League.BUNDESLIGA_1, 10));
+        assertEquals("", MatchdayPageModels.zone(League.BUNDESLIGA_1, 5));
         assertEquals("zone-bottom-playoff", MatchdayPageModels.zone(League.BUNDESLIGA_1, 16));
         assertEquals("zone-bottom", MatchdayPageModels.zone(League.BUNDESLIGA_1, 18));
     }
