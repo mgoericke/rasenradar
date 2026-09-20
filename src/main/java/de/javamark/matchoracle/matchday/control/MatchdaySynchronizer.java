@@ -160,7 +160,7 @@ public class MatchdaySynchronizer {
         match.awayTeam = upsert(source.team2());
         match.kickoff = source.kickoff();
         match.halfTimeScore = source.result(OpenLigaDbMatch.Result.HALF_TIME).map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
-        match.fullTimeScore = source.result(OpenLigaDbMatch.Result.FULL_TIME).map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
+        match.fullTimeScore = source.finalResult().map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
         replaceGoals(match, source.goalsOrEmpty());
         match.sourceLastChangedAt = sourceLastUpdate;
         if (isNew) {

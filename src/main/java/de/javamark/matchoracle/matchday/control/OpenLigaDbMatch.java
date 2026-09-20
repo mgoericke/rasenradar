@@ -13,6 +13,7 @@ public record OpenLigaDbMatch(
         @JsonProperty("leagueSeason") int season,
         @JsonProperty("matchDateTimeUTC") Instant kickoff,
         @JsonProperty("lastUpdateDateTime") LocalDateTime lastUpdate,
+        @JsonProperty("matchIsFinished") boolean finished,
         Group group,
         Team team1,
         Team team2,
@@ -38,6 +39,15 @@ public record OpenLigaDbMatch(
     public Optional<Result> result(int type) {
         return matchResults == null ? Optional.empty()
                 : matchResults.stream().filter(r -> r.type() == type).findFirst();
+    }
+
+    /**
+     * The full-time result, but only once the match has actually finished. The source already
+     * publishes a "full time" entry with the live, still-changing score well before {@code finished}
+     * turns true — reading it unconditionally makes a match in progress look already played.
+     */
+    public Optional<Result> finalResult() {
+        return finished ? result(Result.FULL_TIME) : Optional.empty();
     }
 
     public List<Goal> goalsOrEmpty() {
