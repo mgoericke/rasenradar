@@ -27,7 +27,7 @@ Aktuelle Spieltage, Tabellen und Vereinsdaten der 1./2. Bundesliga und der Champ
 
 | KI-Vorschau | Vereinsseite |
 |---|---|
-| ![KI-Vorschau mit Wahrscheinlichkeiten, Bewertungen und Prüfung](docs/screenshots/ki-vorschau.jpg) | ![Vereinsseite mit Saisonverlauf, Spielplan und Torschützen](docs/screenshots/vereinsseite.jpg) |
+| ![KI-Vorschau mit Wahrscheinlichkeiten, Bewertungen und Prüfung](docs/screenshots/ki-vorschau.jpg) | ![Vereinsseite mit Saisonverlauf, Saisonaussicht, Spielplan und Torschützen](docs/screenshots/vereinsseite.jpg) |
 
 **Trefferbilanz** — wie gut die KI-Vorschau wirklich ist, gemessen an einer reinen Statistik-Basisprognose:
 
@@ -38,6 +38,7 @@ Aktuelle Spieltage, Tabellen und Vereinsdaten der 1./2. Bundesliga und der Champ
 - **Spieldaten in Echtzeit** — 1./2. Bundesliga und die Champions-League-Ligaphase, alle 15 Minuten mit [OpenLigaDB](https://www.openligadb.de) abgeglichen. Ergebnisse gelten erst 24 Stunden nach Anstoß als endgültig; vorläufige Ergebnisse sind im UI klar markiert.
 - **Abgeleitete Fakten** — Form (letzte 5 Saisonspiele), direkte Duelle über mehrere Saisons, Tabelle „vor Spieltag N", Heim-/Auswärtsbilanz, Torschützen je Verein.
 - **Vereinsseiten** — Tabellenplatz im Saisonverlauf, kompletter Spielplan, Bilanz, Torschützen, Verlinkung zu Vorsaisons (auch über Ligagrenzen hinweg bei Auf-/Absteigern).
+- **Saisonaussicht** — Wahrscheinlichkeiten je Mannschaft für Meisterschaft, Europapokal, Auf-/Abstieg und Co., statistisch simuliert (Monte Carlo über die verbleibenden Spiele) und nach jedem beendeten Spieltag neu berechnet.
 - **KI-Vorschau** — ein agentischer Workflow (LangChain4j) aus drei parallelen Bewertern (Form, direkte Duelle, Umfeld), einem Prognostiker und einem Prüfer mit einer Überarbeitungsrunde. Modell: Anthropic Claude Sonnet 5, lokales Ollama als Fallback im Dev-Modus. Eine Prognose wird nie geändert oder gelöscht — eine erneute ist ein neuer Eintrag.
 - **Rückschau mit Trefferbilanz** — jede Prognose wird gegen das endgültige Ergebnis geprüft (Tendenztreffer, Brier-Score, Sicherheitskalibrierung) und gegen eine statistische Basisprognose (Poisson-Schätzung aus Torschnitt und Heimvorteil) verglichen. Eine Quote gibt es erst ab genügend Datenbasis — vorher ausdrücklich nichts statt einer dünnen Zahl. Dazu eine einfache Trefferverlauf-Ansicht ohne Statistikwissen.
 - **Rücktest-Modus** — Prognosen für bereits gespielte Begegnungen der laufenden Saison, sofort bewertet, getrennt von Live-Prognosen ausgewiesen.
