@@ -11,9 +11,9 @@ import jakarta.inject.Inject;
 import java.util.List;
 
 /**
- * Spec 04 safety net: a league-season whose matchday completed before this feature existed (or
+ * Spec 04 safety net: a league-season whose matchday was played before this feature existed (or
  * before its next matchday finishes) would otherwise show no outlook until then. On startup,
- * compute it once for any league-season that has a completed matchday but no outlook yet.
+ * compute it once for any league-season that has a fully-played matchday but no outlook yet.
  */
 @ApplicationScoped
 public class SeasonOutlookBackfill {
@@ -28,7 +28,7 @@ public class SeasonOutlookBackfill {
 
     void onStart(@Observes StartupEvent event) {
         for (String league : LEAGUES) {
-            matchday.mostRecentlyCompletedMatchday(league)
+            matchday.mostRecentlyPlayedMatchday(league)
                     .filter(ref -> SeasonOutlook.findByLeagueSeason(ref.league(), ref.season()).isEmpty())
                     .ifPresent(ref -> outlook.recompute(ref.league(), ref.season()));
         }

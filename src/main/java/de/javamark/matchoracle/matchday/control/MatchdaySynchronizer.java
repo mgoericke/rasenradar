@@ -17,6 +17,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -44,9 +45,10 @@ public class MatchdaySynchronizer {
     @ConfigProperty(name = "matchoracle.matchday.history-seasons", defaultValue = "5")
     int historySeasons;
 
-    /** Checks the current matchday (+/- window) of both leagues and reloads what changed. */
+    /** Checks the current matchday (+/- window) of both leagues and reloads what changed. Returns the ids of matches that got a score for the first time. */
     @ActivateRequestContext // Panache queries outside a transaction need a request context
-    public void syncCurrentMatchdays() {
+    public List<Long> syncCurrentMatchdays() {
+        List<Long> newlyPlayed = new ArrayList<>();
         for (League league : League.values()) {
             try {
                 List<OpenLigaDbMatch> current = client.currentMatchday(league.sourceShortcut());
@@ -59,18 +61,19 @@ public class MatchdaySynchronizer {
                 importMissingSeasons(league, season);
                 refreshTeams(league, season);
                 for (int n = Math.max(1, number - syncWindow); n <= number + syncWindow; n++) {
-                    syncMatchday(league, season, n);
+                    newlyPlayed.addAll(syncMatchday(league, season, n));
                 }
             } catch (RuntimeException e) {
                 // source down or answering garbage: keep the last known state (spec 01, rules)
                 LOG.warnf(e, "%s: sync failed, keeping last known state", league);
             }
         }
+        return newlyPlayed;
     }
 
-    /** Reloads one matchday if the source reports a change since the last sync. */
+    /** Reloads one matchday if the source reports a change since the last sync. Returns the ids of matches that got a score for the first time. */
     @Transactional
-    public void syncMatchday(League league, int season, int number) {
+    public List<Long> syncMatchday(League league, int season, int number) {
         Instant sourceLastChange = OpenLigaDb.toInstant(client.lastChange(league.sourceShortcut(), season, number));
         Matchday existing = Matchday.find(league, season, number).orElse(null);
         Instant now = Instant.now();
@@ -78,17 +81,18 @@ public class MatchdaySynchronizer {
                 && !sourceLastChange.isAfter(existing.sourceLastChangedAt)) {
             LOG.debugf("%s %d/%d unchanged since %s", league, season, number, sourceLastChange);
             existing.lastCheckedAt = now;
-            return;
+            return List.of();
         }
         List<OpenLigaDbMatch> matches = client.matchday(league.sourceShortcut(), season, number);
         if (matches.isEmpty()) {
-            return;
+            return List.of();
         }
         Matchday matchday = existing != null ? existing : newMatchday(league, season, number);
-        matches.forEach(m -> upsert(matchday, m));
+        List<Long> newlyPlayed = matches.stream().map(m -> upsert(matchday, m)).filter(java.util.Objects::nonNull).toList();
         matchday.sourceLastChangedAt = sourceLastChange;
         matchday.lastCheckedAt = now;
         LOG.infof("%s %d/%d: synced %d matches (source changed %s)", league, season, number, matches.size(), sourceLastChange);
+        return newlyPlayed;
     }
 
     /** Names and crests of the season's teams; cheap, and it also covers teams whose matches did not change. */
@@ -140,8 +144,8 @@ public class MatchdaySynchronizer {
         return matchday;
     }
 
-    /** Creates or updates one match. Results and goals are only touched if the source changed the match. */
-    void upsert(Matchday matchday, OpenLigaDbMatch source) {
+    /** Creates or updates one match. Results and goals are only touched if the source changed the match. Returns its id if this call gave it a score for the first time. */
+    Long upsert(Matchday matchday, OpenLigaDbMatch source) {
         Instant sourceLastUpdate = OpenLigaDb.toInstant(source.lastUpdate());
         Match match = Match.findByExternalId(source.id()).orElse(null);
         boolean isNew = match == null;
@@ -149,12 +153,13 @@ public class MatchdaySynchronizer {
             match = new Match();
             match.externalId = source.id();
         } else if (match.sourceLastChangedAt != null && !sourceLastUpdate.isAfter(match.sourceLastChangedAt)) {
-            return;
+            return null;
         }
         if (match.resultStatus == ResultStatus.FINAL) {
             // a FINAL result is used for review and learning; we take the correction but keep the status
             LOG.warnf("Match %d changed at the source after being FINAL", source.id());
         }
+        boolean wasPlayed = match.isPlayed();
         match.matchday = matchday;
         match.homeTeam = upsert(source.team1());
         match.awayTeam = upsert(source.team2());
@@ -167,6 +172,7 @@ public class MatchdaySynchronizer {
             // persist last: Hibernate checks not-null properties at persist time
             match.persist();
         }
+        return !wasPlayed && match.isPlayed() ? match.id : null;
     }
 
     private static Team upsert(OpenLigaDbMatch.Team source) {
