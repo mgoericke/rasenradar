@@ -62,9 +62,11 @@
         </table>
       </div>
 
-      <div class="facts-block" hx-get="{page.outlookLink}" hx-trigger="load" hx-swap="innerHTML">
+      <div class="facts-block">
         <h2>Saisonaussicht</h2>
-        <p class="muted">Wird geladen …</p>
+        <div hx-get="{page.outlookLink}" hx-trigger="load" hx-swap="innerHTML">
+          <p class="muted">Wird geladen …</p>
+        </div>
       </div>
 
       <div class="facts-block">

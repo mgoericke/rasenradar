@@ -129,6 +129,22 @@ public class MatchdayFacade {
                 .map(m -> new LeagueSeasonRef(m.matchday.league.sourceShortcut(), m.matchday.season));
     }
 
+    /** The most recently completed matchday's league/season, if any — backfills a season outlook that was never computed (spec 04's startup safety net). */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Optional<LeagueSeasonRef> mostRecentlyCompletedMatchday(String league) {
+        return League.bySourceShortcut(league).flatMap(Matchday::findCurrent).flatMap(current -> {
+            Matchday candidate = isFullyFinal(current) ? current : Matchday.find(current.league, current.season, current.number - 1).orElse(null);
+            return candidate != null && isFullyFinal(candidate)
+                    ? Optional.of(new LeagueSeasonRef(candidate.league.sourceShortcut(), candidate.season))
+                    : Optional.empty();
+        });
+    }
+
+    private static boolean isFullyFinal(Matchday matchday) {
+        List<Match> matches = Match.findByMatchday(matchday);
+        return !matches.isEmpty() && matches.stream().allMatch(m -> m.resultStatus == ResultStatus.FINAL);
+    }
+
     /** Every team of a league's current season with its table state and home/away scoring record — the season outlook's starting point (spec 04). */
     @Transactional(Transactional.TxType.SUPPORTS)
     public List<TeamState> currentSeasonState(String league) {
