@@ -8,7 +8,7 @@
   <div class="scoreboard">
     <h1 class="teams">
       <span class="home">{page.match.home}{#if page.match.homeIcon} <img class="crest large" src="{page.match.homeIcon}" alt="">{/if}</span>
-      <span class="score {#if page.match.played}is-played{/if} {#if page.match.provisional}is-provisional{/if}">{#if page.match.played}{page.match.score}{#else}–:–{/if}</span>
+      <span class="score {#if page.match.played}is-played{/if} {#if page.match.provisional}is-provisional{/if} {#if page.match.live}is-live{/if}">{#if page.match.played}{page.match.score}{#else if page.match.live}Läuft{#else}–:–{/if}</span>
       <span class="away">{#if page.match.awayIcon}<img class="crest large" src="{page.match.awayIcon}" alt=""> {/if}{page.match.away}</span>
     </h1>
     <p class="half">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
