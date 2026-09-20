@@ -22,7 +22,7 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 class ArchitectureTest {
 
     static final String ROOT = "de.javamark.matchoracle.";
-    static final List<String> FEATURES = List.of("matchday", "forecast", "review");
+    static final List<String> FEATURES = List.of("matchday", "forecast", "review", "season");
 
     /** BCE within a feature. Dependencies between different features are the business of the rule below. */
     @ArchTest
