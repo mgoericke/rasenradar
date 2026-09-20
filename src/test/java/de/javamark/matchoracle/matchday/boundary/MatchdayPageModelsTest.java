@@ -1,10 +1,12 @@
 package de.javamark.matchoracle.matchday.boundary;
 
+import de.javamark.matchoracle.matchday.entity.League;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,5 +39,29 @@ class MatchdayPageModelsTest {
     @Test
     void kickoffThisInstantIsLive() {
         assertTrue(MatchdayPageModels.isLive(NOW, false, NOW, WINDOW));
+    }
+
+    @Test
+    void zoneColorsBundesliga1sChampionsLeagueSpotsAndTheRelegationLadder() {
+        assertEquals("zone-top", MatchdayPageModels.zone(League.BUNDESLIGA_1, 1));
+        assertEquals("zone-top", MatchdayPageModels.zone(League.BUNDESLIGA_1, 4));
+        assertEquals("", MatchdayPageModels.zone(League.BUNDESLIGA_1, 10));
+        assertEquals("zone-bottom-playoff", MatchdayPageModels.zone(League.BUNDESLIGA_1, 16));
+        assertEquals("zone-bottom", MatchdayPageModels.zone(League.BUNDESLIGA_1, 18));
+    }
+
+    @Test
+    void zoneColorsBundesliga2sPromotionAndRelegationSpots() {
+        assertEquals("zone-top", MatchdayPageModels.zone(League.BUNDESLIGA_2, 2));
+        assertEquals("zone-top-playoff", MatchdayPageModels.zone(League.BUNDESLIGA_2, 3));
+        assertEquals("zone-bottom-playoff", MatchdayPageModels.zone(League.BUNDESLIGA_2, 16));
+        assertEquals("zone-bottom", MatchdayPageModels.zone(League.BUNDESLIGA_2, 17));
+    }
+
+    @Test
+    void zoneColorsTheChampionsLeaguePhaseInThirds() {
+        assertEquals("zone-top", MatchdayPageModels.zone(League.CHAMPIONS_LEAGUE, 8));
+        assertEquals("zone-top-playoff", MatchdayPageModels.zone(League.CHAMPIONS_LEAGUE, 24));
+        assertEquals("zone-bottom", MatchdayPageModels.zone(League.CHAMPIONS_LEAGUE, 25));
     }
 }
