@@ -42,7 +42,7 @@ public enum PlacementGoal {
             } else {
                 goals.add(ELIMINATION);
             }
-            return goals;
+            return List.copyOf(goals);
         }
         if (league == League.BUNDESLIGA_1) {
             if (position == 1) {
@@ -66,7 +66,7 @@ public enum PlacementGoal {
         if (position >= 17) {
             goals.add(RELEGATION);
         }
-        return goals;
+        return List.copyOf(goals);
     }
 
     /** Every goal a league's table can produce — e.g. to list all of them even before any team has clinched one. */
