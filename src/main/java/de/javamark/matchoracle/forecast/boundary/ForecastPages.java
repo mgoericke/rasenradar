@@ -12,6 +12,7 @@ import de.javamark.matchoracle.forecast.entity.Verdict;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation;
 import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Nav;
+import de.javamark.matchoracle.review.boundary.ReviewFacade;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
@@ -57,6 +58,7 @@ public class ForecastPages {
         static native TemplateInstance progress(ProgressFragment fragment, String matchLink);
         static native TemplateInstance matchdayForecasts(MatchdayForecastsPage page);
         static native TemplateInstance parameters(ParametersPage page);
+        static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
     }
@@ -73,6 +75,9 @@ public class ForecastPages {
     @Inject
     ForecastParametersService parameters;
 
+    @Inject
+    ReviewFacade review;
+
     // --- view models -------------------------------------------------------------
 
     record AssessmentView(String title, String lean, String leanClass, Integer confidencePercent, String summary, boolean failed) {
@@ -85,7 +90,8 @@ public class ForecastPages {
     record ForecastView(long id, String createdAt, String tendency, String tendencyClass, int homeWin, int draw, int awayWin,
                         String expectedScore, int confidencePercent, String reasoning, String verdict, String verdictClass,
                         String verdictReason, boolean revised, boolean objectionRemains, List<AssessmentView> assessments,
-                        String parameters, String modelName, List<String> retrospectiveLines, boolean backtest) {
+                        String parameters, String modelName, List<String> retrospectiveLines, boolean backtest,
+                        Boolean contrarian, Boolean tendencyHit) {
         static ForecastView of(Forecast f) {
             int home = (int) Math.round(f.homeWin * 100), draw = (int) Math.round(f.draw * 100);
             return new ForecastView(f.id, DATE_TIME.format(f.createdAt.atZone(ZONE)), ForecastPages.lean(f.tendency()), f.tendency().name().toLowerCase(),
@@ -97,7 +103,20 @@ public class ForecastPages {
                             + Math.round(f.promotedTeamMalus * 100) + " Prozentpunkte",
                     f.modelName,
                     f.retrospective == null ? List.of() : List.of(f.retrospective.strip().split("\n")),
-                    f.backtest);
+                    f.backtest, f.contrarian, null);
+        }
+
+        /** Spec 05, "Gegen den Strom": whether the deviation paid off, once the match is evaluated. */
+        ForecastView withTendencyHit(Boolean hit) {
+            return new ForecastView(id, createdAt, tendency, tendencyClass, homeWin, draw, awayWin, expectedScore, confidencePercent,
+                    reasoning, verdict, verdictClass, verdictReason, revised, objectionRemains, assessments, parameters, modelName,
+                    retrospectiveLines, backtest, contrarian, hit);
+        }
+
+        /** For the template: three states, since a plain boolean can't tell "not yet evaluated" from "missed". */
+        public String contrarianState() {
+            if (tendencyHit == null) return "pending";
+            return tendencyHit ? "paid-off" : "did-not-pay-off";
         }
     }
 
@@ -120,6 +139,10 @@ public class ForecastPages {
     }
 
     record ParametersPage(Nav nav, int homeAdvantagePercent, int formMatches, int promotedTeamMalusPercent, String message) {
+    }
+
+    /** Spec 05, step 9: purely static content — no forecast data needed. */
+    record HowItWorksPage(Nav nav) {
     }
 
     /** Embedded on the match page: the latest forecast in one line, or the way to create one. */
@@ -150,7 +173,9 @@ public class ForecastPages {
         MatchSituation situation = matchday.situationOf(matchId, parameters.current().formMatches)
                 .filter(s -> s.league().equals(league(league)))
                 .orElseThrow(() -> new NotFoundException("match not found"));
-        List<ForecastView> all = Forecast.findByMatch(matchId).stream().map(ForecastView::of).toList();
+        List<ForecastView> all = Forecast.findByMatch(matchId).stream()
+                .map(f -> ForecastView.of(f).withTendencyHit(review.tendencyHit(f.id).orElse(null)))
+                .toList();
         String shortcut = league(league);
         return Templates.forecast(new ForecastPage(Nav.of(situation.league()), matchId,
                 "/" + shortcut + "/matches/" + matchId, "/" + shortcut + "/" + situation.season() + "/" + situation.matchday(), situation.matchday(),
@@ -269,6 +294,13 @@ public class ForecastPages {
         }
         ForecastParameters p = parameters.current();
         return Templates.parameters(new ParametersPage(Nav.page("parameters"), (int) Math.round(p.homeAdvantage * 100), p.formMatches, (int) Math.round(p.promotedTeamMalus * 100), message));
+    }
+
+    /** Spec 05, step 9: describes the procedure, not the current scales — those live at /forecast-parameters. */
+    @GET
+    @Path("/so-entsteht-eine-prognose")
+    public TemplateInstance howItWorks() {
+        return Templates.howItWorks(new HowItWorksPage(Nav.page("howItWorks")));
     }
 
     // --- helpers -----------------------------------------------------------------

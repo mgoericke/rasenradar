@@ -120,7 +120,7 @@ public class MatchdayPages {
             });
         }
         Spotlight spotlight = pickSpotlight(candidates, now, liveWindow).map(c -> spotlight(c, now)).orElse(null);
-        return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections));
+        return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections, MatchdayPageModels.LEADERBOARD_LINK));
     }
 
     private Spotlight spotlight(CandidateMatch c, Instant now) {

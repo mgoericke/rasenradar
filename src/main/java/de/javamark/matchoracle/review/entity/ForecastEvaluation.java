@@ -49,6 +49,8 @@ public class ForecastEvaluation extends PanacheEntity {
     /** Made after the match was played (backtest) — kept apart from live forecasts. */
     @Column(nullable = false)
     public boolean backtest;
+    /** Spec 05, "Gegen den Strom": null for forecasts evaluated before this existed. */
+    public Boolean contrarian;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     public ConfidenceVerdict confidenceVerdict;

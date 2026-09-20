@@ -11,6 +11,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class ReviewPages {
     @CheckedTemplate
     static class Templates {
         static native TemplateInstance accuracy(AccuracyPage page);
+        static native TemplateInstance leaderboard(LeaderboardFragment fragment);
     }
 
     @Inject
@@ -48,13 +50,22 @@ public class ReviewPages {
             AccuracyReport.Comparison c = g.comparison();
             return new CalibrationRow(g.label(), c.evaluated(), c.hitRate() == null ? null : (int) Math.round(c.hitRate() * 100));
         }
+
+        /** Spec 05, "Kalibrierung in Sätzen": plain-language reading of one confidence band. */
+        public String sentence(int required) {
+            if (hitRatePercent == null) {
+                return label + ": die Datenlage reicht noch nicht (" + evaluated + " von " + required + " bewerteten Vorschauen).";
+            }
+            return "Wenn das System " + label + " ausweist, trifft die Tendenz in " + hitRatePercent + " von 100 Fällen.";
+        }
     }
 
     record LeagueAccuracy(String shortcut, String name, boolean backtest, int evaluated, int hits, Integer hitRatePercent, Integer averageConfidencePercent,
                           String averageBrier, int required, List<AccuracyReport.MatchdayPoint> perMatchday, String chartJson,
                           List<YardstickRow> yardsticks, Integer skillScorePercent, int baselineEvaluated,
                           List<AccuracyReport.RecentResult> recent, int recentHits, int recentTotal,
-                          List<CalibrationRow> calibrationGroups, List<RecapRow> recaps) {
+                          List<CalibrationRow> calibrationGroups, List<RecapRow> recaps,
+                          int contrarianEvaluated, Integer contrarianHitRatePercent) {
 
         /** For the template: the CSS/label class of one recent dot. */
         public String dotClass(AccuracyReport.RecentResult r) {
@@ -117,7 +128,9 @@ public class ReviewPages {
                     yardsticks, r.skillScore() == null ? null : (int) Math.round(r.skillScore() * 100), r.baseline().evaluated(),
                     r.recent(), (int) r.recent().stream().filter(x -> x.level() != AccuracyReport.HitLevel.MISS).count(), r.recent().size(),
                     r.calibration().stream().map(CalibrationRow::of).toList(),
-                    reversed(r.perMatchday()).stream().map(RecapRow::of).toList());
+                    reversed(r.perMatchday()).stream().map(RecapRow::of).toList(),
+                    r.contrarian().evaluated(),
+                    r.contrarian().hitRate() == null ? null : (int) Math.round(r.contrarian().hitRate() * 100));
         }
     }
 
@@ -138,5 +151,32 @@ public class ReviewPages {
                 LeagueAccuracy.of("bl2", "2. Bundesliga", review.accuracy("bl2", false)),
                 LeagueAccuracy.of("bl1", "1. Bundesliga", review.accuracy("bl1", true)),
                 LeagueAccuracy.of("bl2", "2. Bundesliga", review.accuracy("bl2", true)))));
+    }
+
+    /** One row of the leaderboard: who, and how often they got the tendency right. */
+    record LeaderboardRow(String label, boolean oracle, int hitRatePercent) {
+    }
+
+    /** Spec 05, "Wer liegt vorne?": the fragment matchday's home page loads via htmx — matchday never touches this feature. */
+    record LeaderboardFragment(boolean reliable, int evaluated, int required, List<LeaderboardRow> rows) {
+        static LeaderboardFragment of(AccuracyReport r) {
+            boolean comparable = r.hitRate() != null && r.baseline().hitRate() != null && r.alwaysHome().hitRate() != null;
+            if (!comparable) {
+                return new LeaderboardFragment(false, r.evaluated(), r.required(), List.of());
+            }
+            List<LeaderboardRow> rows = new java.util.ArrayList<>(List.of(
+                    new LeaderboardRow("KI-Vorschau", true, (int) Math.round(r.hitRate() * 100)),
+                    new LeaderboardRow("Basisprognose (Statistik)", false, (int) Math.round(r.baseline().hitRate() * 100)),
+                    new LeaderboardRow("Immer Heimsieg", false, (int) Math.round(r.alwaysHome().hitRate() * 100))));
+            rows.sort(Comparator.comparingInt(LeaderboardRow::hitRatePercent).reversed());
+            return new LeaderboardFragment(true, r.evaluated(), r.required(), rows);
+        }
+    }
+
+    /** Loaded via htmx from matchday's home page — never called directly by matchday's Java code. */
+    @GET
+    @Path("/leaderboard")
+    public TemplateInstance leaderboard() {
+        return Templates.leaderboard(LeaderboardFragment.of(review.combinedAccuracy()));
     }
 }

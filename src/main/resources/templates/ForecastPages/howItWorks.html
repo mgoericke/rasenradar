@@ -1,0 +1,64 @@
+{#include base nav=page.nav}
+{#title}So entsteht eine Prognose{/title}
+{#description}Wie die KI-Vorschau zustande kommt: die fünf Rollen von der ersten Einschätzung bis zur geprüften Prognose, dazu die Rückschau und was das System nicht weiß.{/description}
+{#body}
+<article class="forecast-page how-it-works">
+  <h1 class="page-title">So entsteht eine Prognose</h1>
+  <p class="intro">Jede KI-Vorschau durchläuft dieselben fünf Rollen, in derselben Reihenfolge. Das Zustandekommen einer
+  einzelnen Vorschau steht immer direkt bei ihr; hier das Verfahren dahinter, einmal für alle Begegnungen erklärt.</p>
+
+  <div class="role-flow">
+    <div class="role-row">
+      <div class="role-card">
+        <h2>Formbewerter</h2>
+        <p>Blickt auf die letzten Spiele beider Mannschaften in dieser Saison.</p>
+      </div>
+      <div class="role-card">
+        <h2>Duellbewerter</h2>
+        <p>Blickt auf die bisherigen direkten Duelle der beiden Mannschaften.</p>
+      </div>
+      <div class="role-card">
+        <h2>Umfeldbewerter</h2>
+        <p>Blickt auf Tabellensituation, Heim- und Auswärtsbilanz und ähnliche Rahmenbedingungen.</p>
+      </div>
+    </div>
+    <p class="role-note muted">Die drei Bewerter arbeiten unabhängig voneinander, aus denselben Spieldaten.</p>
+
+    <div class="role-arrow" aria-hidden="true">↓</div>
+
+    <div class="role-card wide">
+      <h2>Prognostiker</h2>
+      <p>Verdichtet die drei Bewertungen zusammen mit einem statistischen Ausgangswert und der Rückschau (siehe unten)
+      zu einer Tendenz mit Wahrscheinlichkeiten und einer kurzen Begründung.</p>
+    </div>
+
+    <div class="role-arrow" aria-hidden="true">↓</div>
+
+    <div class="role-card wide">
+      <h2>Prüfer</h2>
+      <p>Prüft den Entwurf auf Widersprüche zu den drei Bewertungen und auf eine unangemessen große Abweichung vom
+      statistischen Ausgangswert. Bei Einwand gibt es höchstens eine Überarbeitung durch den Prognostiker – danach
+      wird die Prognose festgeschrieben, auch wenn der Einwand bestehen bleibt. Von da an ändert sich nichts mehr:
+      eine erneute Prognose ist immer ein neuer, eigener Eintrag.</p>
+    </div>
+  </div>
+
+  <section class="how-it-works-section">
+    <h2>Die Rückschau</h2>
+    <p>Bevor der Prognostiker urteilt, bekommt er die Rückschau: Begegnungen mit ähnlicher Ausgangslage – Tabellenabstand,
+    Form, Heim- und Auswärtsstärke – und wie das System dort lag. Gibt es zu wenige vergleichbare Fälle, bekommt er
+    ausdrücklich nichts statt einer dünnen Zahl. Nach dem Spiel vergleicht die Rückschau jede Prognose mit dem
+    endgültigen Ergebnis; daraus entsteht die <a href="/trefferbilanz">Trefferbilanz</a>.</p>
+    <p class="muted">Die Bewertungsmaßstäbe hinter alldem – Heimvorteil, Formzeitraum, Aufsteiger-Malus – stehen an
+    eigener Stelle und lassen sich dort <a href="/forecast-parameters">einsehen und ändern</a>.</p>
+  </section>
+
+  <section class="how-it-works-section" id="was-das-system-nicht-weiss">
+    <h2>Was das System nicht weiß</h2>
+    <p>Das System kennt nur, was in den Spieldaten steht: Tabellenstand, bisherige Ergebnisse, Tore. Es weiß nichts
+    über Aufstellungen, Verletzte, Sperren oder aktuelle Nachrichten rund um die Mannschaften. Deshalb kann eine
+    Prognose danebenliegen, selbst wenn die Bewertungen in sich stimmig sind.</p>
+  </section>
+</article>
+{/body}
+{/include}

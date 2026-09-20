@@ -39,6 +39,8 @@ public class RecordedForecast extends PanacheEntity {
     /** Made after the match was played (backtest) — kept apart from live forecasts. */
     @Column(nullable = false)
     public boolean backtest;
+    /** Spec 05, "Gegen den Strom": null for forecasts recorded before this existed. */
+    public Boolean contrarian;
 
     public Outcome predictedOutcome() {
         if (homeWin >= draw && homeWin >= awayWin) return Outcome.HOME_WIN;

@@ -1,0 +1,14 @@
+{! Spec 05, "Wer liegt vorne?": loaded via htmx into matchday's home page. !}
+{#if fragment.reliable}
+<ol class="leaderboard">
+  {#for row in fragment.rows}
+  <li class="{#if row.oracle}is-oracle{/if}">
+    <span class="leaderboard-label">{row.label}</span>
+    <span class="leaderboard-rate">{row.hitRatePercent} %</span>
+  </li>
+  {/for}
+</ol>
+<p class="muted leaderboard-caption">Tendenztreffer nach {fragment.evaluated} Spielen · <a href="/trefferbilanz">mehr in der Trefferbilanz</a></p>
+{#else}
+<p class="muted leaderboard-caption">Noch zu wenige Spiele für eine Rangliste ({fragment.evaluated} von {fragment.required}) · <a href="/trefferbilanz">Trefferbilanz</a></p>
+{/if}

@@ -52,6 +52,7 @@ Die Features ergeben sich aus den Specs in `docs/specs/`:
 | 02 Spieltag-Prognose | Drei parallele Bewerter-Agenten (Form, Duell, Umfeld) → Prognostiker → Prüfer mit max. einer Überarbeitungsrunde; Prognose ist danach unveränderlich | `forecast` |
 | 03 Rückschau und Lernen | Prognosen gegen endgültige Ergebnisse abgleichen, Ausgangslagen speichern, Vergleichsfälle für neue Prognosen liefern, Trefferbilanz | `review` |
 | 04 Saisonaussicht | Je Mannschaft Wahrscheinlichkeiten für Platzierungsziele der Restsaison, statistisch simuliert, neu berechnet nach jedem beendeten Spieltag | `season` |
+| 05 Prognose nachvollziehbar | Zustandekommen, Prüfer-Einwand, Verlauf, Rangliste und Kalibrierung für den Betrachter lesbar machen — keine neuen KI-Schritte, nur Aufbereitung vorhandener Daten | `forecast`/`review` (Boundary-Ergänzung, kein eigenes Package) |
 
 Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rückschau aus `review`; `review` reagiert darauf, dass ein Ergebnis in `matchday` endgültig wird und auf festgeschriebene Prognosen aus `forecast`; `season` reagiert ebenfalls darauf, dass ein Ergebnis in `matchday` endgültig wird (eigenständig von `forecast`/`review`, keine Abhängigkeit zwischen den beiden).
 
@@ -94,6 +95,17 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Champions-League-Ligaphase | `League.CHAMPIONS_LEAGUE` (nur Anzeige, keine KI-Vorschau) |
 | Saisonaussicht | `SeasonOutlook` (Package `season`) |
 | Platzierungsziel (Meisterschaft, Europapokal, Auf-/Abstieg, Play-off, K.-o.-Runde, Ausscheiden) | `PlacementGoal` — Definition der Schwellenwerte je Liga lebt in `matchday`, da sie dieselbe ist wie bei den Tabellenzonen-Farben |
+| Zustandekommen (einer Prognose) | `ForecastTrace` |
+| Einwand des Prüfers | `Reviewer.objection` / `Objection` |
+| Verlauf vor dem Anstoß | `ForecastHistory` |
+| Gegen den Strom (abweichend von Basisprognose) | `contrarian` / `ContrarianOutcome` |
+| Aus der Erfahrung (Vergleichsfälle in Prosa) | `ExperienceNote` |
+| Rangliste (Prognose / Basisprognose / immer Heimsieg) | `Leaderboard` |
+| Kalibrierungssatz | `CalibrationStatement` |
+| Mut-Bilanz | `ContrarianReport` |
+| Erklärseite „So entsteht eine Prognose" | `HowItWorksPage` |
+| „Was das System nicht weiß" | `KnownBlindSpots` |
+| Mindestanzahl (Schwelle für Bilanzen) | `minimumSampleSize` (bereits Spec 3) |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
