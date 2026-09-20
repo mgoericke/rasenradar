@@ -3,6 +3,7 @@ package de.javamark.matchoracle.matchday.entity;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,5 +71,13 @@ class PlacementGoalTest {
         assertEquals(4, PlacementGoal.all(League.BUNDESLIGA_1).size());
         assertEquals(4, PlacementGoal.all(League.BUNDESLIGA_2).size());
         assertEquals(3, PlacementGoal.all(League.CHAMPIONS_LEAGUE).size());
+    }
+
+    @Test
+    void everyLeaguesGoalsHaveDistinctLabels() {
+        for (League league : League.values()) {
+            List<String> labels = PlacementGoal.all(league).stream().map(PlacementGoal::label).toList();
+            assertEquals(labels.size(), Set.copyOf(labels).size(), "duplicate label in " + league);
+        }
     }
 }
