@@ -17,7 +17,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -114,11 +113,5 @@ public class ForecastResource {
     @Path("/parameters")
     public ParametersRep parameters() {
         return ParametersRep.of(parameters.current());
-    }
-
-    @PUT
-    @Path("/parameters")
-    public ParametersRep updateParameters(ParametersRep rep) {
-        return ParametersRep.of(parameters.update(rep.homeAdvantage(), rep.formMatches(), rep.promotedTeamMalus()));
     }
 }
