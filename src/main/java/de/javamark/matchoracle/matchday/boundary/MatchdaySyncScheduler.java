@@ -27,9 +27,15 @@ public class MatchdaySyncScheduler {
     @Inject
     Event<ResultFinalized> resultFinalized;
 
+    @Inject
+    Event<MatchPlayed> matchPlayed;
+
     @Scheduled(every = "${matchoracle.matchday.sync-interval}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void syncAndFinalize() {
-        synchronizer.syncCurrentMatchdays();
+        // announce each newly played match to other features (spec 04's season outlook reacts to it)
+        for (Long matchId : synchronizer.syncCurrentMatchdays()) {
+            matchPlayed.fire(new MatchPlayed(matchId));
+        }
         // announce each newly final result to other features (spec 03 reacts to it)
         for (Match match : finalizer.finalizeDueResults(Instant.now())) {
             resultFinalized.fire(new ResultFinalized(match.id, match.fullTimeScore.home, match.fullTimeScore.away, match.kickoff));

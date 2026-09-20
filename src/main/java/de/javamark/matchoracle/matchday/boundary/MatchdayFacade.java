@@ -121,7 +121,7 @@ public class MatchdayFacade {
                 .orElse(List.of());
     }
 
-    /** Present with the league/season if this result was its matchday's last unplayed match (spec 04's "Spieltag beendet" trigger); empty otherwise. */
+    /** Present with the league/season if every result of this match's matchday is now FINAL (spec 03's Rückschau trigger — final results only); empty otherwise. */
     @Transactional(Transactional.TxType.SUPPORTS)
     public Optional<LeagueSeasonRef> matchdayJustCompleted(long matchId) {
         return Match.<Match>findByIdOptional(matchId)
@@ -129,20 +129,33 @@ public class MatchdayFacade {
                 .map(m -> new LeagueSeasonRef(m.matchday.league.sourceShortcut(), m.matchday.season));
     }
 
-    /** The most recently completed matchday's league/season, if any — backfills a season outlook that was never computed (spec 04's startup safety net). */
+    /**
+     * Present with the league/season if every match of this match's matchday now has a score,
+     * FINAL or not — the season outlook's trigger (spec 04). Unlike the Rückschau, the outlook is
+     * a forward-looking simulation, not an evaluation of a fixed result, so a provisional score is
+     * good enough: showing it a day early beats a "no outlook yet" placeholder.
+     */
     @Transactional(Transactional.TxType.SUPPORTS)
-    public Optional<LeagueSeasonRef> mostRecentlyCompletedMatchday(String league) {
+    public Optional<LeagueSeasonRef> matchdayJustPlayed(long matchId) {
+        return Match.<Match>findByIdOptional(matchId)
+                .filter(m -> Match.findByMatchday(m.matchday).stream().allMatch(Match::isPlayed))
+                .map(m -> new LeagueSeasonRef(m.matchday.league.sourceShortcut(), m.matchday.season));
+    }
+
+    /** The most recently fully-played matchday's league/season, if any — backfills a season outlook that was never computed (spec 04's startup safety net). */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Optional<LeagueSeasonRef> mostRecentlyPlayedMatchday(String league) {
         return League.bySourceShortcut(league).flatMap(Matchday::findCurrent).flatMap(current -> {
-            Matchday candidate = isFullyFinal(current) ? current : Matchday.find(current.league, current.season, current.number - 1).orElse(null);
-            return candidate != null && isFullyFinal(candidate)
+            Matchday candidate = isFullyPlayed(current) ? current : Matchday.find(current.league, current.season, current.number - 1).orElse(null);
+            return candidate != null && isFullyPlayed(candidate)
                     ? Optional.of(new LeagueSeasonRef(candidate.league.sourceShortcut(), candidate.season))
                     : Optional.empty();
         });
     }
 
-    private static boolean isFullyFinal(Matchday matchday) {
+    private static boolean isFullyPlayed(Matchday matchday) {
         List<Match> matches = Match.findByMatchday(matchday);
-        return !matches.isEmpty() && matches.stream().allMatch(m -> m.resultStatus == ResultStatus.FINAL);
+        return !matches.isEmpty() && matches.stream().allMatch(Match::isPlayed);
     }
 
     /** Every team of a league's current season with its table state and home/away scoring record — the season outlook's starting point (spec 04). */
