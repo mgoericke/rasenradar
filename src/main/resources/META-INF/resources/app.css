@@ -299,6 +299,15 @@ h2 { font-size: 1.1rem; }
 .spotlight-forecast .mini-bars { width: 100%; max-width: 22rem; height: .5rem; }
 .spotlight-forecast .summary-figures { font-size: .92rem; }
 
+/* Spec 05, "Wer liegt vorne?": the leaderboard fragment on the landing page, below the spotlight */
+.leaderboard-slot { max-width: 420px; margin: 0 auto 3rem; }
+.leaderboard { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; font-size: .95rem; }
+.leaderboard li + li { border-top: 1px solid var(--line); }
+.leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
+.leaderboard-rate { font-family: var(--display); font-weight: 700; }
+.leaderboard-caption { text-align: center; margin: .6rem 0 0; font-size: .85rem; }
+
 /* one league, full column width, stacked instead of side by side */
 .landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
 .landing-league {

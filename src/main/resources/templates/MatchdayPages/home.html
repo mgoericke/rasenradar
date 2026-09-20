@@ -29,6 +29,8 @@
   </section>
   {/if}
 
+  <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
+
   <div class="landing-grid">
   {#for l in page.leagues}
   <section class="landing-league" aria-labelledby="landing-league-{l.badge}">

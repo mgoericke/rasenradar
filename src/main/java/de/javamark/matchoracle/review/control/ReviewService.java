@@ -232,6 +232,19 @@ public class ReviewService {
 
     // --- accuracy -------------------------------------------------------------------
 
+    /** Spec 05, "Wer liegt vorne?": both leagues combined, live forecasts only. */
+    @Transactional
+    public AccuracyReport combinedAccuracy() {
+        List<ForecastEvaluation> evaluations = new ArrayList<>();
+        evaluations.addAll(ForecastEvaluation.findByLeague("bl1", false));
+        evaluations.addAll(ForecastEvaluation.findByLeague("bl2", false));
+        Map<Long, Situation> situations = new HashMap<>();
+        for (Situation s : Situation.findByMatchIds(evaluations.stream().map(e -> e.matchId).collect(Collectors.toSet()))) {
+            situations.put(s.matchId, s);
+        }
+        return accuracy("bl1+bl2", false, evaluations, situations, minEvaluations);
+    }
+
     /** Spec 03, step 6: hit rate per league, live and backtest apart; null hit rate while fewer than {@code minEvaluations} exist. */
     @Transactional
     public AccuracyReport accuracy(String league, boolean backtest) {

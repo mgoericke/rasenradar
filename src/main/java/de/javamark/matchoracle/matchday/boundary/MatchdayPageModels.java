@@ -197,8 +197,11 @@ public final class MatchdayPageModels {
                      String time, String date, boolean live) {
     }
 
-    record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues) {
+    record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
     }
+
+    /** Spec 05, "Wer liegt vorne?": the review feature's own fragment endpoint, loaded via htmx — matchday stays unaware of it otherwise. */
+    static final String LEADERBOARD_LINK = "/trefferbilanz/leaderboard";
 
     /** One entry of a form strip or head-to-head list. */
     record ResultRow(String date, String opponent, boolean home, String score, TeamResult result, boolean provisional, String link) {
