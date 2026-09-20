@@ -46,3 +46,4 @@ nb-configuration.xml
 
 # Claude Code session files and worktrees
 .claude/
+.worktrees/

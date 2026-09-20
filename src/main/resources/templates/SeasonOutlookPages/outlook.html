@@ -1,0 +1,9 @@
+{#if fragment.available}
+<ul class="outlook-goals">
+  {#for g in fragment.goals}
+  <li><span class="label">{g.label}</span><span class="percent">{g.percent} %</span></li>
+  {/for}
+</ul>
+{#else}
+<p class="muted">Noch keine Saisonaussicht — erscheint nach dem nächsten beendeten Spieltag.</p>
+{/if}

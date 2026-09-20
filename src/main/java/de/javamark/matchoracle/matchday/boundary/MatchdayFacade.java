@@ -13,8 +13,10 @@ import de.javamark.matchoracle.matchday.entity.HeadToHead;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
+import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Standings;
+import de.javamark.matchoracle.matchday.entity.StandingPosition;
 import de.javamark.matchoracle.matchday.entity.Team;
 import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,6 +29,15 @@ import java.util.Optional;
 /** Java entry point for other features (forecast, review). Cross-feature access goes through here, never through entities. */
 @ApplicationScoped
 public class MatchdayFacade {
+
+    public record LeagueSeasonRef(String league, int season) {
+    }
+
+    public record Fixture(long homeTeamId, long awayTeamId) {
+    }
+
+    public record TeamState(long teamId, int points, int goalDifference, int goalsFor, Balance homeRecord, Balance awayRecord) {
+    }
 
     @Inject
     FormCalculator formCalculator;
@@ -107,6 +118,68 @@ public class MatchdayFacade {
     public List<Long> currentUnplayedMatchIds(String league) {
         return League.bySourceShortcut(league).flatMap(Matchday::findCurrent)
                 .map(md -> Match.findByMatchday(md).stream().filter(m -> !m.isPlayed()).map(m -> m.id).toList())
+                .orElse(List.of());
+    }
+
+    /** Present with the league/season if this result was its matchday's last unplayed match (spec 04's "Spieltag beendet" trigger); empty otherwise. */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Optional<LeagueSeasonRef> matchdayJustCompleted(long matchId) {
+        return Match.<Match>findByIdOptional(matchId)
+                .filter(m -> Match.findByMatchday(m.matchday).stream().allMatch(mm -> mm.resultStatus == ResultStatus.FINAL))
+                .map(m -> new LeagueSeasonRef(m.matchday.league.sourceShortcut(), m.matchday.season));
+    }
+
+    /** Every team of a league's current season with its table state and home/away scoring record — the season outlook's starting point (spec 04). */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public List<TeamState> currentSeasonState(String league) {
+        Optional<League> l = League.bySourceShortcut(league);
+        if (l.isEmpty()) {
+            return List.of();
+        }
+        Optional<Matchday> current = Matchday.findCurrent(l.get());
+        if (current.isEmpty()) {
+            return List.of();
+        }
+        Standings standings = standingsCalculator.standingsBefore(current.get());
+        List<TeamState> states = new java.util.ArrayList<>();
+        for (StandingPosition p : standings.positions()) {
+            Form form = formCalculator.formBefore(p.team(), current.get());
+            states.add(new TeamState(p.team().id, p.balance().points(), p.balance().goalDifference(), p.balance().goalsFor(),
+                    balance(form.home()), balance(form.away())));
+        }
+        return states;
+    }
+
+    /** Unplayed fixtures of a league's current season — the season outlook's remaining-season input (spec 04). */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public List<Fixture> remainingFixtures(String league) {
+        Optional<League> l = League.bySourceShortcut(league);
+        if (l.isEmpty()) {
+            return List.of();
+        }
+        Optional<Integer> season = Matchday.latestSeason(l.get());
+        if (season.isEmpty()) {
+            return List.of();
+        }
+        return Match.findUnplayed(l.get(), season.get()).stream().map(m -> new Fixture(m.homeTeam.id, m.awayTeam.id)).toList();
+    }
+
+    /** Same Poisson estimate as the other overloads, from two teams' current home/away records (spec 04, independent of any KI-Vorschau). */
+    public ScorelineForecast scorelineForecast(Balance home, Balance away) {
+        return scorelineForecast(poissonScoreModel.forecast(entityBalance(home), entityBalance(away)));
+    }
+
+    /** Every placement-goal label a league's table can produce (spec 04). */
+    public List<String> placementGoals(String league) {
+        return League.bySourceShortcut(league)
+                .map(l -> PlacementGoal.all(l).stream().map(PlacementGoal::label).toList())
+                .orElse(List.of());
+    }
+
+    /** The placement-goal labels a final table position satisfies for a league (spec 04). */
+    public List<String> placementGoalsAt(String league, int position) {
+        return League.bySourceShortcut(league)
+                .map(l -> PlacementGoal.forPosition(l, position).stream().map(PlacementGoal::label).toList())
                 .orElse(List.of());
     }
 

@@ -6,6 +6,7 @@ import de.javamark.matchoracle.matchday.entity.GoalTiming;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
+import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Scorer;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
@@ -142,16 +143,19 @@ public final class MatchdayPageModels {
      * round of 16, 9-24 into the knockout play-off, 25-36 eliminated.
      */
     static String zone(League league, int position) {
-        if (league == League.CHAMPIONS_LEAGUE) {
-            if (position <= 8) return "zone-top";
-            if (position <= 24) return "zone-top-playoff";
+        List<PlacementGoal> goals = PlacementGoal.forPosition(league, position);
+        if (goals.contains(PlacementGoal.KNOCKOUT_DIRECT) || goals.contains(PlacementGoal.EUROPE) || goals.contains(PlacementGoal.PROMOTION)) {
+            return "zone-top";
+        }
+        if (goals.contains(PlacementGoal.KNOCKOUT_PLAYOFF) || goals.contains(PlacementGoal.PROMOTION_PLAYOFF)) {
+            return "zone-top-playoff";
+        }
+        if (goals.contains(PlacementGoal.RELEGATION_PLAYOFF)) {
+            return "zone-bottom-playoff";
+        }
+        if (goals.contains(PlacementGoal.RELEGATION) || goals.contains(PlacementGoal.ELIMINATION)) {
             return "zone-bottom";
         }
-        if (league == League.BUNDESLIGA_1 && position <= 4) return "zone-top";
-        if (league == League.BUNDESLIGA_2 && position <= 2) return "zone-top";
-        if (league == League.BUNDESLIGA_2 && position == 3) return "zone-top-playoff";
-        if (position == 16) return "zone-bottom-playoff";
-        if (position >= 17) return "zone-bottom";
         return "";
     }
 
@@ -277,7 +281,7 @@ public final class MatchdayPageModels {
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
-                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, DataInfo data) {
+                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }

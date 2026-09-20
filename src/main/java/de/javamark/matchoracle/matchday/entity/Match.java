@@ -94,6 +94,11 @@ public class Match extends PanacheEntity {
                 league, season, matchday);
     }
 
+    /** Unplayed matches of a season — the season outlook's remaining-fixtures input (spec 04). */
+    public static List<Match> findUnplayed(League league, int season) {
+        return list("matchday.league = ?1 and matchday.season = ?2 and fullTimeScore is null", league, season);
+    }
+
     /** Played matches of a team in a season before the given matchday number, newest first. */
     public static List<Match> findPlayedByTeamBefore(Team team, League league, int season, int matchday) {
         return list("(homeTeam = ?1 or awayTeam = ?1) and matchday.league = ?2 and matchday.season = ?3"
