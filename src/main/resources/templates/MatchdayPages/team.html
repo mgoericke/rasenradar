@@ -62,6 +62,11 @@
         </table>
       </div>
 
+      <div class="facts-block" hx-get="{page.outlookLink}" hx-trigger="load" hx-swap="innerHTML">
+        <h2>Saisonaussicht</h2>
+        <p class="muted">Wird geladen …</p>
+      </div>
+
       <div class="facts-block">
         <h2>Torschützen</h2>
         {#if page.scorers.isEmpty}

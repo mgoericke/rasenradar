@@ -296,6 +296,7 @@ public class MatchdayPages {
                 scorerCalculator.scorersFor(team, league, season).stream().map(ScorerRow::of).toList(),
                 MatchdayPageModels.goalTimingJson(goalTimingCalculator.timingFor(team, league, season)),
                 positionChartJson,
+                "/" + shortcut + "/" + season + "/teams/" + team.id + "/outlook",
                 DataInfo.of(reference, Instant.now()));
     }
 

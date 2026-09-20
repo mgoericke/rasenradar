@@ -281,7 +281,7 @@ public final class MatchdayPageModels {
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
-                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, DataInfo data) {
+                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }
