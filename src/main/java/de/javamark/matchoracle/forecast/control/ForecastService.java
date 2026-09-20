@@ -4,6 +4,7 @@ import de.javamark.matchoracle.forecast.entity.Assessment;
 import de.javamark.matchoracle.forecast.entity.AssessmentKind;
 import de.javamark.matchoracle.forecast.entity.Forecast;
 import de.javamark.matchoracle.forecast.entity.ForecastParameters;
+import de.javamark.matchoracle.forecast.entity.Outcome;
 import de.javamark.matchoracle.forecast.entity.Verdict;
 import de.javamark.matchoracle.matchday.boundary.MatchSituation;
 import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
@@ -99,7 +100,7 @@ public class ForecastService {
                 LOG.warnf("Forecast for match %d got an unparsable answer, running once more: %s", matchId, causeChain(e));
                 result = workflow.run(facts, baselineText, FactSheet.parameters(parameters), retrospectiveText, "", ForecastWorkflow.NOT_REVIEWED);
             }
-            long id = commit(situation, parameters, result.result(), result.agenticScope(), retrospective, backtest);
+            long id = commit(situation, parameters, result.result(), result.agenticScope(), retrospective, backtest, statisticalBaseline);
             handOver(id);
             progress.done(matchId, id);
             return id;
@@ -146,7 +147,7 @@ public class ForecastService {
     /** Spec 02, step 7: written once, never changed. */
     @Transactional
     long commit(MatchSituation situation, ForecastParameters parameters, ForecastDraft draft, AgenticScope scope, String retrospective,
-                boolean backtest) {
+                boolean backtest, ScorelineForecast statisticalBaseline) {
         Map<AssessmentKind, AssessmentResult> assessments = Map.of(
                 AssessmentKind.FORM, assessmentFrom(scope, "formAssessment"),
                 AssessmentKind.HEAD_TO_HEAD, assessmentFrom(scope, "headToHeadAssessment"),
@@ -182,6 +183,8 @@ public class ForecastService {
         forecast.revised = reviewNote != null && !reviewNote.isBlank();
         forecast.objectionRemains = verdict.verdict() == Verdict.REVISE;
 
+        forecast.contrarian = contrarian(forecast.tendency(), tendencyOf(statisticalBaseline));
+
         forecast.homeAdvantage = parameters.homeAdvantage;
         forecast.formMatches = parameters.formMatches;
         forecast.promotedTeamMalus = parameters.promotedTeamMalus;
@@ -212,6 +215,17 @@ public class ForecastService {
      */
     static double confidence(double tendencyProbability, long failedAssessments) {
         return clamp(tendencyProbability) * Math.pow(CONFIDENCE_FACTOR_PER_FAILED_ASSESSMENT, failedAssessments);
+    }
+
+    /** Spec 05, "Gegen den Strom": the forecast's tendency diverges from the statistical baseline's. */
+    static boolean contrarian(Outcome forecastTendency, Outcome baselineTendency) {
+        return forecastTendency != baselineTendency;
+    }
+
+    private static Outcome tendencyOf(ScorelineForecast sf) {
+        if (sf.homeWin() >= sf.draw() && sf.homeWin() >= sf.awayWin()) return Outcome.HOME_WIN;
+        if (sf.awayWin() >= sf.draw()) return Outcome.AWAY_WIN;
+        return Outcome.DRAW;
     }
 
     private static AssessmentResult assessmentFrom(AgenticScope scope, String key) {

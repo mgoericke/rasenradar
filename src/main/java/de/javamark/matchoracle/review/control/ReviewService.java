@@ -195,6 +195,12 @@ public class ReviewService {
         return evaluations;
     }
 
+    /** Spec 05, "Gegen den Strom": whether this forecast's tendency matched the result, once evaluated. */
+    @Transactional
+    public Optional<Boolean> tendencyHit(long forecastId) {
+        return ForecastEvaluation.findByForecast(forecastId).map(e -> e.tendencyHit);
+    }
+
     // --- retrospective --------------------------------------------------------------
 
     /** Spec 03, step 4: similar completed matches for an upcoming one; empty when the data is too thin. */

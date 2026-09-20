@@ -73,6 +73,13 @@ public class Forecast extends PanacheEntity {
     @Column(nullable = false)
     public boolean objectionRemains;
 
+    /**
+     * Spec 05, "Gegen den Strom": whether the tendency diverged from the statistical baseline's
+     * tendency at commit time. Null for forecasts committed before this existed — the baseline
+     * used back then is not reconstructible, so no marker is shown for them.
+     */
+    public Boolean contrarian;
+
     // the scales in effect for this forecast
     @Column(nullable = false)
     public double homeAdvantage;

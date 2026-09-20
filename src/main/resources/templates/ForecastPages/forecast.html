@@ -32,7 +32,7 @@
     <h2>Frühere Vorschauen</h2>
     {#for f in page.older}
     <details class="older-forecast">
-      <summary><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}Ergebnis {f.expectedScore}, Tendenz {f.tendency} ({f.homeWin}/{f.draw}/{f.awayWin}), Sicherheit {f.confidencePercent} %{#if f.revised} <span class="objection-badge">Einwand</span>{/if}</summary>
+      <summary><span class="muted">{f.createdAt}</span> {#if f.backtest}<span class="backtest-badge">Rücktest</span> {/if}Ergebnis {f.expectedScore}, Tendenz {f.tendency} ({f.homeWin}/{f.draw}/{f.awayWin}), Sicherheit {f.confidencePercent} %{#if f.revised} <span class="objection-badge">Einwand</span>{/if}{#if f.contrarian} <span class="contrarian-badge">Gegen den Strom</span>{/if}</summary>
       {#include ForecastPages/forecastSection f=f homeTeam=page.homeTeam awayTeam=page.awayTeam /}
     </details>
     {/for}

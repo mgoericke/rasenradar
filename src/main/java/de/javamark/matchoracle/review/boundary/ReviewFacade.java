@@ -26,6 +26,11 @@ public class ReviewFacade {
         return review.retrospectiveFor(matchId).map(Retrospective::summary);
     }
 
+    /** Spec 05, "Gegen den Strom": whether a forecast's tendency matched the result; empty until the match is evaluated. */
+    public Optional<Boolean> tendencyHit(long forecastId) {
+        return review.tendencyHit(forecastId);
+    }
+
     /** Spec 02 -> 03: the forecast feature hands over every committed forecast. Idempotent. */
     public void forecastCommitted(CommittedForecast f) {
         review.recordForecast(f.forecastId(), f.matchId(), f.league(), f.season(), f.matchday(), f.createdAt(),

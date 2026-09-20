@@ -11,6 +11,9 @@
   {#if f.revised}
   <p class="objection-flag {#if f.objectionRemains}stands{#else}resolved{/if}">Der Prüfer hat widersprochen{#if f.objectionRemains} – der Einwand bleibt bestehen{#else} – die Überarbeitung hat ihn ausgeräumt{/if}.</p>
   {/if}
+  {#if f.contrarian}
+  <p class="contrarian-flag {f.contrarianState}">Gegen den Strom – die Tendenz weicht von der Basisprognose ab{#if f.contrarianState == 'paid-off'}, das hat sich ausgezahlt{#else if f.contrarianState == 'did-not-pay-off'}, das hat sich nicht ausgezahlt{/if}.</p>
+  {/if}
   <p class="tendency-explainer muted">„Ergebnis" ist das wahrscheinlichste einzelne Resultat, „Tendenz" die Summe aller Ergebnisse mit diesem Ausgang (Balken unten) — bei knappen Spielen können beide auseinandergehen.</p>
   <div class="bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
     <span class="bar home" style="flex-basis: {f.homeWin}%"><b>{f.homeWin} %</b> {homeTeam}</span>
