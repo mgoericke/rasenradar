@@ -3,7 +3,9 @@ package de.javamark.matchoracle.forecast.control;
 import dev.langchain4j.model.chat.Capability;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.request.ChatRequestParameters;
+import dev.langchain4j.model.chat.request.ResponseFormatType;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import io.quarkiverse.langchain4j.ModelName;
 import jakarta.enterprise.inject.spi.CDI;
@@ -67,7 +69,7 @@ public final class FallbackChatModel implements ChatModel {
                 LOG.debugf("Asking cloud model %s", cloudName);
                 ChatResponse response = cloud.get().chat(request);
                 usage.record(cloudName);
-                return response;
+                return repaired(request, response);
             } catch (RuntimeException e) {
                 if (local.isEmpty()) {
                     LOG.warnf("Cloud model %s failed (%s), no local fallback configured", cloudName, ForecastService.rootMessage(e));
@@ -78,7 +80,21 @@ public final class FallbackChatModel implements ChatModel {
         }
         ChatResponse response = local.orElseThrow().chat(request);
         usage.record(cloud.isPresent() ? localName + " (Fallback)" : localName);
-        return response;
+        return repaired(request, response);
+    }
+
+    /** A JSON answer the model could not close properly is salvaged before the AI service parses it, see {@link JsonAnswerRepair}. */
+    private static ChatResponse repaired(ChatRequest request, ChatResponse response) {
+        if (request.responseFormat() == null || request.responseFormat().type() != ResponseFormatType.JSON
+                || response.aiMessage() == null || response.aiMessage().text() == null) {
+            return response;
+        }
+        String text = response.aiMessage().text();
+        String repaired = JsonAnswerRepair.repair(text);
+        if (repaired == text) {
+            return response;
+        }
+        return ChatResponse.builder().aiMessage(AiMessage.from(repaired)).metadata(response.metadata()).build();
     }
 
     @Override
