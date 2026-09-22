@@ -651,3 +651,38 @@ details.round[open] > summary::before { transform: rotate(90deg); }
 details.round > summary:hover .round-name { text-decoration: underline; }
 details.round > summary .round-meta { margin: 0; }
 details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* --- Trichter: wie sich ein K.-o.-Feld ausduennt -------------------------------------
+   Die Breite traegt die Aussage. Die vier Spielklassen werden allein ueber Abstufungen
+   der Tinte unterschieden — Gruen und Rot bleiben Ergebnissen vorbehalten, Messing der
+   KI-Vorschau (siehe docs/styleguide.md). */
+.funnel-block { margin-top: 2.5rem; }
+.funnel { list-style: none; padding: 0; margin: .8rem 0 0; display: grid; gap: .3rem; }
+.funnel-row { display: grid; grid-template-columns: 7.5rem 1fr 2.5rem; gap: .6rem; align-items: center; }
+.funnel-label { font-size: .85rem; color: var(--ink-soft); }
+.funnel-bar { display: flex; height: 1.1rem; border-radius: 3px; overflow: hidden; min-width: 2px; }
+.funnel-share { display: block; height: 100%; }
+.funnel-count { font-family: var(--display); font-weight: 700; font-size: .9rem; text-align: right; }
+
+.tier-first  { background: var(--ink); }
+.tier-second { background: var(--ink-soft); }
+.tier-third  { background: var(--ink-mute); }
+.tier-lower  { background: var(--line); }
+
+.funnel-legend {
+  list-style: none; padding: 0; margin: .7rem 0 0; display: flex; flex-wrap: wrap;
+  gap: .2rem 1rem; font-size: .8rem; color: var(--ink-mute);
+}
+.funnel-legend li { display: flex; align-items: center; gap: .35rem; }
+.funnel-key { width: .8rem; height: .8rem; border-radius: 2px; display: inline-block; }
+
+.funnel-figures {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; margin-top: 1rem;
+  font-size: .9rem; color: var(--ink-soft);
+}
+.funnel-figures strong { font-family: var(--display); color: var(--ink); }
+
+@media (max-width: 640px) {
+  .funnel-row { grid-template-columns: 5.5rem 1fr 2rem; gap: .4rem; }
+  .funnel-label { font-size: .78rem; }
+}

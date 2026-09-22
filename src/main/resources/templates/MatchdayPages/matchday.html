@@ -66,5 +66,41 @@
   </table>
   {#if page.standingsProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
 </aside>
+
+{#if page.rounds}
+{! Spec 06: die K.-o.-Phase ist eine Phase fuer sich — eigene Runden, keine Tabellenpunkte. !}
+<section class="matchday knockout-phase">
+  <h2 class="round-name">K.-o.-Phase</h2>
+  {#for round in page.rounds}
+  <details class="round" {#if round.open}open{/if}>
+    <summary>
+      <span class="round-name">{round.name}</span>
+      <span class="round-meta">{round.matchCount} {#if round.matchCount == 1}Begegnung{#else}Begegnungen{/if}{#if round.dateRange} · {round.dateRange}{/if}</span>
+    </summary>
+    <ol class="fixtures">
+      {#for m in round.matches}
+      <li>
+        <a class="fixture" href="{m.link}">
+          <span class="time">{m.time}</span>
+          <span class="home">
+            <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+            {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+          </span>
+          <span class="away">
+            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+          </span>
+          <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>
+        </a>
+      </li>
+      {/for}
+    </ol>
+  </details>
+  {/for}
+</section>
+{/if}
 {/body}
 {/include}

@@ -47,6 +47,49 @@
   </details>
   {/for}
 
+  {#if page.funnel}
+  {! Spec 06: der Trichter — wie sich das Feld von Runde zu Runde ausduennt und wer
+     uebrig bleibt. Die Breite traegt die Aussage, die Spielklassen werden allein
+     ueber die Tinte unterschieden (Gruen/Rot sind Ergebnisse, Messing ist die KI). !}
+  <section class="funnel-block">
+    <h2 class="round-name">Wie sich das Feld ausdünnt</h2>
+    <p class="round-meta muted">Mannschaften je Runde, aufgeschlüsselt nach Spielklasse.</p>
+
+    <ol class="funnel">
+      {#for row in page.funnel}
+      <li class="funnel-row">
+        <span class="funnel-label">{row.round}</span>
+        <span class="funnel-bar" style="width: {row.percent}%"
+              role="img" aria-label="{row.clubs} Mannschaften">
+          {#for share in row.shares}
+          <span class="funnel-share {share.cssClass}" style="width: {share.percent}%"
+                title="{share.clubs} × {share.tier}"></span>
+          {/for}
+        </span>
+        <span class="funnel-count">{row.clubs}</span>
+      </li>
+      {/for}
+    </ol>
+
+    <ul class="funnel-legend">
+      <li><span class="funnel-key tier-first"></span>1. Liga</li>
+      <li><span class="funnel-key tier-second"></span>2. Liga</li>
+      <li><span class="funnel-key tier-third"></span>3. Liga</li>
+      <li><span class="funnel-key tier-lower"></span>Amateur</li>
+    </ul>
+
+    {#if page.figures.matches}
+    <p class="funnel-figures">
+      <span><strong>{page.figures.matches}</strong> Begegnungen</span>
+      <span><strong>{page.figures.goals}</strong> Tore</span>
+      <span><strong>{page.figures.shootouts}</strong> Elfmeterschießen</span>
+      {#if page.figures.extraTime}<span><strong>{page.figures.extraTime}</strong> Verlängerungen</span>{/if}
+      <span><strong>{page.figures.upsets}</strong> Überraschungen</span>
+    </p>
+    {/if}
+  </section>
+  {/if}
+
   {#if page.upsets}
   <section class="upsets">
     <h2 class="round-name">Überraschungen</h2>

@@ -98,14 +98,18 @@ public class Matchday extends PanacheEntity {
     /** Season and matchday number the competition is currently at. */
     public static Optional<SeasonMatchday> currentNumber(League league) {
         return latestSeason(league).map(season -> {
+            // spec 06: the counting stays within the league or group phase — a knockout round
+            // is a phase of its own and is not navigated through as a matchday
             Integer number = getEntityManager()
                     .createQuery("select min(m.matchday.number) from Match m"
-                            + " where m.matchday.league = :league and m.matchday.season = :season and m.fullTimeScore is null", Integer.class)
+                            + " where m.matchday.league = :league and m.matchday.season = :season"
+                            + " and m.matchday.label is null and m.fullTimeScore is null", Integer.class)
                     .setParameter("league", league).setParameter("season", season)
                     .getSingleResult();
             if (number == null) {
                 number = getEntityManager()
-                        .createQuery("select max(m.number) from Matchday m where m.league = :league and m.season = :season", Integer.class)
+                        .createQuery("select max(m.number) from Matchday m"
+                                + " where m.league = :league and m.season = :season and m.label is null", Integer.class)
                         .setParameter("league", league).setParameter("season", season)
                         .getSingleResult();
             }
@@ -115,6 +119,11 @@ public class Matchday extends PanacheEntity {
 
     /** A season and a matchday number within it. */
     public record SeasonMatchday(int season, int number) {
+    }
+
+    /** Spec 06: the knockout rounds of a season, in order — empty where a competition has none. */
+    public static List<Matchday> findRounds(League league, int season) {
+        return list("league = ?1 and season = ?2 and label is not null order by number", league, season);
     }
 
     /** Every group's matchday of that number, ordered by group; a single one outside a group competition. */

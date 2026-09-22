@@ -114,15 +114,26 @@ public class Match extends PanacheEntity {
     }
 
     /** Played matches of a season before the given matchday number, e.g. for standings. */
+    /**
+     * Spec 06: a round of a knockout phase never counts towards a table — the Champions
+     * League's league-phase table does not keep growing once the knockout rounds start.
+     * A matchday carrying a round's name ({@code label}) is such a round.
+     */
+    public static boolean countsTowardsTable(Match match) {
+        return match.matchday.label == null;
+    }
+
     public static List<Match> findPlayedBefore(League league, int season, int matchday) {
-        return list("matchday.league = ?1 and matchday.season = ?2 and matchday.number < ?3 and fullTimeScore is not null",
+        return list("matchday.league = ?1 and matchday.season = ?2 and matchday.number < ?3"
+                + " and matchday.label is null and fullTimeScore is not null",
                 league, season, matchday);
     }
 
     /** Spec 06: played matches before a matchday within one group — the basis of a group's own table. */
     public static List<Match> findPlayedBefore(League league, int season, String groupName, int matchday) {
         return list("matchday.league = ?1 and matchday.season = ?2 and matchday.groupName is not distinct from ?3"
-                + " and matchday.number < ?4 and fullTimeScore is not null", league, season, groupName, matchday);
+                + " and matchday.number < ?4 and matchday.label is null and fullTimeScore is not null",
+                league, season, groupName, matchday);
     }
 
     /** Unplayed matches of a season — the season outlook's remaining-fixtures input (spec 04). */
