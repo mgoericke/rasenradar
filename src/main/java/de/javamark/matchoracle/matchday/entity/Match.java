@@ -119,6 +119,12 @@ public class Match extends PanacheEntity {
                 league, season, matchday);
     }
 
+    /** Spec 06: played matches before a matchday within one group — the basis of a group's own table. */
+    public static List<Match> findPlayedBefore(League league, int season, String groupName, int matchday) {
+        return list("matchday.league = ?1 and matchday.season = ?2 and matchday.groupName is not distinct from ?3"
+                + " and matchday.number < ?4 and fullTimeScore is not null", league, season, groupName, matchday);
+    }
+
     /** Unplayed matches of a season — the season outlook's remaining-fixtures input (spec 04). */
     public static List<Match> findUnplayed(League league, int season) {
         return list("matchday.league = ?1 and matchday.season = ?2 and fullTimeScore is null", league, season);

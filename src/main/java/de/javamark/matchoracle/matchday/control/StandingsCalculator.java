@@ -30,8 +30,10 @@ public class StandingsCalculator {
             .thenComparingInt(e -> e.getValue().goalsFor())
             .reversed();
 
+    /** Spec 06: a matchday of a group competition brings its group along — its table is the group's. */
     public Standings standingsBefore(Matchday matchday) {
-        return standingsBefore(matchday.league, matchday.season, matchday.number);
+        return standings(matchday.league, matchday.season, matchday.number,
+                Match.findPlayedBefore(matchday.league, matchday.season, matchday.groupName, matchday.number));
     }
 
     public Standings standingsBefore(League league, int season, int matchday) {

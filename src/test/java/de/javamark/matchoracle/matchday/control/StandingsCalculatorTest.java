@@ -55,4 +55,16 @@ class StandingsCalculatorTest {
 
         assertTrue(standings.includesProvisional());
     }
+
+    @Test
+    void aGroupTableCountsOnlyTheMatchesOfThatGroup() {
+        // Spec 06: in einem Gruppenwettbewerb gilt jede Regel je Gruppe. Die Auswahl der
+        // Begegnungen macht die Tabelle aus — hier bekommt sie nur die der einen Gruppe.
+        Standings groupA = calculator.standings(League.BUNDESLIGA_1, 2026, 3, List.of(
+                played(1, mainz, 2, leipzig, 0),
+                played(2, leipzig, 1, mainz, 1)));
+
+        assertEquals(List.of(mainz, leipzig), groupA.positions().stream().map(StandingPosition::team).toList());
+        assertEquals(2, groupA.positions().size(), "keine Mannschaft einer anderen Gruppe in der Tabelle");
+    }
 }
