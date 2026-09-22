@@ -37,6 +37,8 @@ public final class MatchdayPageModels {
             case BUNDESLIGA_1 -> "1. Bundesliga";
             case BUNDESLIGA_2 -> "2. Bundesliga";
             case CHAMPIONS_LEAGUE -> "Champions League";
+            case DFB_POKAL -> "DFB-Pokal";
+            case NATIONS_LEAGUE -> "Nations League";
         };
     }
 
@@ -46,6 +48,8 @@ public final class MatchdayPageModels {
             case BUNDESLIGA_1 -> "1";
             case BUNDESLIGA_2 -> "2";
             case CHAMPIONS_LEAGUE -> "CL";
+            case DFB_POKAL -> "DFB";
+            case NATIONS_LEAGUE -> "NL";
         };
     }
 

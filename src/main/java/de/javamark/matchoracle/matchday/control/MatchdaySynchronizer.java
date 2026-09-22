@@ -43,10 +43,6 @@ public class MatchdaySynchronizer {
     @ConfigProperty(name = "matchoracle.matchday.sync-window", defaultValue = "1")
     int syncWindow;
 
-    /** Past seasons kept as history in addition to the current one. */
-    @ConfigProperty(name = "matchoracle.matchday.history-seasons", defaultValue = "5")
-    int historySeasons;
-
     /** Checks the current matchday (+/- window) of both leagues and reloads what changed. Returns the ids of matches that got a score for the first time. */
     @ActivateRequestContext // Panache queries outside a transaction need a request context
     public List<Long> syncCurrentMatchdays() {
@@ -165,10 +161,7 @@ public class MatchdaySynchronizer {
      * are loaded once, as soon as no matchday of that season is known yet.
      */
     void importMissingSeasons(League league, int currentSeason) {
-        // Champions League: only the current season — the league-phase field turns over so much
-        // each year that past seasons give almost no reusable form/head-to-head data, at the cost
-        // of importing dozens of clubs that will not play again.
-        int seasons = league == League.CHAMPIONS_LEAGUE ? 0 : historySeasons;
+        int seasons = league.historySeasons();
         for (int season = currentSeason - seasons; season <= currentSeason; season++) {
             if (Matchday.count("league = ?1 and season = ?2", league, season) == 0) {
                 importSeason(league, season);

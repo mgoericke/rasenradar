@@ -143,6 +143,15 @@ public class MatchdayFacade {
                 .map(m -> new LeagueSeasonRef(m.matchday.league.sourceShortcut(), m.matchday.season));
     }
 
+    /**
+     * Whether a competition has placement goals at all — spec 06: a cup has nothing to simulate,
+     * and the Nations League's groups of four would be a decision of their own. Lets the season
+     * feature ask without reaching into this feature's entities.
+     */
+    public boolean hasPlacementGoals(String league) {
+        return League.bySourceShortcut(league).map(l -> !PlacementGoal.all(l).isEmpty()).orElse(false);
+    }
+
     /** The most recently fully-played matchday's league/season, if any — backfills a season outlook that was never computed (spec 04's startup safety net). */
     @Transactional(Transactional.TxType.SUPPORTS)
     public Optional<LeagueSeasonRef> mostRecentlyPlayedMatchday(String league) {

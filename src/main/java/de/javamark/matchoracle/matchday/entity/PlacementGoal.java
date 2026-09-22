@@ -33,6 +33,9 @@ public enum PlacementGoal {
 
     /** The goals a final table position satisfies for a league; empty for a plain mid-table finish. */
     public static List<PlacementGoal> forPosition(League league, int position) {
+        if (all(league).isEmpty()) {
+            return List.of();
+        }
         List<PlacementGoal> goals = new ArrayList<>();
         if (league == League.CHAMPIONS_LEAGUE) {
             if (position <= 8) {
@@ -75,6 +78,9 @@ public enum PlacementGoal {
             case CHAMPIONS_LEAGUE -> List.of(KNOCKOUT_DIRECT, KNOCKOUT_PLAYOFF, ELIMINATION);
             case BUNDESLIGA_1 -> List.of(CHAMPIONSHIP, EUROPE, RELEGATION_PLAYOFF, RELEGATION);
             case BUNDESLIGA_2 -> List.of(PROMOTION, PROMOTION_PLAYOFF, RELEGATION_PLAYOFF, RELEGATION);
+            // Spec 06: no season outlook for these two — a cup has nothing to simulate, and
+            // placement goals for groups of four would be a decision of their own.
+            case DFB_POKAL, NATIONS_LEAGUE -> List.of();
         };
     }
 }
