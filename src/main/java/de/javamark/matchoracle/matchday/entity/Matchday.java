@@ -5,8 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -14,12 +12,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * One round of matches of a league in a season. The unique constraint on
- * (league, season, number) makes the per-league matchday counter explicit.
- * It is also the unit of synchronisation with the external source.
+ * One round of matches of a competition in a season. The per-competition matchday
+ * counter is explicit in the identity (league, season, group, number) — spec 06: in a
+ * group competition every group counts its own matchdays. The uniqueness itself is
+ * enforced by a unique index in the schema, because null groups have to compare equal.
  */
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"league", "season", "number"}))
 public class Matchday extends PanacheEntity {
 
     @Enumerated(EnumType.STRING)
@@ -33,15 +31,36 @@ public class Matchday extends PanacheEntity {
     @Column(nullable = false)
     public int number;
 
+    /**
+     * Spec 06: the parallel group this matchday belongs to ("Gruppe A"), null in every
+     * competition that is not played in groups. Part of the matchday's identity.
+     */
+    @Column(length = 40)
+    public String groupName;
+
+    /** Spec 06: name of the round in a knockout competition ("Achtelfinale"), null elsewhere. */
+    @Column(length = 40)
+    public String label;
+
     /** Last change reported by the external source; null if never synced. */
     public Instant sourceLastChangedAt;
 
     /** When this matchday was last successfully checked against the source — the age of the data. */
     public Instant lastCheckedAt;
 
+    /** How this section of the competition is called: the round's name, or the counted matchday. */
+    public String displayName() {
+        return label != null ? label : number + ". Spieltag";
+    }
+
+    /** Short form for the competitions without groups. */
     public static Optional<Matchday> find(League league, int season, int number) {
-        return find("league = ?1 and season = ?2 and number = ?3", league, season, number)
-                .firstResultOptional();
+        return find(league, season, null, number);
+    }
+
+    public static Optional<Matchday> find(League league, int season, String groupName, int number) {
+        return find("league = ?1 and season = ?2 and groupName is not distinct from ?3 and number = ?4",
+                league, season, groupName, number).firstResultOptional();
     }
 
     /** Latest known season of a league. */

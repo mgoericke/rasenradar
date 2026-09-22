@@ -17,6 +17,11 @@
 - **BCE-Architektur**, von ArchUnit erzwungen: `boundary` → `control`/`entity`, `control` → `entity`, `entity` kennt keine der beiden. Kein Zugriff in fremde Feature-Packages. Alles in diesem Plan bleibt im Package `matchday`, außer der ausdrücklich benannten Änderung in `season/boundary`.
 - **Panache Active Record** — Finder als `static` Methoden auf der Entity, keine Repository-Klassen.
 - **Flyway** besitzt das Schema, Hibernate validiert nur. Freie Migrationen der Reihe nach: `V13` (Task 2), `V14` (Task 5), `V15` (Task 8).
+- **Die Testsuite prüft das Schema nicht.** Es gibt keinen `@QuarkusTest` und keinen Integrationstest; `./mvnw test` startet die Anwendung nie. Jede Migration wird deshalb von Hand geprüft, mit abgeschaltetem Scheduler, damit kein Prognoselauf Kosten verursacht:
+  ```bash
+  ./mvnw quarkus:dev -Dquarkus.http.port=8081 -Dquarkus.scheduler.enabled=false
+  ```
+  Im Log müssen „Successfully applied … migration" und ein sauberes „started in" stehen — eine `SchemaManagementException` bedeutet, dass Migration und Entity auseinanderlaufen.
 - **Tests nur für fachlich relevante Features** — keine Tests für Getter, triviale Mapper oder Framework-Verhalten.
 - **Kein `matchoracle.forecast`-Bezug**: Pokal und Nations League erzeugen keine KI-Vorschau, keine Rückschau, keine Saisonaussicht.
 - **Styleguide** (`docs/styleguide.md`): heller Grund, genau eine dunkle Bühne, Grün/Rot nur als Bedeutung. Messing (`--accent`) ist der KI-Vorschau vorbehalten und darf in diesen beiden Wettbewerben **nicht** auftauchen.
@@ -261,7 +266,7 @@ drop index if exists uk_matchday_league_season_number;
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `./mvnw test -Dtest=MatchdayTest`
-Expected: PASS. Danach `./mvnw test` komplett — die Migration läuft gegen die Dev-Datenbank, Hibernate validiert das Schema.
+Expected: PASS. Danach `./mvnw test` komplett, und die Migration wie in den Global Constraints beschrieben von Hand prüfen.
 
 - [ ] **Step 5: Commit**
 
