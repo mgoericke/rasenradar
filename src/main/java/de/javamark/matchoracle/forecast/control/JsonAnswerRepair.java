@@ -4,23 +4,22 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.logging.Logger;
 
-import java.util.regex.Pattern;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
- * Salvages one specific way the hosted model breaks a JSON answer: it closes the German
+ * Salvages one specific way the hosted model breaks a JSON answer: it ends the German
  * summary with a typographic quote instead of {@code "}. Under schema-constrained decoding
  * the string is then still open, the model cannot stop and pads with invisible characters
- * until the token limit. The repair is deliberately narrow — invisible characters removed,
- * a typographic quote right before a closing bracket or comma turned into {@code "}, and
- * whatever follows the first complete JSON value cut off — and only applied when the
- * original does not parse.
+ * — or drifts into new text — until the token limit. The repair is deliberately narrow:
+ * cut at a typographic quote, close the string and whatever brackets are still open, and
+ * take the first cut that parses. Only applied when the original does not parse.
  */
 final class JsonAnswerRepair {
 
     private static final Logger LOG = Logger.getLogger(JsonAnswerRepair.class);
     private static final ObjectMapper JSON = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-    private static final Pattern INVISIBLE = Pattern.compile("[\\u200B-\\u200D\\uFEFF]");
-    private static final Pattern TYPOGRAPHIC_CLOSING_QUOTE = Pattern.compile("[\\u201C\\u201D\\u201E]\\s*(?=[}\\],])");
+    private static final String TYPOGRAPHIC_QUOTES = "“”„";
 
     private JsonAnswerRepair() {
     }
@@ -30,16 +29,44 @@ final class JsonAnswerRepair {
         if (text == null || parses(text)) {
             return text;
         }
-        String candidate = INVISIBLE.matcher(text).replaceAll("");
-        candidate = TYPOGRAPHIC_CLOSING_QUOTE.matcher(candidate).replaceAll("\"");
-        for (int end = candidate.indexOf('}'); end >= 0; end = candidate.indexOf('}', end + 1)) {
-            String prefix = candidate.substring(0, end + 1);
-            if (parses(prefix)) {
-                LOG.warnf("Repaired a broken JSON answer (%d chars cut, typographic quote closed): %s", text.length() - prefix.length(), prefix);
-                return prefix;
+        for (int cut = 0; cut < text.length(); cut++) {
+            if (TYPOGRAPHIC_QUOTES.indexOf(text.charAt(cut)) < 0) {
+                continue;
+            }
+            String candidate = closed(text.substring(0, cut));
+            if (candidate != null && parses(candidate)) {
+                LOG.warnf("Repaired a broken JSON answer (%d chars dropped after a typographic quote): %s", text.length() - cut, candidate);
+                return candidate;
             }
         }
         return text;
+    }
+
+    /** The prefix with its open string closed and its open brackets closed, or null if the cut is not inside a string. */
+    private static String closed(String prefix) {
+        Deque<Character> open = new ArrayDeque<>();
+        boolean inString = false;
+        for (int i = 0; i < prefix.length(); i++) {
+            char c = prefix.charAt(i);
+            if (inString) {
+                if (c == '\\') i++;
+                else if (c == '"') inString = false;
+            } else if (c == '"') {
+                inString = true;
+            } else if (c == '{' || c == '[') {
+                open.push(c);
+            } else if (c == '}' || c == ']') {
+                open.poll();
+            }
+        }
+        if (!inString) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(prefix).append('"');
+        while (!open.isEmpty()) {
+            sb.append(open.pop() == '{' ? '}' : ']');
+        }
+        return sb.toString();
     }
 
     private static boolean parses(String text) {

@@ -30,6 +30,15 @@ class JsonAnswerRepairTest {
     }
 
     @Test
+    void aTypographicQuoteFollowedByNewTextInsteadOfTheClosingBraceIsRepairedToo() {
+        String broken = "{\"lean\":\"HOME_WIN\",\"confidence\":0.35,\"summary\":\"Beide Teams sind gleich erholt.\u201c E"
+                + "\u200b \u200b \u200b \u200b";
+
+        assertEquals("{\"lean\":\"HOME_WIN\",\"confidence\":0.35,\"summary\":\"Beide Teams sind gleich erholt.\"}",
+                JsonAnswerRepair.repair(broken));
+    }
+
+    @Test
     void aTypographicQuoteInsideTheTextStaysAsItIs() {
         String withQuoteInText = "{\"lean\":\"DRAW\",\"confidence\":0.4,\"summary\":\"Ein „Lauf“ ist das nicht.\"}";
 
