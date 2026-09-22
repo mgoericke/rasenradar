@@ -70,8 +70,6 @@ public class ReviewService {
                 });
     }
 
-    /** Bundesliga base rates of recent seasons — the "always home" yardstick's probabilities. */
-    static final double LEAGUE_HOME_WIN_RATE = 0.44, LEAGUE_DRAW_RATE = 0.25, LEAGUE_AWAY_WIN_RATE = 0.31;
     /** How many of the most recent evaluations the plain hit/miss timeline shows. */
     static final int RECENT_RESULTS_LIMIT = 12;
 
@@ -256,23 +254,21 @@ public class ReviewService {
         return accuracy(league, backtest, evaluations, situations, minEvaluations);
     }
 
-    /** Oracle, baseline and "always home" measured on the same evaluated matches; the skill score is 1 - Brier / baseline Brier. */
+    /** Oracle and baseline measured on the same evaluated matches; the skill score is 1 - Brier / baseline Brier. */
     static AccuracyReport accuracy(String league, boolean backtest, List<ForecastEvaluation> evaluations,
                                    Map<Long, Situation> situations, int required) {
         int hits = (int) evaluations.stream().filter(e -> e.tendencyHit).count();
         boolean reliable = evaluations.size() >= required;
         Map<String, int[]> perMatchday = new LinkedHashMap<>();
         Map<String, List<ForecastEvaluation>> evaluationsByMatchday = new LinkedHashMap<>();
-        int baselineEvaluated = 0, baselineHits = 0, alwaysHomeHits = 0;
-        double baselineBrier = 0, oracleBrierOnSameMatches = 0, alwaysHomeBrier = 0;
+        int baselineEvaluated = 0, baselineHits = 0;
+        double baselineBrier = 0, oracleBrierOnSameMatches = 0;
         for (ForecastEvaluation e : evaluations) {
             String key = e.season + "/" + e.matchday;
             int[] counts = perMatchday.computeIfAbsent(key, k -> new int[]{e.season, e.matchday, 0, 0, 0});
             evaluationsByMatchday.computeIfAbsent(key, k -> new ArrayList<>()).add(e);
             counts[2]++;
             if (e.tendencyHit) counts[3]++;
-            if (e.actualOutcome == Outcome.HOME_WIN) alwaysHomeHits++;
-            alwaysHomeBrier += Evaluation.brier(LEAGUE_HOME_WIN_RATE, LEAGUE_DRAW_RATE, LEAGUE_AWAY_WIN_RATE, e.actualOutcome);
             Optional<Baseline> baseline = Optional.ofNullable(situations.get(e.matchId)).flatMap(Situation::baseline);
             if (baseline.isPresent()) {
                 Baseline b = baseline.get();
@@ -300,9 +296,6 @@ public class ReviewService {
                 required, points,
                 new AccuracyReport.Comparison(baselineEvaluated, baselineHits,
                         baselineReliable ? (double) baselineHits / baselineEvaluated : null, meanBaselineBrier),
-                new AccuracyReport.Comparison(evaluations.size(), alwaysHomeHits,
-                        reliable ? (double) alwaysHomeHits / evaluations.size() : null,
-                        reliable ? alwaysHomeBrier / evaluations.size() : null),
                 baselineReliable && meanBaselineBrier > 0 ? 1 - (oracleBrierOnSameMatches / baselineEvaluated) / meanBaselineBrier : null,
                 recent(evaluations, situations), calibration(evaluations, required), contrarianReport(evaluations, required));
     }

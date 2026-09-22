@@ -112,6 +112,11 @@ public class Forecast extends PanacheEntity {
         return assessments.stream().filter(a -> a.kind == kind).findFirst();
     }
 
+    /** Spec 02, rules: made without a single working assessment — kept, but worth a fresh attempt soon. */
+    public boolean withoutAnyAssessment() {
+        return assessments.stream().allMatch(a -> a.failed);
+    }
+
     /** All forecasts of a match, newest first. */
     public static List<Forecast> findByMatch(long matchId) {
         return list("matchId = ?1 order by createdAt desc", matchId);

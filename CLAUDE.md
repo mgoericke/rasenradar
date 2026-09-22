@@ -88,7 +88,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Trefferbilanz | `HitRate` / `AccuracyReport` |
 | Torschütze (Torschützenliste eines Vereins) | `Scorer` / `ScorerCalculator` |
 | Basisprognose (Statistik-Maßstab der Rückschau) | `Baseline` / `BaselineForecast` |
-| Maßstab in der Trefferbilanz (Basisprognose, immer Heimsieg) | `AccuracyReport.Comparison` |
+| Maßstab in der Trefferbilanz (Basisprognose) | `AccuracyReport.Comparison` |
 | Skill-Score | `skillScore` |
 | Saison einer Liga (z. B. 2. Bundesliga 2024/25) | `LeagueSeason` |
 | Vereinsseite (Spielplan, Saisonverlauf, Bilanz, Torschützen) | `TeamPage` / `ScheduleRow` |
@@ -100,7 +100,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Verlauf vor dem Anstoß | `ForecastHistory` |
 | Gegen den Strom (abweichend von Basisprognose) | `contrarian` / `ContrarianOutcome` |
 | Aus der Erfahrung (Vergleichsfälle in Prosa) | `ExperienceNote` |
-| Rangliste (Prognose / Basisprognose / immer Heimsieg) | `Leaderboard` |
+| Rangliste (Prognose / Basisprognose) | `Leaderboard` |
 | Kalibrierungssatz | `CalibrationStatement` |
 | Mut-Bilanz | `ContrarianReport` |
 | Erklärseite „So entsteht eine Prognose" | `HowItWorksPage` |

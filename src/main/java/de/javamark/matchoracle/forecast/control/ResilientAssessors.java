@@ -30,18 +30,9 @@ final class ResilientAssessors {
                 return call.get();
             } catch (Exception second) {
                 LOG.warnf("%s failed again, forecasting without it: %s", name, ForecastService.causeChain(second));
-                return AssessmentResult.failed(rootMessage(second));
+                return AssessmentResult.failed(ForecastService.rootMessage(second));
             }
         }
-    }
-
-    private static String rootMessage(Throwable e) {
-        Throwable t = e;
-        while (t.getCause() != null && t.getCause() != t) {
-            t = t.getCause();
-        }
-        String m = t.getMessage();
-        return m == null ? t.getClass().getSimpleName() : m.length() > 200 ? m.substring(0, 200) + "…" : m;
     }
 
     public static class Form {

@@ -51,9 +51,9 @@ allgemeinverständlicher Sprache, ohne Fachvokabular aus der KI-Welt.
 
 ### B. Über alle Prognosen hinweg
 
-6. **Wer liegt vorne?** Auf der Startseite steht eine kleine Rangliste aus drei
-   Zeilen: die Prognose des Systems, die Basisprognose und die Faustregel
-   „immer Heimsieg" — mit Tendenztreffern auf denselben Begegnungen,
+6. **Wer liegt vorne?** Auf der Startseite steht eine kleine Rangliste aus zwei
+   Zeilen: die Prognose des Systems und die Basisprognose — mit
+   Tendenztreffern auf denselben Begegnungen,
    ligenübergreifend (Umschalter je Liga in der Trefferbilanz). Die
    Reihenfolge ergibt sich aus den Zahlen; führt die Basisprognose, steht sie
    oben. Die Rangliste weist aus, auf wie vielen Begegnungen sie beruht (z. B.
@@ -132,9 +132,9 @@ allgemeinverständlicher Sprache, ohne Fachvokabular aus der KI-Welt.
   Reihenfolge; die maßgebliche ist als solche erkennbar.
 - Eine Prognose, deren Tendenz von der Basisprognose abweicht, ist gekennzeichnet;
   nach dem Spiel ist erkennbar, ob die Abweichung traf.
-- Auf der Startseite steht die Rangliste aus Prognose, Basisprognose und
-  „immer Heimsieg"; führt die Basisprognose, steht sie oben. Sie weist aus,
-  auf wie vielen Begegnungen sie beruht.
+- Auf der Startseite steht die Rangliste aus Prognose und Basisprognose;
+  führt die Basisprognose, steht sie oben. Sie weist aus, auf wie vielen
+  Begegnungen sie beruht.
 - Die Kalibrierung ist in drei Sätzen lesbar, je Sicherheitsgruppe einer.
 - Bei zu wenigen abgeschlossenen Fällen zeigen Rangliste, Kalibrierungssätze,
   Mut-Bilanz und „Aus der Erfahrung" einen Hinweis statt einer Zahl.
@@ -152,7 +152,7 @@ allgemeinverständlicher Sprache, ohne Fachvokabular aus der KI-Welt.
 | Verlauf vor dem Anstoß                      | `ForecastHistory`                       |
 | Gegen den Strom (abweichend von Basisprognose) | `contrarian` / `ContrarianOutcome`   |
 | Aus der Erfahrung (Vergleichsfälle in Prosa) | `ExperienceNote`                       |
-| Rangliste (Prognose / Basisprognose / immer Heimsieg) | `Leaderboard`                 |
+| Rangliste (Prognose / Basisprognose)         | `Leaderboard`                 |
 | Kalibrierungssatz                           | `CalibrationStatement`                  |
 | Mut-Bilanz                                  | `ContrarianReport`                      |
 | Erklärseite „So entsteht eine Prognose"     | `HowItWorksPage`                        |

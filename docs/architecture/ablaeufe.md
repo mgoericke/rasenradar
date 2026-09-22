@@ -201,9 +201,8 @@ flowchart LR
     Sit[Situation.findByMatchIds] --> A
     A[accuracy: je Bewertung] --> H[Treffer, Brier, Sicherheit<br/>der KI-Vorschau]
     A --> B[Basisprognose der Situation:<br/>Treffer, Brier auf denselben Spielen]
-    A --> AH[„immer Heimsieg“ mit Ligaraten<br/>44/25/31: Treffer, Brier]
     H & B --> SK[Skill-Score = 1 − Brier_KI / Brier_Basis]
-    H & B & AH --> R[AccuracyReport<br/>je Spieltag: hits, baselineHits]
+    H & B --> R[AccuracyReport<br/>je Spieltag: hits, baselineHits]
     R --> N{≥ 10 Bewertungen?<br/>min-evaluations}
     N -- nein --> Null[hitRate, Brier, Skill = null<br/>UI: Hinweis auf dünne Datenlage]
 ```

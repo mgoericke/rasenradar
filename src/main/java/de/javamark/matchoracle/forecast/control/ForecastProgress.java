@@ -7,6 +7,7 @@ import dev.langchain4j.observability.api.event.AiServiceStartedEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,7 +34,8 @@ public class ForecastProgress {
         }
     }
 
-    public record Run(long matchId, Map<String, State> steps, State state, String error, Long forecastId, Tokens tokens) {
+    /** {@code finishedAt} is null while the run is in progress. */
+    public record Run(long matchId, Map<String, State> steps, State state, String error, Long forecastId, Tokens tokens, Instant finishedAt) {
         public List<Step> stepList() {
             return steps.entrySet().stream().map(e -> new Step(e.getKey(), LABELS.get(e.getKey()), e.getValue())).toList();
         }
@@ -54,22 +56,27 @@ public class ForecastProgress {
     public void start(long matchId) {
         Map<String, State> steps = Collections.synchronizedMap(new LinkedHashMap<>());
         LABELS.keySet().forEach(k -> steps.put(k, State.WAITING));
-        runs.put(matchId, new Run(matchId, steps, State.RUNNING, null, null, new Tokens(0, 0, 0)));
+        runs.put(matchId, new Run(matchId, steps, State.RUNNING, null, null, new Tokens(0, 0, 0), null));
         current = matchId;
     }
 
     public void done(long matchId, long forecastId) {
-        runs.computeIfPresent(matchId, (k, r) -> new Run(k, r.steps(), State.DONE, null, forecastId, r.tokens()));
+        runs.computeIfPresent(matchId, (k, r) -> new Run(k, r.steps(), State.DONE, null, forecastId, r.tokens(), Instant.now()));
         current = null;
     }
 
     public void failed(long matchId, String error) {
-        runs.computeIfPresent(matchId, (k, r) -> new Run(k, r.steps(), State.FAILED, error, null, r.tokens()));
+        runs.computeIfPresent(matchId, (k, r) -> new Run(k, r.steps(), State.FAILED, error, null, r.tokens(), Instant.now()));
         current = null;
     }
 
     public Optional<Run> of(long matchId) {
         return Optional.ofNullable(runs.get(matchId));
+    }
+
+    /** When the last run for this match failed — since the last restart; a failure before that is simply not known. */
+    public Optional<Instant> lastFailureAt(long matchId) {
+        return of(matchId).filter(r -> r.state() == State.FAILED).map(Run::finishedAt);
     }
 
     public boolean isRunning(long matchId) {
@@ -91,7 +98,7 @@ public class ForecastProgress {
         }
         var usage = event.response().tokenUsage();
         runs.computeIfPresent(matchId, (k, r) -> new Run(k, r.steps(), r.state(), r.error(), r.forecastId(),
-                r.tokens().plus(usage.inputTokenCount(), usage.outputTokenCount())));
+                r.tokens().plus(usage.inputTokenCount(), usage.outputTokenCount()), r.finishedAt()));
     }
 
     void error(@Observes AiServiceErrorEvent event) {

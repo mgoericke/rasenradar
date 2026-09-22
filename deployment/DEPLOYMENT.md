@@ -28,11 +28,14 @@ Internet → Traefik (proxy-Netz, :443) → rasenradar (:8080)
   `Method(\`POST\`)`, siehe `docker-compose.yml`). Kostenschutz, kein Login-System in der App.
 
 **Bekannte Einschränkung:** Anders als im Dev-Modus läuft auf dem Server kein lokales Ollama.
-Schlägt der Cloud-Aufruf (Anthropic) fehl, greift `FallbackChatModel` ins Leere — der betroffene
-Bewerter bzw. Prognoseschritt schlägt fehl, statt auf ein lokales Modell auszuweichen. Die drei
-Bewerter sind dank `ResilientAssessors` (ein Retry, dann Ausfall statt Abbruch) robust dagegen;
-ein Ausfall des Prognostikers oder Prüfers lässt die einzelne Prognose fehlschlagen — der Nutzer
-sieht das im Fortschritt und kann es erneut versuchen.
+Das `prod`-Profil schaltet den lokalen Fallback deshalb ab (`matchoracle.forecast.local-fallback-enabled=false`):
+Schlägt der Cloud-Aufruf (Anthropic) fehl — etwa weil die Credits aufgebraucht sind —, schlägt der
+betroffene Bewerter bzw. Prognoseschritt mit dem echten Grund fehl. Die drei Bewerter sind dank
+`ResilientAssessors` (ein Retry, dann Ausfall statt Abbruch) robust dagegen; ein Ausfall des
+Prognostikers oder Prüfers lässt die einzelne Prognose fehlschlagen. Der Betrachter sieht einen
+kurzen Hinweis mit dem Grund; die Terminplanung holt anstehende Spiele nach einer Stunde nach
+(`matchoracle.forecast.auto.retry-after`). Die Antworten des Cloud-Modells werden in Prod geloggt
+(`log-responses=true`), damit sich abgeschnittene oder unparsbare Antworten nachvollziehen lassen.
 
 ---
 
