@@ -16,8 +16,9 @@ public enum League {
     // balances over several editions actually mean something.
     DFB_POKAL("dfb", CompetitionFormat.KNOCKOUT, 3),
     // Spec 06: only the 2024 and 2026 editions are served under this shortcut; the source
-    // renames the competition from edition to edition.
-    NATIONS_LEAGUE("nla", CompetitionFormat.GROUPS, 1);
+    // renames the competition from edition to edition. Two years back, not one — the
+    // competition is played every other year, so 2025 simply has nothing in it.
+    NATIONS_LEAGUE("nla", CompetitionFormat.GROUPS, 2);
 
     /** League shortcut as used by the external data source (OpenLigaDB). */
     private final String sourceShortcut;

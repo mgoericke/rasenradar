@@ -152,8 +152,12 @@ public final class MatchdayPageModels {
         }
     }
 
-    /** Spec 06: one round of a knockout competition — the band's sections, final on top. */
-    record RoundSection(String name, int matchCount, String dateRange, List<MatchRow> matches) {
+    /**
+     * Spec 06: one round of a knockout competition — the band's sections, final on top.
+     * {@code open} marks the round the viewer should land on: the one that is being played,
+     * so a finished edition does not open with 32 first-round pairings.
+     */
+    record RoundSection(String name, int matchCount, String dateRange, List<MatchRow> matches, boolean open) {
     }
 
     /** Spec 06: a match a lower-division club won, with how far apart the two divisions were. */
@@ -163,6 +167,15 @@ public final class MatchdayPageModels {
 
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
                         List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data) {
+    }
+
+    /** Spec 06: one group of a group competition — its own table and its matches of the shown matchday. */
+    record GroupSection(String name, List<StandingRow> table, List<MatchRow> matches) {
+    }
+
+    /** {@code rounds} carries a group competition's final round — empty while it is in the group stage. */
+    record GroupsPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
+                      List<GroupSection> groups, List<RoundSection> rounds, boolean standingsProvisional, DataInfo data) {
     }
 
     record DayGroup(String label, List<MatchRow> matches) {

@@ -59,6 +59,10 @@ machen.
   werden mit dem Namen der Runde bezeichnet, nicht als Spieltag gezählt.
 - In einem Gruppenwettbewerb gilt jede Regel, die bisher je Liga galt, je Gruppe:
   eigene Tabelle, eigener Spieltagszähler, eigene Tabellenposition.
+- Ein Wettbewerb kann **beide Formen nacheinander** enthalten: die Nations League
+  spielt zuerst Gruppen und danach eine Endrunde. Jeder Abschnitt trägt für sich, was
+  er ist — eine Gruppe führt eine Tabelle, eine Runde nicht. Die Wettbewerbsseite zeigt
+  erst die Gruppen, dann die Runden der Endrunde.
 - Liefert die Quelle für einen Gruppenwettbewerb keine Spieltagsnummer, leitet das
   System sie aus der zeitlichen Abfolge innerhalb der Gruppe ab: Begegnungen
   derselben Gruppe am selben Kalendertag bilden einen Spieltag, die Reihenfolge der
@@ -102,7 +106,7 @@ machen.
   keine Saisonaussicht (Spec 4) für Pokal und Nations League. Spec 4 zählt den Pokal
   bereits heute zur Abgrenzung; das bleibt so.
 - Nur die Liga A der Nations League. Die übrigen Ligen des Wettbewerbs und der
-  Auf-/Abstieg zwischen ihnen bleiben außen vor.
+  Auf-/Abstieg zwischen ihnen bleiben außen vor. Die Endrunde der Liga A gehört dazu.
 - Keine weiteren Wettbewerbe mit Nationalmannschaften (Europa- und Weltmeisterschaft,
   deren Qualifikation, Freundschaftsspiele).
 - Keine Aussage darüber, welche Mannschaft eine K.-o.-Runde erreichen wird — der
@@ -151,6 +155,10 @@ machen.
   Liga derselben Saison abgeleitet; damit sind 56 der 64 Teilnehmer einer Ausgabe
   zugeordnet, der Rest gilt als unterklassig (Stichprobe 2025/26 geprüft). Die dritte
   Liga ist dafür nur Vergleichsliste, kein eigener Wettbewerb im System.
+- **Endrunde der Nations League:** Bei der Umsetzung aufgefallen — die Ausgabe 2024
+  enthält neben den vier Gruppen auch Viertelfinale, Halbfinale und Endspiel. Ein
+  Wettbewerb ist deshalb nicht durchgehend von einer Form; jeder Abschnitt entscheidet
+  für sich, ob er eine Gruppe oder eine Runde ist.
 - **Saisonbezeichnung der Nations League:** Die Ausgabe reicht ins Folgejahr und wird
   wie eine Saison bezeichnet (Beispiel: 2026/27).
 
@@ -163,6 +171,9 @@ machen.
 - Innerhalb einer Gruppe stimmen die abgeleiteten Spieltage mit den Spieltagen des
   Wettbewerbs überein: sechs Spieltage je Gruppe, je zwei Begegnungen.
 - Eine Tabelle einer Gruppe enthält ausschließlich Begegnungen dieser Gruppe.
+- Die Endrunde der Nations League erscheint als Runden ohne Tabelle, nicht als Gruppe:
+  zur Ausgabe 2024 steht „Endspiel/Spiel um Platz 3" mit seiner Begegnung, nicht mit
+  einer Tabelle.
 - Ein Amateurverein mit einer einzigen Pokalbegegnung hat eine Mannschaftsseite mit
   Spielplan, Bilanz und Torschützen — ohne Tabellenteil und ohne Fehlerbild.
 - Ein Bundesligaverein, der auch im Pokal spielt, ist von seiner Ligaseite aus in

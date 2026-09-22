@@ -623,3 +623,31 @@ h2 { font-size: 1.1rem; }
   .upset { grid-template-columns: 1fr; gap: .2rem; }
   .upset-score { justify-self: start; }
 }
+
+/* Gruppenwettbewerb: jede Gruppe eine eigene kleine Tabelle, darunter ihre Begegnungen */
+.group { margin-top: 2rem; }
+.group-table { width: 100%; border-collapse: collapse; margin: .4rem 0 .8rem; font-size: .9rem; }
+.group-table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .2rem .4rem; }
+.group-table th.pos, .group-table th.team { text-align: left; }
+.group-table td { text-align: right; padding: .25rem .4rem; border-top: 1px solid var(--line); }
+.group-table td.pos, .group-table td.team { text-align: left; }
+.group-table td.points { font-weight: 700; }
+.group-table td.team a { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: .3rem; }
+.group-table td.team a:hover { text-decoration: underline; }
+@media (max-width: 640px) { .groups .group-table { display: block; overflow-x: auto; } }
+
+/* Aufklappbare Runden: kein JavaScript, alles bleibt im Dokument — durchsuchbar,
+   druckbar, und der Trichter von 32 auf 1 bleibt als Umriss lesbar. */
+details.round > summary {
+  list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: .6rem; padding: .5rem 0; border-bottom: 1px solid var(--line);
+}
+details.round > summary::-webkit-details-marker { display: none; }
+details.round > summary::before {
+  content: "›"; display: inline-block; color: var(--ink-mute);
+  transition: transform .12s ease; font-size: 1.1rem; line-height: 1;
+}
+details.round[open] > summary::before { transform: rotate(90deg); }
+details.round > summary:hover .round-name { text-decoration: underline; }
+details.round > summary .round-meta { margin: 0; }
+details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }

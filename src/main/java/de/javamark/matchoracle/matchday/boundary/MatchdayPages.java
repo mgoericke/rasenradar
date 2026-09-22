@@ -24,6 +24,7 @@ import de.javamark.matchoracle.matchday.entity.Tier;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.UpsetRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.RoundSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.KnockoutPage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GroupsPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TeamSituation;
 import de.javamark.matchoracle.matchday.control.FormCalculator;
 import de.javamark.matchoracle.matchday.control.GoalTimingCalculator;
@@ -79,6 +80,7 @@ public class MatchdayPages {
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance team(TeamPage page);
         static native TemplateInstance knockout(KnockoutPage page);
+        static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
     }
 
@@ -175,6 +177,11 @@ public class MatchdayPages {
                     : Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
             return Templates.knockout(knockoutPage(l, edition));
         }
+        if (l.format() == CompetitionFormat.GROUPS) {
+            Matchday.SeasonMatchday current = Matchday.currentNumber(l)
+                    .orElseThrow(() -> new NotFoundException("no matchday known yet"));
+            return Templates.groups(groupsPage(l, current.season(), current.number()));
+        }
         Matchday matchday = Matchday.findDisplayed(l, Instant.now())
                 .orElseThrow(() -> new NotFoundException("no matchday known yet"));
         return Templates.matchday(matchdayPage(matchday));
@@ -183,7 +190,11 @@ public class MatchdayPages {
     @GET
     @Path("/{league}/{season}/{number}")
     public TemplateInstance matchday(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
-        Matchday matchday = Matchday.find(league(league), season, number)
+        League l = league(league);
+        if (l.format() == CompetitionFormat.GROUPS) {
+            return Templates.groups(groupsPage(l, season, number));
+        }
+        Matchday matchday = Matchday.find(l, season, number)
                 .orElseThrow(() -> new NotFoundException("matchday not found"));
         return Templates.matchday(matchdayPage(matchday));
     }
@@ -277,6 +288,62 @@ public class MatchdayPages {
 
     /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */
     /**
+     * Spec 06: all groups of a group competition, each with its own table and its matches of
+     * the shown matchday. One competition page, not one entry per group.
+     */
+    private GroupsPage groupsPage(League league, int season, int number) {
+        String shortcut = league.sourceShortcut();
+        // the groups' matchday of that number, plus the edition's final round — the latter is a
+        // phase of its own and does not share the groups' counting, so it always sits at the end
+        List<Matchday> groups = Matchday.findAll(league, season, number).stream()
+                .filter(m -> m.groupName != null).toList();
+        List<Matchday> finalRound = Matchday.<Matchday>list(
+                "league = ?1 and season = ?2 and groupName is null order by number", league, season);
+        if (groups.isEmpty() && finalRound.isEmpty()) {
+            throw new NotFoundException("matchday not found");
+        }
+        Instant now = Instant.now();
+        boolean provisional = false;
+        List<MatchdayPageModels.GroupSection> sections = new ArrayList<>();
+        List<RoundSection> rounds = new ArrayList<>();
+        for (Matchday group : groups) {
+            List<Match> matches = Match.findByMatchday(group);
+            matches.sort(Comparator.comparing((Match m) -> m.kickoff));
+            // table after this matchday: everything played in this group up to and including it
+            Standings standings = standingsCalculator.standingsBefore(withNumber(group, group.number + 1));
+            provisional = provisional || standings.includesProvisional();
+            sections.add(new MatchdayPageModels.GroupSection(group.groupName,
+                    standings.positions().stream().map(p -> StandingRow.of(p, league)).toList(),
+                    matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList()));
+        }
+        // spec 06: sections of the final round are rounds, not groups — no table
+        for (Matchday round : finalRound) {
+            List<Match> matches = Match.findByMatchday(round);
+            matches.sort(Comparator.comparing((Match m) -> m.kickoff));
+            rounds.add(new RoundSection(round.displayName(), matches.size(), dateRange(matches),
+                    matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList(),
+                    true));
+        }
+        String base = "/" + shortcut + "/" + season + "/";
+        String prev = number > 1 ? base + (number - 1) : null;
+        boolean hasNext = Matchday.findAll(league, season, number + 1).stream().anyMatch(m -> m.groupName != null);
+        String next = hasNext ? base + (number + 1) : null;
+        Matchday reference = groups.isEmpty() ? finalRound.get(0) : groups.get(0);
+        return new GroupsPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, number,
+                prev, next, sections, rounds, provisional, DataInfo.of(reference, now));
+    }
+
+    /** A detached stand-in used only to ask for the table *after* a matchday of the same group. */
+    private static Matchday withNumber(Matchday group, int number) {
+        Matchday reference = new Matchday();
+        reference.league = group.league;
+        reference.season = group.season;
+        reference.groupName = group.groupName;
+        reference.number = number;
+        return reference;
+    }
+
+    /**
      * Spec 06: the round band — every round of one edition, the final on top, each with its
      * pairings; below it the surprises of that edition. No bracket: the competition is drawn
      * anew after every round, so there are no paths to draw.
@@ -289,6 +356,13 @@ public class MatchdayPages {
         }
         rounds.sort(Comparator.comparingInt((Matchday m) -> m.number).reversed());
         Instant now = Instant.now();
+        // the round the viewer should land on — same rule the rest of the app follows for the
+        // current matchday: the first one still to be played, the last one once the edition is
+        // over. A finished edition opens on the final instead of 32 first-round pairings.
+        int openRound = rounds.stream()
+                .filter(r -> Match.findByMatchday(r).stream().anyMatch(m -> !m.isPlayed()))
+                .mapToInt(r -> r.number).min()
+                .orElse(rounds.get(0).number);
 
         List<RoundSection> sections = new ArrayList<>();
         List<UpsetRow> upsets = new ArrayList<>();
@@ -297,7 +371,8 @@ public class MatchdayPages {
             matches.sort(Comparator.comparing((Match m) -> m.kickoff));
             sections.add(new RoundSection(round.displayName(), matches.size(), dateRange(matches),
                     matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow,
-                            TeamTier.of(m.homeTeam, season).label(), TeamTier.of(m.awayTeam, season).label())).toList()));
+                            TeamTier.of(m.homeTeam, season).label(), TeamTier.of(m.awayTeam, season).label())).toList(),
+                    round.number == openRound));
             matches.forEach(m -> upsetOf(m, round, season, shortcut).ifPresent(upsets::add));
         }
         upsets.sort(Comparator.comparingInt(UpsetRow::gap).reversed());

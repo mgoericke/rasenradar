@@ -36,6 +36,12 @@ class CompetitionFormatTest {
         assertEquals(5, League.BUNDESLIGA_1.historySeasons());
         assertEquals(0, League.CHAMPIONS_LEAGUE.historySeasons());
         assertEquals(3, League.DFB_POKAL.historySeasons());
-        assertEquals(1, League.NATIONS_LEAGUE.historySeasons());
+    }
+
+    @Test
+    void aCompetitionPlayedEveryOtherYearNeedsTheGapInItsHistory() {
+        // Spec 06: die Ausgaben 2024 und 2026 sollen vorliegen. Mit nur einer Saison
+        // Historie bliebe 2024 aussen vor, weil dazwischen ein leeres Jahr liegt.
+        assertEquals(2, League.NATIONS_LEAGUE.historySeasons());
     }
 }

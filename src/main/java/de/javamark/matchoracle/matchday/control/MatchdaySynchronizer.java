@@ -110,14 +110,26 @@ public class MatchdaySynchronizer {
         return true;
     }
 
-    /** Spec 06: in a knockout competition the source's section name is the round's name. */
-    static String labelOf(CompetitionFormat format, String sectionName) {
-        return format == CompetitionFormat.KNOCKOUT ? sectionName : null;
+    /**
+     * Spec 06: a group competition is not groups all the way through — the Nations League
+     * plays its groups first and a final round afterwards. Every section says for itself
+     * what it is, by its name.
+     */
+    private static boolean isGroup(CompetitionFormat format, String sectionName) {
+        return format == CompetitionFormat.GROUPS && sectionName != null && sectionName.startsWith("Gruppe");
     }
 
-    /** Spec 06: in a group competition it is the group the matchday belongs to. */
+    /** Spec 06: the round's name — in a cup always, in a group competition for its final round. */
+    static String labelOf(CompetitionFormat format, String sectionName) {
+        if (format == CompetitionFormat.KNOCKOUT) {
+            return sectionName;
+        }
+        return format == CompetitionFormat.GROUPS && !isGroup(format, sectionName) ? sectionName : null;
+    }
+
+    /** Spec 06: the group a matchday belongs to, where the section is one. */
     static String groupOf(CompetitionFormat format, String sectionName) {
-        return format == CompetitionFormat.GROUPS ? sectionName : null;
+        return isGroup(format, sectionName) ? sectionName : null;
     }
 
     /**
@@ -128,7 +140,7 @@ public class MatchdaySynchronizer {
     private List<Long> storeSection(League league, int season, int sectionNumber,
                                     List<OpenLigaDbMatch> matches, Instant sourceLastChange, Instant now) {
         String sectionName = matches.get(0).group().name();
-        if (league.format() == CompetitionFormat.GROUPS) {
+        if (isGroup(league.format(), sectionName)) {
             String groupName = groupOf(league.format(), sectionName);
             List<Long> newlyPlayed = new ArrayList<>();
             GroupMatchdays.byMatchday(matches).forEach((number, matchesOfDay) -> {

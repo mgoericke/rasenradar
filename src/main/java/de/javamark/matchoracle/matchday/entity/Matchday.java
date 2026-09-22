@@ -87,10 +87,17 @@ public class Matchday extends PanacheEntity {
 
     /**
      * The current matchday: the first one of the latest season with an unplayed match,
-     * or the last matchday if the season is complete.
+     * or the last matchday if the season is complete. In a group competition the groups
+     * run side by side and share the counting, so this is the number that applies to all
+     * of them — see {@link #findAll} to get every group's matchday of that number.
      */
     public static Optional<Matchday> findCurrent(League league) {
-        return latestSeason(league).flatMap(season -> {
+        return currentNumber(league).flatMap(current -> find(league, current.season(), current.number()));
+    }
+
+    /** Season and matchday number the competition is currently at. */
+    public static Optional<SeasonMatchday> currentNumber(League league) {
+        return latestSeason(league).map(season -> {
             Integer number = getEntityManager()
                     .createQuery("select min(m.matchday.number) from Match m"
                             + " where m.matchday.league = :league and m.matchday.season = :season and m.fullTimeScore is null", Integer.class)
@@ -102,8 +109,18 @@ public class Matchday extends PanacheEntity {
                         .setParameter("league", league).setParameter("season", season)
                         .getSingleResult();
             }
-            return find(league, season, number);
+            return new SeasonMatchday(season, number == null ? 1 : number);
         });
+    }
+
+    /** A season and a matchday number within it. */
+    public record SeasonMatchday(int season, int number) {
+    }
+
+    /** Every group's matchday of that number, ordered by group; a single one outside a group competition. */
+    public static List<Matchday> findAll(League league, int season, int number) {
+        return list("league = ?1 and season = ?2 and number = ?3 order by groupName nulls first",
+                league, season, number);
     }
 
     private static final ZoneId DISPLAY_ZONE = ZoneId.of("Europe/Berlin");
