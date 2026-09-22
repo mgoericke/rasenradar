@@ -165,8 +165,20 @@ public final class MatchdayPageModels {
                     String score, String decision, String link, int gap) {
     }
 
+    /** Spec 06: one bar of the funnel — how wide the field still was in that round. */
+    record FunnelRow(String round, int clubs, int percent, List<FunnelShare> shares) {
+    }
+
+    /** The share of one division in a round; {@code percent} is relative to that round's field. */
+    record FunnelShare(String tier, String cssClass, int clubs, int percent) {
+    }
+
+    record FunnelFigures(int matches, int goals, int shootouts, int extraTime, int upsets) {
+    }
+
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
-                        List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data) {
+                        List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data,
+                        List<FunnelRow> funnel, FunnelFigures figures) {
     }
 
     /** Spec 06: one group of a group competition — its own table and its matches of the shown matchday. */

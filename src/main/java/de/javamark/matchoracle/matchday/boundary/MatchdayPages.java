@@ -23,6 +23,11 @@ import jakarta.ws.rs.QueryParam;
 import de.javamark.matchoracle.matchday.entity.Tier;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.UpsetRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.RoundSection;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FunnelFigures;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FunnelRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FunnelShare;
+import de.javamark.matchoracle.matchday.control.CupFunnelCalculator;
+import de.javamark.matchoracle.matchday.entity.CupFunnel;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.KnockoutPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GroupsPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TeamSituation;
@@ -98,6 +103,9 @@ public class MatchdayPages {
 
     @Inject
     GoalTimingCalculator goalTimingCalculator;
+
+    @Inject
+    CupFunnelCalculator cupFunnelCalculator;
 
     /** How long after kickoff a match still counts as "läuft" in the UI — never a live score, just the label (Spec 1). */
     @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
@@ -403,8 +411,37 @@ public class MatchdayPages {
                         "/" + shortcut + "?saison=" + y))
                 .toList();
 
+        CupFunnel funnel = cupFunnelCalculator.funnelFor(league, season);
         return new KnockoutPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, otherEditions,
-                sections, upsets, DataInfo.of(rounds.get(0), now));
+                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel));
+    }
+
+    /**
+     * Spec 06: the funnel as bars — each round against the widest one, and inside a round
+     * each division against that round's field. The widths carry the meaning, the divisions
+     * are told apart by ink alone (styleguide: green and red are results, brass is the AI).
+     */
+    private static List<FunnelRow> funnelRows(CupFunnel funnel) {
+        int widest = funnel.widest();
+        List<FunnelRow> rows = new ArrayList<>();
+        for (CupFunnel.Round round : funnel.rounds()) {
+            List<FunnelShare> shares = new ArrayList<>();
+            for (Tier tier : Tier.values()) {
+                int clubs = round.byTier().getOrDefault(tier, 0);
+                if (clubs == 0) {
+                    continue;
+                }
+                shares.add(new FunnelShare(tier.label(), "tier-" + tier.name().toLowerCase(java.util.Locale.ROOT),
+                        clubs, round.clubs() == 0 ? 0 : Math.round(100f * clubs / round.clubs())));
+            }
+            rows.add(new FunnelRow(round.name(), round.clubs(), round.percentOf(widest), List.copyOf(shares)));
+        }
+        return List.copyOf(rows);
+    }
+
+    private static FunnelFigures figuresOf(CupFunnel funnel) {
+        CupFunnel.Figures f = funnel.figures();
+        return new FunnelFigures(f.matches(), f.goals(), f.shootouts(), f.extraTime(), f.upsets());
     }
 
     /** Spec 06: the lower-division side winning is the surprise. */
