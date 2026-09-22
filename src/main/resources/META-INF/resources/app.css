@@ -21,14 +21,17 @@
 }
 
 * { box-sizing: border-box; }
-html { color-scheme: light; }
+/* Die Schriftgroesse sitzt an der Wurzel, nicht am body: sonst rechnet jedes rem im
+   Rest der Datei gegen die 16px des Browsers, waehrend der Fliesstext auf 15px steht —
+   .95rem war dadurch groesser als der Fliesstext. Fluid, aber mit rem-Anteil, damit
+   Zoom benutzbar bleibt: 16px auf dem Telefon, 17.5px auf grossen Schirmen. */
+html { color-scheme: light; font-size: clamp(16px, 0.9rem + 0.35vw, 17.5px); }
 body {
   margin: 0;
   background: var(--ground);
   color: var(--ink);
   font-family: var(--text);
-  font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
 a { color: inherit; text-decoration: none; }
@@ -85,7 +88,7 @@ h2 { font-size: 1.1rem; }
 @media (max-width: 900px) { .page { grid-template-columns: minmax(0, 1fr); } }
 
 /* matchday head */
-.matchday-title { font-size: clamp(2.6rem, 6.5vw, 4.4rem); font-weight: 700; line-height: .95; letter-spacing: -0.04em; }
+.matchday-title { font-size: clamp(1.9rem, 7.5vw, 4.4rem); font-weight: 700; line-height: .95; letter-spacing: -0.04em; }
 .matchday-title .number { font-variation-settings: "opsz" 96; }
 .matchday-season { margin: .35rem 0 0; color: var(--ink-soft); font-size: 1.05rem; }
 .pager { display: flex; gap: 1.5rem; margin-top: 1rem; }
@@ -112,13 +115,17 @@ h2 { font-size: 1.1rem; }
 .fixture .team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fixture .team-name.short { display: none; }
 @media (max-width: 560px) {
-  .fixture { grid-template-columns: 2.5rem minmax(0, 1fr) auto minmax(0, 1fr) 2.1rem; gap: .4rem; padding: .55rem .6rem; }
+  /* letzte Spalte auf auto: sie traegt Halbzeitstand, Prognose-Marker oder die Art der
+     Entscheidung — ist sie leer (im Pokal der Normalfall), faellt sie jetzt zusammen,
+     statt fest Breite zu verbrauchen, die der Vereinsname braucht */
+  .fixture { grid-template-columns: 2.5rem minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: .4rem; padding: .55rem .6rem; }
   .fixture .team-name.full { display: none; }
   .fixture .team-name.short { display: block; }
   /* decorative crests (alt="") are the first thing to go — narrow columns need the room for the name */
   .fixture .crest { display: none; }
-  .fixture .time { font-size: .8rem; }
-  .score { min-width: 2.9rem; font-size: 1.05rem; }
+  /* Schrift wird auf dem Telefon nicht mehr verkleinert — das Telefon ist der Ort, an
+     dem man Groesse braucht. Platz kommt aus der Breite, nicht aus der Schriftgroesse. */
+  .score { min-width: 2.6rem; }
 }
 
 /* the score cell: solid when final, outlined while provisional, quiet before kickoff */
@@ -281,7 +288,7 @@ h2 { font-size: 1.1rem; }
 .landing { grid-column: 1 / -1; }
 .masthead { text-align: center; max-width: 700px; margin: 0 auto 2.5rem; }
 .masthead .kicker { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mute); }
-.landing-title { font-size: clamp(2.2rem, 6vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; margin: .3rem 0 0; text-wrap: balance; }
+.landing-title { font-size: clamp(1.75rem, 6.5vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; margin: .3rem 0 0; text-wrap: balance; }
 .landing-intro { margin: .6rem auto 0; color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; }
 
 /* the one upcoming (or currently live) match, ahead of both league sections */
@@ -359,7 +366,7 @@ h2 { font-size: 1.1rem; }
 
 /* --- forecast pages --------------------------------------------------------------- */
 .forecast-page { grid-column: 1 / -1; max-width: 960px; }
-.page-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; }
+.page-title { font-size: clamp(1.45rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; }
 .start { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.5rem; }
 
 .progress { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; }
@@ -384,7 +391,7 @@ h2 { font-size: 1.1rem; }
    they can point in different directions on a close match (see .tendency-explainer) */
 .forecast-headline { display: flex; align-items: baseline; gap: .5rem; }
 .headline-label { color: var(--ink-soft); }
-.headline-score { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; color: var(--ink); }
+.headline-score { font-family: var(--display); font-weight: 700; font-size: clamp(1.4rem, 4.5vw, 2.2rem); letter-spacing: -0.02em; color: var(--ink); }
 .tendency { font-weight: 600; }
 .tendency.home_win { color: var(--ink); }
 .tendency.away_win { color: var(--ink-mute); }
@@ -493,7 +500,7 @@ h2 { font-size: 1.1rem; }
 /* club page */
 .club { grid-column: 1 / -1; max-width: 1100px; }
 .club-head { display: flex; gap: 1.5rem; align-items: center; margin-bottom: 2rem; }
-.club-name { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
+.club-name { font-size: clamp(1.7rem, 6vw, 3.4rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
 .club-season { margin: .3rem 0 0; color: var(--ink-soft); font-size: 1.05rem; }
 .club-standing { margin: .6rem 0 0; color: var(--ink-soft); }
 .club-standing .place { font-family: var(--display); font-weight: 700; font-size: 1.25rem; color: var(--ink); padding-left: .6rem; border-left: 3px solid var(--line); }
@@ -549,7 +556,7 @@ h2 { font-size: 1.1rem; }
 .accuracy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 @media (max-width: 800px) { .accuracy-grid { grid-template-columns: 1fr; } }
 .accuracy-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.3rem 1.4rem; }
-.big-number { font-family: var(--display); font-weight: 700; font-size: clamp(2.2rem, 5.5vw, 3.4rem); letter-spacing: -0.04em; margin: .4rem 0 .2rem; font-variation-settings: "opsz" 96; }
+.big-number { font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 7vw, 3.4rem); letter-spacing: -0.04em; margin: .4rem 0 .2rem; font-variation-settings: "opsz" 96; }
 .big-number .muted { font-family: var(--text); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
 .accuracy-facts { color: var(--ink-soft); margin: 0 0 .6rem; }
 .yardsticks { border-collapse: collapse; width: 100%; margin: .6rem 0 .2rem; font-size: .92rem; }
@@ -596,10 +603,10 @@ h2 { font-size: 1.1rem; }
 /* Spielklasse am Vereinsnamen: die eine Angabe, die aus einer Ergebniszeile eine
    Pokalgeschichte macht. Abstufung über die Tinte, nicht über eine neue Farbe. */
 .tier {
-  font-size: .7rem; color: var(--ink-mute); border: 1px solid var(--line);
+  font-size: .75rem; color: var(--ink-mute); border: 1px solid var(--line);
   border-radius: 4px; padding: 0 .25rem; white-space: nowrap;
 }
-.decision { font-size: .75rem; color: var(--ink-mute); margin-left: .35rem; white-space: nowrap; }
+.decision { font-size: .8rem; color: var(--ink-mute); margin-left: .35rem; white-space: nowrap; }
 
 .upsets { margin-top: 2.5rem; }
 .upset-list { list-style: none; padding: 0; margin: .5rem 0 0; display: grid; gap: .35rem; }
