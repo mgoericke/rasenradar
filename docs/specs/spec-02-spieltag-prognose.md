@@ -71,6 +71,11 @@ Sicherheit und sichtbarem Zustandekommen.
   Pause der Terminplanung), werden nachgeholt, aber je Lauf nur bis zu einer
   Obergrenze — der Rest folgt beim nächsten Lauf. Das hält die Zahl gleichzeitig
   ausgelöster Prognosen kalkulierbar.
+- Schlägt ein Prognoselauf fehl oder entsteht eine Prognose, bei der keine
+  einzige Bewertung gelungen ist, holt die Terminplanung sie deutlich früher
+  nach als sie eine gelungene Prognose auffrischen würde — aber nicht in einer
+  engen Schleife, damit ein Ausfall des Modells keine Kosten verursacht. Die
+  misslungene Prognose bleibt als eigener Eintrag erhalten.
 - Die fachlichen Bewertungsmaßstäbe (Gewicht des Heimvorteils, Länge des
   betrachteten Formzeitraums, Umgang mit Aufsteigern) sind ohne Eingriff in die
   Anwendung änderbar und wirken sofort auf die nächste Prognose.
