@@ -20,7 +20,8 @@ public record OpenLigaDbMatch(
         List<Result> matchResults,
         List<Goal> goals) {
 
-    public record Group(@JsonProperty("groupOrderID") int number) {
+    /** In a cup this same field carries the name of the round ("Achtelfinale"). */
+    public record Group(@JsonProperty("groupOrderID") int number, @JsonProperty("groupName") String name) {
     }
 
     public record Team(int teamId, String teamName, String shortName, String teamIconUrl) {
