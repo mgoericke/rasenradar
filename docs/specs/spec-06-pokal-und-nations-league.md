@@ -10,6 +10,11 @@ zwei weitere Wettbewerbe: den **DFB-Pokal** und die **Nations League**. Beide di
 allein der Ansicht — Begegnungen, Ergebnisse und Statistik. Es entsteht keine
 KI-Vorschau zu ihren Begegnungen.
 
+Der Schwerpunkt liegt auf Statistik, nicht auf Prognose. Was den Pokal fachlich
+ausmacht — dass eine klassentiefere Mannschaft eine höherklassige wirft, dass eine
+Begegnung erst im Elfmeterschießen fällt, wie weit eine Mannschaft gekommen ist —,
+soll sichtbar sein.
+
 Beide Wettbewerbe sind anders aufgebaut als eine Liga: der Pokal kennt keine Tabelle,
 sondern Runden bis zum Endspiel; die Nations League spielt mehrere Gruppen
 nebeneinander, jede mit eigener Tabelle. Das System braucht dafür einen Begriff von
@@ -38,7 +43,12 @@ machen.
    der Runden, bei der Nations League die Tabellen aller Gruppen samt den Begegnungen
    des aktuellen Spieltags.
 6. Der Betrachter ruft zu jeder beteiligten Mannschaft eine Mannschaftsseite auf, die
-   deren Weg durch den Wettbewerb, Bilanz und Torschützen zeigt.
+   deren Weg durch den Wettbewerb, Bilanz und Torschützen zeigt. Im K.-o.-Wettbewerb ist
+   dieser Weg eine Kette von Runde zu Runde, die dort endet, wo die Mannschaft
+   ausgeschieden ist.
+7. Im K.-o.-Wettbewerb weist das System zu jeder Begegnung die Spielklasse beider
+   Mannschaften aus und hebt die **Überraschungen** einer Ausgabe hervor: Begegnungen,
+   die eine klassentiefere Mannschaft gewonnen hat.
 
 ## Regeln
 
@@ -65,6 +75,22 @@ machen.
   Wettbewerbe hinweg zu einer Gesamtbilanz verrechnet. Eine Mannschaft, die in
   mehreren Wettbewerben derselben Saison spielt, ist von jedem ihrer Wettbewerbe aus
   erreichbar.
+- Eine Begegnung eines K.-o.-Wettbewerbs kann nach Verlängerung oder im
+  Elfmeterschießen entschieden werden. Maßgeblich für den Sieger ist das
+  Elfmeterschießen, sonst die Verlängerung, sonst der Stand nach 90 Minuten. Angezeigt
+  wird der Stand nach 90 Minuten zusammen mit der Art der Entscheidung.
+- Die äußere Quelle weist zusätzlich einen zusammenfassenden Endstand aus, dessen
+  Bedeutung von Ausgabe zu Ausgabe wechselt — mal der Stand nach 90 Minuten, mal nach
+  Verlängerung, mal der des Elfmeterschießens. Er wird nicht übernommen; das System
+  liest die eigens ausgewiesenen Stände.
+- Treffer aus einem Elfmeterschießen sind keine Tore der Begegnung. Sie zählen weder in
+  den Endstand noch in eine Torschützenliste noch in eine Bilanz.
+- Jede Mannschaft eines K.-o.-Wettbewerbs trägt die **Spielklasse**, in der sie in
+  dieser Saison spielt: erste, zweite oder dritte Liga, sonst unterklassig. Sie ergibt
+  sich aus den Mannschaftslisten dieser Ligen in derselben Saison; wer in keiner davon
+  steht, gilt als unterklassig.
+- Eine **Überraschung** ist eine Begegnung, die eine klassentiefere Mannschaft gewonnen
+  hat. Wie deutlich sie ausfällt, ergibt sich aus dem Abstand der beiden Spielklassen.
 - Vorläufige Ergebnisse dürfen angezeigt werden und sind als solche gekennzeichnet,
   wie in Spec 1.
 - Zu Begegnungen dieser Wettbewerbe entsteht keine KI-Vorschau, keine Rückschau und
@@ -81,6 +107,8 @@ machen.
   deren Qualifikation, Freundschaftsspiele).
 - Keine Aussage darüber, welche Mannschaft eine K.-o.-Runde erreichen wird — der
   Pokal wird gezeigt, nicht geschätzt.
+- Kein Turnierbaum. Der Wettbewerb wird nach jeder Runde neu ausgelost; ein Baum würde
+  Pfade behaupten, die es nicht gibt (siehe „Im Spec-Interview geklärt").
 - Keine Spielerstatistik über die Torschützen hinaus, wie in Spec 1.
 
 ## Im Spec-Interview geklärt
@@ -105,6 +133,24 @@ machen.
 - **Saisonaussicht für die Nations League:** bewusst nicht. Gruppen mit vier
   Mannschaften und sechs Begegnungen wären eine eigene fachliche Entscheidung über
   Platzierungsziele; sie wird getrennt getroffen, falls sie gewünscht wird.
+- **Kein Turnierbaum:** Geprüft an den Ausgaben 2023/24 bis 2025/26 — von sechzehn
+  Paarungen, die ein fester Turnierbaum für die zweite Runde vorhersagen würde, traten
+  über drei Ausgaben zusammen zwei ein. Der Wettbewerb wird nach jeder Runde neu
+  ausgelost, auch vor Viertel- und Halbfinale. Die fachlich richtige Form ist die Kette
+  je Mannschaft, nicht der Baum.
+- **Entscheidung einer K.-o.-Begegnung:** Die Quelle weist die Stände nach 90 Minuten,
+  nach Verlängerung und nach Elfmeterschießen getrennt aus; daneben einen
+  zusammenfassenden Endstand, dessen Bedeutung wechselt (geprüft: 2023/24 trägt er den
+  Stand des Elfmeterschießens, 2024/25 den nach Verlängerung, 2025/26 den nach 90
+  Minuten). Nur die eigens ausgewiesenen Stände werden gelesen.
+- **Elfmeterschützen:** Die Quelle führt die Schützen eines Elfmeterschießens in
+  derselben Liste wie die Tore der Begegnung, erkennbar am fehlenden Spielzeitpunkt
+  (16 bis 25 Einträge je Ausgabe). Ohne Trennung wäre jede Torschützenliste des
+  Wettbewerbs verfälscht.
+- **Spielklasse:** Sie wird aus den Mannschaftslisten der ersten, zweiten und dritten
+  Liga derselben Saison abgeleitet; damit sind 56 der 64 Teilnehmer einer Ausgabe
+  zugeordnet, der Rest gilt als unterklassig (Stichprobe 2025/26 geprüft). Die dritte
+  Liga ist dafür nur Vergleichsliste, kein eigener Wettbewerb im System.
 - **Saisonbezeichnung der Nations League:** Die Ausgabe reicht ins Folgejahr und wird
   wie eine Saison bezeichnet (Beispiel: 2026/27).
 
@@ -125,3 +171,12 @@ machen.
 - Zu einer Begegnung des Pokals oder der Nations League lässt sich keine KI-Vorschau
   auslösen, und es erscheint keine.
 - Ein vorläufiges Ergebnis ist in beiden Wettbewerben als vorläufig gekennzeichnet.
+- Eine im Elfmeterschießen entschiedene Pokalbegegnung zeigt den Stand nach 90 Minuten
+  und die Art der Entscheidung; der Sieger ist die Mannschaft, die das Elfmeterschießen
+  gewonnen hat. Geprüft an einer bekannten Begegnung: SV Sandhausen gegen Hannover 96
+  (Ausgabe 2023/24) endete 3:3 und wurde im Elfmeterschießen mit 7:5 entschieden.
+- Kein Schütze eines Elfmeterschießens erscheint in einer Torschützenliste, und kein
+  solcher Treffer verändert eine Bilanz.
+- Jede Mannschaft einer Pokalbegegnung ist mit ihrer Spielklasse ausgewiesen.
+- Die Übersicht der Überraschungen einer Ausgabe enthält genau die Begegnungen, die
+  eine klassentiefere Mannschaft gewonnen hat.
