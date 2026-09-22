@@ -15,8 +15,11 @@ import java.util.Set;
 
 /**
  * Tries the hosted model first and falls back to the local one when the hosted
- * call fails — unreachable, no or invalid key, credits used up, timeout. Which
- * model answered is recorded in {@link ModelUsage} and ends up on the forecast.
+ * call fails — unreachable, no or invalid key, credits used up, timeout. Where no
+ * local model runs (production), the fallback is switched off so the hosted
+ * model's own error surfaces instead of a "connection refused" from a port nobody
+ * listens on. Which model answered is recorded in {@link ModelUsage} and ends up
+ * on the forecast.
  */
 public final class FallbackChatModel implements ChatModel {
 
@@ -24,11 +27,14 @@ public final class FallbackChatModel implements ChatModel {
 
     private final Optional<ChatModel> cloud;
     private final String cloudName;
-    private final ChatModel local;
+    private final Optional<ChatModel> local;
     private final String localName;
     private final ModelUsage usage;
 
-    FallbackChatModel(Optional<ChatModel> cloud, String cloudName, ChatModel local, String localName, ModelUsage usage) {
+    FallbackChatModel(Optional<ChatModel> cloud, String cloudName, Optional<ChatModel> local, String localName, ModelUsage usage) {
+        if (cloud.isEmpty() && local.isEmpty()) {
+            throw new IllegalStateException("No chat model left: cloud and local fallback are both disabled");
+        }
         this.cloud = cloud;
         this.cloudName = cloudName;
         this.local = local;
@@ -40,12 +46,16 @@ public final class FallbackChatModel implements ChatModel {
     static ChatModel resilient() {
         var config = ConfigProvider.getConfig();
         boolean cloudEnabled = config.getOptionalValue("matchoracle.forecast.cloud-enabled", Boolean.class).orElse(true);
+        boolean localEnabled = config.getOptionalValue("matchoracle.forecast.local-fallback-enabled", Boolean.class).orElse(true);
         Optional<ChatModel> cloud = cloudEnabled
                 ? Optional.of(CDI.current().select(ChatModel.class, ModelName.Literal.of("cloud")).get())
                 : Optional.empty();
+        Optional<ChatModel> local = localEnabled
+                ? Optional.of(CDI.current().select(ChatModel.class).get())
+                : Optional.empty();
         return new FallbackChatModel(cloud,
                 config.getValue("quarkus.langchain4j.anthropic.cloud.chat-model.model-name", String.class),
-                CDI.current().select(ChatModel.class).get(),
+                local,
                 config.getValue("quarkus.langchain4j.ollama.chat-model.model-name", String.class),
                 CDI.current().select(ModelUsage.class).get());
     }
@@ -59,17 +69,21 @@ public final class FallbackChatModel implements ChatModel {
                 usage.record(cloudName);
                 return response;
             } catch (RuntimeException e) {
-                LOG.warnf("Cloud model %s failed (%s), falling back to %s", cloudName, rootMessage(e), localName);
+                if (local.isEmpty()) {
+                    LOG.warnf("Cloud model %s failed (%s), no local fallback configured", cloudName, ForecastService.rootMessage(e));
+                    throw e;
+                }
+                LOG.warnf("Cloud model %s failed (%s), falling back to %s", cloudName, ForecastService.rootMessage(e), localName);
             }
         }
-        ChatResponse response = local.chat(request);
+        ChatResponse response = local.orElseThrow().chat(request);
         usage.record(cloud.isPresent() ? localName + " (Fallback)" : localName);
         return response;
     }
 
     @Override
     public ChatRequestParameters defaultRequestParameters() {
-        return cloud.orElse(local).defaultRequestParameters();
+        return primary().defaultRequestParameters();
     }
 
     /**
@@ -79,15 +93,10 @@ public final class FallbackChatModel implements ChatModel {
      */
     @Override
     public Set<Capability> supportedCapabilities() {
-        return cloud.orElse(local).supportedCapabilities();
+        return primary().supportedCapabilities();
     }
 
-    private static String rootMessage(Throwable e) {
-        Throwable t = e;
-        while (t.getCause() != null && t.getCause() != t) {
-            t = t.getCause();
-        }
-        String m = t.getMessage();
-        return m == null ? t.getClass().getSimpleName() : m.length() > 200 ? m.substring(0, 200) : m;
+    private ChatModel primary() {
+        return cloud.or(() -> local).orElseThrow();
     }
 }

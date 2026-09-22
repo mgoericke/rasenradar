@@ -23,8 +23,9 @@ services:
       QUARKUS_DATASOURCE_USERNAME: matchoracle
       QUARKUS_DATASOURCE_PASSWORD: ${MATCHORACLE_DB_PASSWORD}
       QUARKUS_DATASOURCE_DEVSERVICES_ENABLED: "false"
-      # Model: Anthropic Sonnet first. No local Ollama on this server — if the cloud
-      # call fails, the affected forecast step fails too, it does not fall back further.
+      # Model: Anthropic Sonnet only. No local Ollama on this server — the prod profile
+      # switches the local fallback off, so a failed cloud call reports its own error
+      # and the Terminplanung retries the forecast an hour later.
       QUARKUS_LANGCHAIN4J_ANTHROPIC_CLOUD_API_KEY: ${ANTHROPIC_API_KEY}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/q/health/ready" ]

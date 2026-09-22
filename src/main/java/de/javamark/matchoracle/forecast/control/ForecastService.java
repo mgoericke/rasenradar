@@ -106,7 +106,7 @@ public class ForecastService {
             return id;
         } catch (RuntimeException e) {
             LOG.errorf(e, "Forecast for match %d failed", matchId);
-            progress.failed(matchId, causeChain(e));
+            progress.failed(matchId, rootMessage(e));
             throw e;
         }
     }
@@ -121,6 +121,16 @@ public class ForecastService {
     }
 
     /** Agent frameworks wrap exceptions several times; the viewer wants the root cause — without the base64 copy of the answer. */
+    /** The innermost cause, capped — what the viewer gets to see; the whole chain goes to the log. */
+    static String rootMessage(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) {
+            t = t.getCause();
+        }
+        String m = t.getMessage() == null ? null : BASE64_COPY.matcher(t.getMessage()).replaceAll("");
+        return m == null ? t.getClass().getSimpleName() : m.length() > 200 ? m.substring(0, 200) + "…" : m;
+    }
+
     static String causeChain(Throwable e) {
         StringBuilder sb = new StringBuilder();
         for (Throwable t = e; t != null && sb.length() < 2000; t = t.getCause() == t ? null : t.getCause()) {

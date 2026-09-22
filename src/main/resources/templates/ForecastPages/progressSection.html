@@ -6,8 +6,8 @@
   {#else if fragment.state == 'RUNNING'}
   <p class="progress-title">Die KI-Vorschau entsteht …</p>
   {#else if fragment.state == 'FAILED'}
-  <p class="progress-title is-error">Die letzte Vorschau ist fehlgeschlagen.</p>
-  <p class="progress-error">{fragment.error}</p>
+  <p class="progress-title is-error">Die letzte Vorschau ist fehlgeschlagen – für anstehende Spiele wird sie automatisch nachgeholt.</p>
+  <p class="progress-error">Grund: {fragment.error}</p>
   {/if}
   {#if fragment.steps && fragment.state != 'DONE'}
   <ol class="steps">
