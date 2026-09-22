@@ -4,7 +4,7 @@ Die wichtigen Abläufe mit Verweis auf die beteiligten Klassen. Konfigurationswe
 
 ## 1. Spieltag-Synchronisation und Finalisierung
 
-Alle 15 Minuten (`matchoracle.matchday.sync-interval`, erster Lauf beim Start) prüft der Scheduler beide Ligen. Ein Spieltag wird nur nachgeladen, wenn `getlastchangedate` bei OpenLigaDB neuer ist als der gespeicherte Stand. Danach werden vorläufige Ergebnisse endgültig, deren Anstoß und letzte Quellenänderung 24 h (`final-after`) zurückliegen; für jedes fires der Scheduler das CDI-Event `ResultFinalized`.
+Alle 15 Minuten (`matchoracle.matchday.sync-interval`, erster Lauf beim Start) prüft der Scheduler alle Wettbewerbe. Ein Spieltag wird nur nachgeladen, wenn `getlastchangedate` bei OpenLigaDB neuer ist als der gespeicherte Stand. Danach werden vorläufige Ergebnisse endgültig, deren Anstoß und letzte Quellenänderung 24 h (`final-after`) zurückliegen; für jedes fires der Scheduler das CDI-Event `ResultFinalized`.
 
 ```mermaid
 sequenceDiagram
@@ -52,6 +52,22 @@ Anmerkungen:
 - `syncMatchday` ist je Spieltag eine eigene Transaktion; `syncCurrentMatchdays` läuft mit `@ActivateRequestContext`, weil Panache außerhalb einer Transaktion einen Request-Kontext braucht.
 - Ändert die Quelle ein bereits endgültiges Ergebnis, übernimmt `upsert` die Korrektur, lässt den Status aber auf `FINAL` und loggt eine Warnung.
 - Zeitstempel von OpenLigaDB außer `matchDateTimeUTC` sind Ortszeit ohne Zone; `OpenLigaDb.toInstant` interpretiert sie als `Europe/Berlin`.
+
+### 1a. Abschnitte der Quelle und abgeleitete Spieltage (Spec 06)
+
+Die Quelle liefert einen Wettbewerb in **Abschnitten** (`getmatchdata/{liga}/{saison}/{n}`). Was ein Abschnitt bedeutet, hängt an der Form des Wettbewerbs (`League.format()`):
+
+| Form | Beispiel | Ein Abschnitt ist … | Spieltagsnummer |
+|------|----------|---------------------|-----------------|
+| `TABLE` | bl1, bl2, ucl | ein Spieltag | die der Quelle |
+| `KNOCKOUT` | dfb | eine Runde, benannt (`Matchday.label`) | die der Quelle |
+| `GROUPS` | nla | eine ganze Gruppe (`Matchday.groupName`) mit sechs Spieltagen | **abgeleitet** |
+
+Ein Gruppenwettbewerb ist dabei nicht durchgehend Gruppen: Abschnitte, deren Name mit „Gruppe" beginnt, sind Gruppen, alle anderen (Viertelfinale, Endspiel) Runden der Endrunde.
+
+**Die einzige Stelle, an der das System der Quelle etwas hinzufügt:** Für einen Gruppenwettbewerb nennt OpenLigaDB nur die Gruppe, keine Spieltagsnummer. `GroupMatchdays.byMatchday` leitet sie aus dem Kalender ab — Begegnungen derselben Gruppe am selben Tag (Europe/Berlin) bilden einen Spieltag, die Reihenfolge der Tage ergibt die Zählung. Geprüft an der Nations League: je Gruppe sechs Tage mit je zwei Begegnungen.
+
+`Matchday.sectionNumber` merkt sich, aus welchem Abschnitt ein Spieltag stammt. Die Änderungsprüfung läuft vor dem Laden der Begegnungen und kann die sechs Spieltage einer Gruppe sonst nicht wiederfinden.
 
 ## 2. Initial-Import der Historie
 

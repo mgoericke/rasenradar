@@ -70,6 +70,13 @@ Regeln:
   rein aus der Anstoßzeit abgeleitet, siehe Spec 1), ersetzt „Läuft" den Platzhalter —
   Text-Schrift statt Display, `--loss`-Rahmen ohne Füllung: auffällig, aber erkennbar kein
   Ergebnis.
+- **Wettbewerbsabzeichen** (`.badge`): kleines Zeichen links am Navigationseintrag,
+  Display-Schrift 700, Haarrahmen; aktiv in Messing gefüllt. Ein einzelnes Zeichen
+  (die Ligazahl „1", „2") ergibt eine runde Scheibe, ein Kürzel („CL", „DFB", „NL")
+  eine mitwachsende Plakette — `min-width` statt fester Breite, Radius 999 px. Nur
+  Ligen haben eine Zahl; Pokal und Nationenwettbewerb in ein Zahlenabzeichen zu
+  zwingen wäre eine falsche Aussage. **Keine Wettbewerbslogos**: die Datenquelle
+  liefert keine, und die echten sind Marken.
 - **Tabellenzonen**: 2 px-Marker links an der Platzziffer, durchgezogen = direkt,
   gedämpft (60 % Deckkraft) = Relegation/Play-off.
 - **Wappen**: `object-fit: contain`, auf der Bühne auf einer weißen runden Scheibe

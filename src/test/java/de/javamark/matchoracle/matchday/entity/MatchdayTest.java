@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,5 +26,26 @@ class MatchdayTest {
     @Test
     void stillShowingRightUntilMidnightBerlinTime() {
         assertTrue(Matchday.stillShowing(LAST_KICKOFF, Instant.parse("2026-09-20T21:59:59Z")));
+    }
+
+    @Test
+    void aKnockoutMatchdayIsNamedAfterItsRound() {
+        Matchday round = new Matchday();
+        round.league = League.BUNDESLIGA_1;
+        round.season = 2026;
+        round.number = 3;
+        round.label = "Achtelfinale";
+
+        assertEquals("Achtelfinale", round.displayName());
+    }
+
+    @Test
+    void aMatchdayWithoutALabelIsCountedAsUsual() {
+        Matchday plain = new Matchday();
+        plain.league = League.BUNDESLIGA_1;
+        plain.season = 2026;
+        plain.number = 3;
+
+        assertEquals("3. Spieltag", plain.displayName());
     }
 }

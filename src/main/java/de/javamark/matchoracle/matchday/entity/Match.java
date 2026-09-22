@@ -61,6 +61,31 @@ public class Match extends PanacheEntity {
     @OrderBy("position")
     public List<Goal> goals = new ArrayList<>();
 
+    /** Spec 06: how the match was decided; always REGULAR outside a knockout competition. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    public Decision decision = Decision.REGULAR;
+
+    /** Spec 06: the shootout aggregate, null unless the match was decided on penalties. */
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "home", column = @Column(name = "penalty_home")),
+            @AttributeOverride(name = "away", column = @Column(name = "penalty_away"))
+    })
+    public Score penaltyScore;
+
+    /**
+     * Spec 06: the shootout decides, then extra time, then the 90 minutes. Empty for a
+     * draw and for a match that has not been played.
+     */
+    public Optional<Team> winner() {
+        Score decisive = penaltyScore != null ? penaltyScore : fullTimeScore;
+        if (decisive == null || decisive.home == decisive.away) {
+            return Optional.empty();
+        }
+        return Optional.of(decisive.home > decisive.away ? homeTeam : awayTeam);
+    }
+
     public static Optional<Match> findByExternalId(int externalId) {
         return find("externalId", externalId).firstResultOptional();
     }
@@ -92,6 +117,12 @@ public class Match extends PanacheEntity {
     public static List<Match> findPlayedBefore(League league, int season, int matchday) {
         return list("matchday.league = ?1 and matchday.season = ?2 and matchday.number < ?3 and fullTimeScore is not null",
                 league, season, matchday);
+    }
+
+    /** Spec 06: played matches before a matchday within one group — the basis of a group's own table. */
+    public static List<Match> findPlayedBefore(League league, int season, String groupName, int matchday) {
+        return list("matchday.league = ?1 and matchday.season = ?2 and matchday.groupName is not distinct from ?3"
+                + " and matchday.number < ?4 and fullTimeScore is not null", league, season, groupName, matchday);
     }
 
     /** Unplayed matches of a season — the season outlook's remaining-fixtures input (spec 04). */

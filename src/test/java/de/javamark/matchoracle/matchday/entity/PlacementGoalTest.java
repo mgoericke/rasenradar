@@ -80,4 +80,16 @@ class PlacementGoalTest {
             assertEquals(labels.size(), Set.copyOf(labels).size(), "duplicate label in " + league);
         }
     }
+
+    @Test
+    void competitionsWithoutATableHaveNoPlacementGoals() {
+        assertTrue(PlacementGoal.all(League.DFB_POKAL).isEmpty());
+        assertTrue(PlacementGoal.forPosition(League.DFB_POKAL, 1).isEmpty());
+    }
+
+    @Test
+    void theNationsLeagueHasNoPlacementGoalsEither() {
+        assertTrue(PlacementGoal.all(League.NATIONS_LEAGUE).isEmpty());
+        assertTrue(PlacementGoal.forPosition(League.NATIONS_LEAGUE, 1).isEmpty());
+    }
 }

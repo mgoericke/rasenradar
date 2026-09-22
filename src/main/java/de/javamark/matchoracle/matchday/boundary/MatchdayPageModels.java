@@ -3,7 +3,9 @@ package de.javamark.matchoracle.matchday.boundary;
 import de.javamark.matchoracle.matchday.entity.Balance;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.GoalTiming;
+import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.League;
+import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.PlacementGoal;
@@ -37,6 +39,8 @@ public final class MatchdayPageModels {
             case BUNDESLIGA_1 -> "1. Bundesliga";
             case BUNDESLIGA_2 -> "2. Bundesliga";
             case CHAMPIONS_LEAGUE -> "Champions League";
+            case DFB_POKAL -> "DFB-Pokal";
+            case NATIONS_LEAGUE -> "Nations League";
         };
     }
 
@@ -46,6 +50,8 @@ public final class MatchdayPageModels {
             case BUNDESLIGA_1 -> "1";
             case BUNDESLIGA_2 -> "2";
             case CHAMPIONS_LEAGUE -> "CL";
+            case DFB_POKAL -> "DFB";
+            case NATIONS_LEAGUE -> "NL";
         };
     }
 
@@ -119,10 +125,21 @@ public final class MatchdayPageModels {
         }
     }
 
+    /**
+     * {@code decision}, {@code homeTier} and {@code awayTier} are empty outside a knockout
+     * competition — spec 06: there a result carries how it was decided, and each club the
+     * division it plays in.
+     */
     record MatchRow(long id, String link, String time, String home, String away, String homeShort, String awayShort,
                     String homeIcon, String awayIcon,
-                    String score, String halfTime, boolean played, boolean provisional, boolean live) {
+                    String score, String halfTime, boolean played, boolean provisional, boolean live,
+                    String decision, String homeTier, String awayTier) {
         static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
+            return of(m, leagueShortcut, now, liveWindow, null, null);
+        }
+
+        static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow,
+                           String homeTier, String awayTier) {
             return new MatchRow(m.id, "/" + leagueShortcut + "/matches/" + m.id,
                     TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
                     m.homeTeam.name, m.awayTeam.name, m.homeTeam.shortName, m.awayTeam.shortName,
@@ -130,8 +147,35 @@ public final class MatchdayPageModels {
                     m.fullTimeScore == null ? null : m.fullTimeScore.home + ":" + m.fullTimeScore.away,
                     m.halfTimeScore == null ? null : m.halfTimeScore.home + ":" + m.halfTimeScore.away,
                     m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
-                    isLive(m.kickoff, m.isPlayed(), now, liveWindow));
+                    isLive(m.kickoff, m.isPlayed(), now, liveWindow),
+                    decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier);
         }
+    }
+
+    /**
+     * Spec 06: one round of a knockout competition — the band's sections, final on top.
+     * {@code open} marks the round the viewer should land on: the one that is being played,
+     * so a finished edition does not open with 32 first-round pairings.
+     */
+    record RoundSection(String name, int matchCount, String dateRange, List<MatchRow> matches, boolean open) {
+    }
+
+    /** Spec 06: a match a lower-division club won, with how far apart the two divisions were. */
+    record UpsetRow(String round, String winner, String loser, String winnerTier, String loserTier,
+                    String score, String decision, String link, int gap) {
+    }
+
+    record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
+                        List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data) {
+    }
+
+    /** Spec 06: one group of a group competition — its own table and its matches of the shown matchday. */
+    record GroupSection(String name, List<StandingRow> table, List<MatchRow> matches) {
+    }
+
+    /** {@code rounds} carries a group competition's final round — empty while it is in the group stage. */
+    record GroupsPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
+                      List<GroupSection> groups, List<RoundSection> rounds, boolean standingsProvisional, DataInfo data) {
     }
 
     record DayGroup(String label, List<MatchRow> matches) {
@@ -142,6 +186,36 @@ public final class MatchdayPageModels {
      * 16 relegation play-off, 17-18 relegation. Champions League league phase: 1-8 straight to the
      * round of 16, 9-24 into the knockout play-off, 25-36 eliminated.
      */
+    /**
+     * Spec 06: a knockout result shows the score of the match with how it was decided behind
+     * it — "3:3 n. E. 7:5", never the shootout aggregate as the result itself.
+     */
+    static String decisionLabel(Decision decision, Score penaltyScore) {
+        return switch (decision) {
+            case REGULAR -> "";
+            case EXTRA_TIME -> "n. V.";
+            case PENALTIES -> penaltyScore == null ? "n. E."
+                    : "n. E. " + penaltyScore.home + ":" + penaltyScore.away;
+        };
+    }
+
+    /**
+     * Spec 06: how a club's cup run ended — the line under the chain of rounds. Empty while
+     * the club is still in it.
+     */
+    static String cupRunOutcome(String lastRoundLabel, boolean wonIt) {
+        if (wonIt) {
+            return "Pokalsieger";
+        }
+        if (lastRoundLabel == null) {
+            return "";
+        }
+        // "die Runde", but "das Achtelfinale" — the preposition follows the round's gender
+        return lastRoundLabel.endsWith("Runde")
+                ? "in der " + lastRoundLabel + " aus"
+                : "im " + lastRoundLabel + " aus";
+    }
+
     static String zone(League league, int position) {
         List<PlacementGoal> goals = PlacementGoal.forPosition(league, position);
         if (goals.contains(PlacementGoal.KNOCKOUT_DIRECT) || goals.contains(PlacementGoal.EUROPE) || goals.contains(PlacementGoal.PROMOTION)) {
@@ -244,8 +318,9 @@ public final class MatchdayPageModels {
     }
 
     /** One match of the club's season schedule from the club's point of view; unplayed matches have no score. */
-    record ScheduleRow(int matchday, String date, String time, String opponent, String opponentIcon, boolean home,
-                       String score, TeamResult result, boolean provisional, String link) {
+    /** {@code section} is the round's name in a cup ("Achtelfinale") and "3. Spieltag" elsewhere. */
+    record ScheduleRow(int matchday, String section, String date, String time, String opponent, String opponentIcon,
+                       boolean home, String score, TeamResult result, boolean provisional, String decision, String link) {
         static ScheduleRow of(Match m, Team team, String leagueShortcut) {
             boolean home = m.homeTeam.equals(team);
             Team opponent = home ? m.awayTeam : m.homeTeam;
@@ -256,9 +331,11 @@ public final class MatchdayPageModels {
                 score = v.goalsFor() + ":" + v.goalsAgainst();
                 result = v.result();
             }
-            return new ScheduleRow(m.matchday.number, DAY_SHORT.format(m.kickoff.atZone(DISPLAY_ZONE)), TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
+            return new ScheduleRow(m.matchday.number, m.matchday.displayName(),
+                    DAY_SHORT.format(m.kickoff.atZone(DISPLAY_ZONE)), TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
                     opponent.name, opponent.iconUrl, home, score, result,
-                    m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL, "/" + leagueShortcut + "/matches/" + m.id);
+                    m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
+                    decisionLabel(m.decision, m.penaltyScore), "/" + leagueShortcut + "/matches/" + m.id);
         }
     }
 
@@ -286,10 +363,16 @@ public final class MatchdayPageModels {
         return "{\"labels\":[" + labels + "],\"scored\":[" + scored + "],\"conceded\":[" + conceded + "]}";
     }
 
+    /**
+     * {@code hasTable} is false in a knockout competition — then position, zone and the
+     * position curve are absent and {@code cupRunOutcome} says how the run ended instead
+     * (spec 06). {@code tier} is the club's division, empty outside a cup.
+     */
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
-                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data) {
+                    List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
+                    boolean hasTable, String cupRunOutcome, String tier) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }

@@ -1,0 +1,93 @@
+{#include base nav=page.nav data=page.data}
+{#title}{page.number}. Spieltag – {page.nav.leagueName}{/title}
+{#description}Alle Gruppen der {page.nav.leagueName} {page.season} – Tabellen und die Begegnungen des {page.number}. Spieltags.{/description}
+{#body}
+<section class="matchday groups">
+  <div class="matchday-head">
+    <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
+    <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
+    <nav class="pager" aria-label="Spieltag wechseln">
+      {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
+      {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
+    </nav>
+  </div>
+
+  {! Spec 06: die Gruppen laufen nebeneinander, jede mit eigener Tabelle und eigenem
+     Spieltagszähler — eine Wettbewerbsseite, nicht vier Einträge in der Navigation. !}
+  {#for g in page.groups}
+  <section class="group">
+    <h2 class="round-name">{g.name}</h2>
+
+    <table class="group-table">
+      <thead>
+        <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff.</th><th>Pkt.</th></tr>
+      </thead>
+      <tbody>
+        {#for r in g.table}
+        <tr>
+          <td class="pos">{r.position}</td>
+          <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
+          <td>{r.played}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
+          <td>{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+        </tr>
+        {/for}
+      </tbody>
+    </table>
+
+    <ol class="fixtures">
+      {#for m in g.matches}
+      <li>
+        <a class="fixture" href="{m.link}">
+          <span class="time">{m.time}</span>
+          <span class="home">
+            <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+            {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+          </span>
+          <span class="away">
+            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+          </span>
+          <span class="half">{#if m.halfTime}({m.halfTime}){/if}</span>
+        </a>
+      </li>
+      {/for}
+    </ol>
+  </section>
+  {/for}
+
+  {! Spec 06: die Endrunde ist eine Folge von Runden, keine Gruppe — also ohne Tabelle. !}
+  {#for r in page.rounds}
+  <section class="round">
+    <h2 class="round-name">{r.name}</h2>
+    <p class="round-meta">{r.matchCount} {#if r.matchCount == 1}Begegnung{#else}Begegnungen{/if}{#if r.dateRange} · {r.dateRange}{/if}</p>
+    <ol class="fixtures">
+      {#for m in r.matches}
+      <li>
+        <a class="fixture" href="{m.link}">
+          <span class="time">{m.time}</span>
+          <span class="home">
+            <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+            {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+          </span>
+          <span class="away">
+            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+          </span>
+          <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>
+        </a>
+      </li>
+      {/for}
+    </ol>
+  </section>
+  {/for}
+
+  {#if page.standingsProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
+</section>
+{/body}
+{/include}

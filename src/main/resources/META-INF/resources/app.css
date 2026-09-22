@@ -63,9 +63,12 @@ h2 { font-size: 1.1rem; }
 .nav-link:hover { color: #fff; }
 .nav-link.is-active { color: #fff; border-color: var(--accent); }
 .topnav a:focus-visible { outline-color: var(--accent); }
-/* league badge: a small disc with the league number; brass when active */
+/* competition badge: a disc for a league number, a pill for a shortcut ("CL", "DFB", "NL").
+   Only leagues have a number — min-width keeps "1" and "2" perfectly round while a
+   shortcut simply grows. */
 .badge {
-  display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%;
+  display: inline-grid; place-items: center; min-width: 1.35rem; height: 1.35rem;
+  padding: 0 .35rem; border-radius: 999px;
   font-family: var(--display); font-weight: 700; font-size: .8rem; line-height: 1;
   border: 1.5px solid var(--stage-soft); color: var(--stage-soft); background: transparent;
 }
@@ -582,3 +585,69 @@ h2 { font-size: 1.1rem; }
 .backtest-badge { display: inline-block; font-family: var(--text); font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 4px; padding: .05rem .35rem; vertical-align: middle; }
 .button.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
 .actual-result { margin: 0 0 1rem; color: var(--ink-soft); }
+
+/* --- Spec 06: K.-o.-Wettbewerb ------------------------------------------------------
+   Rundenband statt Turnierbaum — der Pokal wird nach jeder Runde neu ausgelost, ein Baum
+   würde Pfade behaupten, die es nicht gibt. Kein Messing hier: es gibt keine KI-Vorschau. */
+.round { margin-top: 2rem; }
+.round-name { font-family: var(--display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+.round-meta { color: var(--ink-mute); font-size: .85rem; margin: .15rem 0 .6rem; }
+
+/* Spielklasse am Vereinsnamen: die eine Angabe, die aus einer Ergebniszeile eine
+   Pokalgeschichte macht. Abstufung über die Tinte, nicht über eine neue Farbe. */
+.tier {
+  font-size: .7rem; color: var(--ink-mute); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 .25rem; white-space: nowrap;
+}
+.decision { font-size: .75rem; color: var(--ink-mute); margin-left: .35rem; white-space: nowrap; }
+
+.upsets { margin-top: 2.5rem; }
+.upset-list { list-style: none; padding: 0; margin: .5rem 0 0; display: grid; gap: .35rem; }
+.upset {
+  display: grid; grid-template-columns: 7rem 1fr auto; gap: .6rem; align-items: baseline;
+  padding: .5rem .7rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; color: inherit;
+}
+.upset:hover { border-color: var(--ink-mute); }
+.upset-round { color: var(--ink-mute); font-size: .8rem; }
+.upset-beat { color: var(--ink-mute); }
+.upset-score { font-family: var(--display); font-weight: 700; }
+
+.season-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+.season-chips .chip {
+  font-size: .8rem; padding: .15rem .5rem; border: 1px solid var(--line);
+  border-radius: 999px; text-decoration: none; color: var(--ink-soft);
+}
+.season-chips .chip:hover { border-color: var(--ink-mute); color: var(--ink); }
+
+@media (max-width: 640px) {
+  .upset { grid-template-columns: 1fr; gap: .2rem; }
+  .upset-score { justify-self: start; }
+}
+
+/* Gruppenwettbewerb: jede Gruppe eine eigene kleine Tabelle, darunter ihre Begegnungen */
+.group { margin-top: 2rem; }
+.group-table { width: 100%; border-collapse: collapse; margin: .4rem 0 .8rem; font-size: .9rem; }
+.group-table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .2rem .4rem; }
+.group-table th.pos, .group-table th.team { text-align: left; }
+.group-table td { text-align: right; padding: .25rem .4rem; border-top: 1px solid var(--line); }
+.group-table td.pos, .group-table td.team { text-align: left; }
+.group-table td.points { font-weight: 700; }
+.group-table td.team a { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: .3rem; }
+.group-table td.team a:hover { text-decoration: underline; }
+@media (max-width: 640px) { .groups .group-table { display: block; overflow-x: auto; } }
+
+/* Aufklappbare Runden: kein JavaScript, alles bleibt im Dokument — durchsuchbar,
+   druckbar, und der Trichter von 32 auf 1 bleibt als Umriss lesbar. */
+details.round > summary {
+  list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: .6rem; padding: .5rem 0; border-bottom: 1px solid var(--line);
+}
+details.round > summary::-webkit-details-marker { display: none; }
+details.round > summary::before {
+  content: "›"; display: inline-block; color: var(--ink-mute);
+  transition: transform .12s ease; font-size: 1.1rem; line-height: 1;
+}
+details.round[open] > summary::before { transform: rotate(90deg); }
+details.round > summary:hover .round-name { text-decoration: underline; }
+details.round > summary .round-meta { margin: 0; }
+details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }

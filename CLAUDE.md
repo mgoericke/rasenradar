@@ -53,6 +53,7 @@ Die Features ergeben sich aus den Specs in `docs/specs/`:
 | 03 Rückschau und Lernen | Prognosen gegen endgültige Ergebnisse abgleichen, Ausgangslagen speichern, Vergleichsfälle für neue Prognosen liefern, Trefferbilanz | `review` |
 | 04 Saisonaussicht | Je Mannschaft Wahrscheinlichkeiten für Platzierungsziele der Restsaison, statistisch simuliert, neu berechnet nach jedem beendeten Spieltag | `season` |
 | 05 Prognose nachvollziehbar | Zustandekommen, Prüfer-Einwand, Verlauf, Rangliste und Kalibrierung für den Betrachter lesbar machen — keine neuen KI-Schritte, nur Aufbereitung vorhandener Daten | `forecast`/`review` (Boundary-Ergänzung, kein eigenes Package) |
+| 06 Pokal und Nations League | DFB-Pokal (K.-o., Runden) und Nations League (parallele Gruppen) nur zur Ansicht; Wettbewerbsform statt Sonderfällen je Liga | `matchday` (kein eigenes Package) |
 
 Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rückschau aus `review`; `review` reagiert darauf, dass ein Ergebnis in `matchday` endgültig wird und auf festgeschriebene Prognosen aus `forecast`; `season` reagiert ebenfalls darauf, dass ein Ergebnis in `matchday` endgültig wird (eigenständig von `forecast`/`review`, keine Abhängigkeit zwischen den beiden).
 
@@ -93,6 +94,11 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Saison einer Liga (z. B. 2. Bundesliga 2024/25) | `LeagueSeason` |
 | Vereinsseite (Spielplan, Saisonverlauf, Bilanz, Torschützen) | `TeamPage` / `ScheduleRow` |
 | Champions-League-Ligaphase | `League.CHAMPIONS_LEAGUE` (nur Anzeige, keine KI-Vorschau) |
+| Wettbewerbsform (Tabellen-/Gruppen-/K.-o.-Wettbewerb) | `CompetitionFormat.TABLE` / `GROUPS` / `KNOCKOUT` |
+| DFB-Pokal | `League.DFB_POKAL` (K.-o., nur Anzeige) |
+| Nations League (Liga A) | `League.NATIONS_LEAGUE` (Gruppen, nur Anzeige) |
+| Runde (Achtelfinale, Endspiel …) | `Matchday.label` — Name des Abschnitts im K.-o.-Wettbewerb |
+| Gruppe (Gruppe A … D) | `Matchday.groupName` — eigene Tabelle und eigener Spieltagszähler je Gruppe |
 | Saisonaussicht | `SeasonOutlook` (Package `season`) |
 | Platzierungsziel (Meisterschaft, Europapokal, Auf-/Abstieg, Play-off, K.-o.-Runde, Ausscheiden) | `PlacementGoal` — Definition der Schwellenwerte je Liga lebt in `matchday`, da sie dieselbe ist wie bei den Tabellenzonen-Farben |
 | Zustandekommen (einer Prognose) | `ForecastTrace` |

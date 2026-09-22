@@ -9,10 +9,17 @@
       <h1 class="club-name">{page.name}</h1>
       <p class="club-season">{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
       <p class="club-standing {page.zone}">
+        {#if page.hasTable}
         {#if page.position}<span class="place">Platz {page.position}</span> mit {page.total.points} Punkten aus {page.total.played} Spielen
         · {page.total.wins} Siege, {page.total.draws} Unentschieden, {page.total.losses} Niederlagen · Tore {page.total.goals}
         {#else}Noch ohne Spiel in dieser Saison.{/if}
         {#if page.standingsProvisional}<span class="muted">(enthält vorläufige Ergebnisse)</span>{/if}
+        {#else}
+        {! Spec 06: im K.-o.-Wettbewerb gibt es keine Tabelle — stattdessen Spielklasse und Ausgang !}
+        {#if page.tier}<span class="tier">{page.tier}</span>{/if}
+        {#if page.cupRunOutcome}<span class="place">{page.cupRunOutcome}</span>{/if}
+        {#if page.total.played}· {page.total.wins} Siege, {page.total.draws} Unentschieden, {page.total.losses} Niederlagen · Tore {page.total.goals}{/if}
+        {/if}
       </p>
       {#if page.otherSeasons}
       <ul class="seasons" aria-label="Weitere Saisons">
@@ -26,22 +33,24 @@
 
   <div class="club-body">
     <section class="club-main">
+      {#if page.hasTable}
       <div class="chart-block">
         <h2>Tabellenplatz im Saisonverlauf</h2>
         <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
       </div>
+      {/if}
 
       <div class="schedule-block">
-        <h2>Spielplan</h2>
+        <h2>{#if page.hasTable}Spielplan{#else}Weg durch den Wettbewerb{/if}</h2>
         <ol class="schedule">
           {#for r in page.schedule}
           <li>
             <a href="{r.link}" class="{#if r.result}{r.result.toString.toLowerCase}{#else}open{/if}">
-              <span class="md">{r.matchday}.</span>
+              <span class="md">{#if page.hasTable}{r.matchday}.{#else}{r.section}{/if}</span>
               <span class="date">{r.date} <span class="muted">{r.time}</span></span>
               <span class="venue">{#if r.home}Heim{#else}Ausw.{/if}</span>
               <span class="opponent">{#if r.opponentIcon}<img class="crest small" src="{r.opponentIcon}" alt="" loading="lazy"> {/if}{r.opponent}</span>
-              {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>
+              {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>{#if r.decision}<span class="decision">{r.decision}</span>{/if}
               {#else}<span class="pill open">–:–</span>{/if}
             </a>
           </li>
@@ -62,12 +71,14 @@
         </table>
       </div>
 
+      {#if page.outlookLink}
       <div class="facts-block">
         <h2>Saisonaussicht</h2>
         <div hx-get="{page.outlookLink}" hx-trigger="load" hx-swap="innerHTML">
           <p class="muted">Wird geladen …</p>
         </div>
       </div>
+      {/if}
 
       <div class="facts-block">
         <h2>Torschützen</h2>
@@ -92,7 +103,7 @@
 </article>
 {/body}
 {#scripts}
-<script id="chart-data" type="application/json">{page.chartJson.raw}</script>
+{#if page.chartJson}<script id="chart-data" type="application/json">{page.chartJson.raw}</script>{/if}
 <script id="goal-timing-data" type="application/json">{page.goalTimingJson.raw}</script>
 <script src="/vendor/chart-4.5.1.umd.min.js"></script>
 <script src="/match.js"></script>

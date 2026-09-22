@@ -44,7 +44,9 @@ frühere Begegnungen bewerten zu können.
 
 - Keine Live-Ergebnisse während laufender Spiele.
 - Keine Spielerstatistiken über die Torschützen hinaus.
-- Keine weiteren Wettbewerbe (Pokal, europäische Wettbewerbe) in dieser Ausbaustufe.
+- Keine Wettbewerbe über die beiden Bundesligen, die Champions-League-Ligaphase,
+  den DFB-Pokal und die Nations League hinaus. Die beiden letztgenannten und die
+  Formen, in denen sie gespielt werden, beschreibt Spec 6.
 
 ## Im Spec-Interview geklärt
 
