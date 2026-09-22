@@ -149,6 +149,16 @@ Wichtige Fachregeln, die im Code sichtbar sein müssen:
 
 Im Dev-Modus steht auch die kontinuierliche Testausführung über die Quarkus-Konsole (Taste `r`) zur Verfügung.
 
+```bash
+python3 scripts/branch-tokens.py            # Claude-Code-Tokenverbrauch des aktuellen Branches, als Markdown für die PR-Beschreibung
+python3 scripts/branch-tokens.py --all      # Rangliste über alle Branches
+```
+
+Der Verbrauch wird aus den Sitzungsprotokollen unter `~/.claude/projects/` gelesen; jede Zeile
+dort trägt den Branch, unter dem sie entstanden ist. **Was vor dem Branch passiert — Spec-Gespräche,
+Planung, Recherche — liegt auf `main` und fehlt dem Feature**; die Zahl taugt zum Vergleich zwischen
+Features, nicht als vollständige Kostenzuordnung. Protokolle werden nach 30 Tagen gelöscht.
+
 ## Branching-Konvention
 
 **Für jedes neue Feature IMMER einen eigenen Branch anlegen — niemals direkt auf `main` committen.**
