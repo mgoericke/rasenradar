@@ -59,6 +59,18 @@ Regeln:
 - Keine Versalien als Beschriftung, keine Eyebrow-Labels, keine hervorgehobenen
   Einzelwörter in Überschriften.
 - Zeilenlänge unter 80 Zeichen (`max-width: 70ch` für Begründungen und Erklärtexte).
+- **Die Schriftgröße sitzt an der Wurzel** (`html`), nicht am `body` — sonst rechnet jedes
+  `rem` gegen die 16 px des Browsers, während der Fließtext auf einem anderen Wert steht.
+  Sie ist fluide mit `rem`-Anteil (`clamp(16px, 0.9rem + 0.35vw, 17.5px)`): 16 px auf dem
+  Telefon, 17,5 px auf großen Schirmen, und Zoom bleibt benutzbar.
+- **Nichts unter 0,75 rem.** Kleinstschrift in `--ink-mute` ist die schwächste Stelle jeder
+  Seite; darunter wird sie auf dem Telefon unlesbar.
+- **Auf dem Telefon wird Schrift nicht verkleinert.** Das Telefon ist der Ort, an dem man
+  Größe braucht — Platz kommt aus der Breite (Spalten, die zusammenfallen, wenn sie leer
+  sind), nicht aus der Schriftgröße.
+- **`clamp()` muss auf Telefonbreite auch wirklich arbeiten.** Liegt der `vw`-Anteil bei
+  430 px unter dem Minimum, ist die Größe dort eingefroren und der ganze Ausdruck nutzlos.
+  Faustregel: das Minimum so wählen, dass es bei ~400 px greift, nicht erst bei 600.
 
 ## Bausteine
 
