@@ -1,0 +1,71 @@
+{#include base nav=page.nav data=page.data}
+{#title}{page.nav.leagueName} {page.season}{/title}
+{#description}Alle Runden des {page.nav.leagueName}s {page.season} – Ergebnisse, Spielklassen und die Überraschungen der Ausgabe.{/description}
+{#body}
+<section class="matchday knockout">
+  <div class="matchday-head">
+    <h1 class="matchday-title">{page.nav.leagueName}</h1>
+    <p class="matchday-season">{page.season}</p>
+    {#if page.otherSeasons}
+    <nav class="season-chips" aria-label="Ausgabe wechseln">
+      {#for s in page.otherSeasons}<a class="chip" href="{s.link}">{s.season}</a>{/for}
+    </nav>
+    {/if}
+  </div>
+
+  {! Spec 06: kein Turnierbaum — der Wettbewerb wird nach jeder Runde neu ausgelost.
+     Die Runden stehen als Band, Endspiel zuoberst. !}
+  {#for round in page.rounds}
+  <section class="round">
+    <h2 class="round-name">{round.name}</h2>
+    <p class="round-meta">{round.matchCount} {#if round.matchCount == 1}Begegnung{#else}Begegnungen{/if}{#if round.dateRange} · {round.dateRange}{/if}</p>
+    <ol class="fixtures">
+      {#for m in round.matches}
+      <li>
+        <a class="fixture" href="{m.link}">
+          <span class="time">{m.time}</span>
+          <span class="home">
+            <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+            {#if m.homeTier}<span class="tier">{m.homeTier}</span>{/if}
+            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+            {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+          </span>
+          <span class="away">
+            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+            {#if m.awayTier}<span class="tier">{m.awayTier}</span>{/if}
+          </span>
+          <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>
+        </a>
+      </li>
+      {/for}
+    </ol>
+  </section>
+  {/for}
+
+  {#if page.upsets}
+  <section class="upsets">
+    <h2 class="round-name">Überraschungen</h2>
+    <p class="round-meta muted">Begegnungen, die die klassentiefere Mannschaft gewonnen hat – der größte Klassenunterschied zuerst.</p>
+    <ol class="upset-list">
+      {#for u in page.upsets}
+      <li>
+        <a class="upset" href="{u.link}">
+          <span class="upset-round">{u.round}</span>
+          <span class="upset-teams">
+            <strong>{u.winner}</strong> <span class="tier">{u.winnerTier}</span>
+            <span class="upset-beat">schlägt</span>
+            {u.loser} <span class="tier">{u.loserTier}</span>
+          </span>
+          <span class="upset-score">{u.score}{#if u.decision} <span class="decision">{u.decision}</span>{/if}</span>
+        </a>
+      </li>
+      {/for}
+    </ol>
+  </section>
+  {/if}
+</section>
+{/body}
+{/include}
