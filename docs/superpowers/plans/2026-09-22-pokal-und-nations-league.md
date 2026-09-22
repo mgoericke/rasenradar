@@ -1359,6 +1359,74 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ---
 
+### Task 11: Schema-Prüfung in die Testsuite holen
+
+Bei der Umsetzung von Task 2 aufgefallen: es gibt keinen `@QuarkusTest` und keinen Integrationstest, `./mvnw test` startet die Anwendung nie. Damit können Migration und Entity beliebig auseinanderlaufen, ohne dass die CI es merkt — unabhängig von diesem Feature, aber durch die drei neuen Migrationen akut.
+
+**Files:**
+- Create: `src/test/java/de/javamark/matchoracle/SchemaValidationTest.java`
+
+**Interfaces:**
+- Consumes: nichts — der Test prüft nur, dass die Anwendung mit dem migrierten Schema hochfährt.
+- Produces: nichts.
+
+- [ ] **Step 1: Write the failing test**
+
+```java
+package de.javamark.matchoracle;
+
+import de.javamark.matchoracle.matchday.entity.Matchday;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Flyway owns the schema and Hibernate only validates it — but nothing in the suite ever
+ * started the application, so a migration that drifted from its entity failed first in dev
+ * or, worse, in production. Booting once and touching the mapping is enough to catch that.
+ */
+@QuarkusTest
+class SchemaValidationTest {
+
+    @Test
+    @Transactional
+    void theApplicationStartsAgainstTheMigratedSchema() {
+        assertTrue(Matchday.count() >= 0, "the mapping must match the migrated schema");
+    }
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `./mvnw test -Dtest=SchemaValidationTest`
+Expected: Ohne `quarkus-junit5` als Testabhängigkeit ein Kompilierfehler an `@QuarkusTest`; die Abhängigkeit prüfen und, falls sie fehlt, in die `pom.xml` aufnehmen (über die BOM, ohne eigene Version). Fährt die Anwendung im Test nicht hoch, ist genau das der Befund, den dieser Test künftig liefern soll.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Kein Produktionscode. Sicherstellen, dass der Test eine Datenbank bekommt: im Testprofil laufen die Compose Dev Services wie im Dev-Modus. `%test.quarkus.scheduler.enabled=false` steht bereits in `application.properties`, sodass beim Hochfahren weder die Datenquelle abgefragt noch eine Prognose ausgelöst wird — prüfen, dass das auch für diesen Test greift, sonst kostet jeder Testlauf Geld.
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `./mvnw test -Dtest=SchemaValidationTest` — PASS.
+Dann `./mvnw test` komplett; die Laufzeit steigt um den einmaligen Start der Anwendung.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A
+git commit -m "test(matchday): Schema-Pruefung in die Testsuite holen
+
+Flyway besitzt das Schema und Hibernate validiert es nur — aber kein Test hat
+die Anwendung je gestartet, sodass eine Migration unbemerkt von ihrer Entity
+abweichen konnte. Ein einmaliger Start im Test faengt das ab.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
 ## Abschluss
 
-Nach Task 10 gegen die Abnahmekriterien der Spec prüfen (`docs/specs/spec-06-pokal-und-nations-league.md`, Abschnitt „Abnahmekriterien"), dann `./mvnw test`, pushen und Pull Request anlegen. Die Dokumentation der Abläufe (`docs/architecture/ablaeufe.md`) um die Ableitung der Gruppenspieltage ergänzen — sie ist die einzige Stelle, an der das System der Quelle etwas hinzufügt, und gehört dorthin, wo die übrigen Abläufe beschrieben sind.
+Nach Task 11 gegen die Abnahmekriterien der Spec prüfen (`docs/specs/spec-06-pokal-und-nations-league.md`, Abschnitt „Abnahmekriterien"), dann `./mvnw test`, pushen und Pull Request anlegen. Die Dokumentation der Abläufe (`docs/architecture/ablaeufe.md`) um die Ableitung der Gruppenspieltage ergänzen — sie ist die einzige Stelle, an der das System der Quelle etwas hinzufügt, und gehört dorthin, wo die übrigen Abläufe beschrieben sind.
