@@ -1,6 +1,7 @@
 package de.javamark.matchoracle.matchday.control;
 
 import de.javamark.matchoracle.matchday.entity.League;
+import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
 import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
@@ -12,6 +13,7 @@ import static de.javamark.matchoracle.matchday.control.MatchFixtures.played;
 import static de.javamark.matchoracle.matchday.control.MatchFixtures.provisional;
 import static de.javamark.matchoracle.matchday.control.MatchFixtures.team;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StandingsCalculatorTest {
@@ -66,5 +68,18 @@ class StandingsCalculatorTest {
 
         assertEquals(List.of(mainz, leipzig), groupA.positions().stream().map(StandingPosition::team).toList());
         assertEquals(2, groupA.positions().size(), "keine Mannschaft einer anderen Gruppe in der Tabelle");
+    }
+
+    @Test
+    void aKnockoutRoundNeverCountsTowardsATable() {
+        // Spec 06: die Champions League spielt nach der Ligaphase eine K.-o.-Phase. Ein
+        // Achtelfinale darf keine Tabellenpunkte erzeugen — sonst wuerde die Tabelle der
+        // Ligaphase nach ihrem Ende weiterlaufen.
+        Match leaguePhase = played(8, mainz, 2, leipzig, 0);
+        Match knockout = played(10, mainz, 3, leipzig, 0);
+        knockout.matchday.label = "Achtelfinale Hinspiele";
+
+        assertTrue(Match.countsTowardsTable(leaguePhase));
+        assertFalse(Match.countsTowardsTable(knockout));
     }
 }

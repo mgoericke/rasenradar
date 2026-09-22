@@ -119,12 +119,23 @@ public class MatchdaySynchronizer {
         return format == CompetitionFormat.GROUPS && sectionName != null && sectionName.startsWith("Gruppe");
     }
 
-    /** Spec 06: the round's name — in a cup always, in a group competition for its final round. */
+    /** A section the source names like "7. Spieltag" or "1.Spieltag" — a counted matchday, not a round. */
+    private static final java.util.regex.Pattern PLAIN_MATCHDAY = java.util.regex.Pattern.compile("\\d+\\.\\s*Spieltag");
+
+    /**
+     * Spec 06: the round's name — in a cup always, and in a competition that ends in knockout
+     * rounds for those sections. The Champions League plays a league phase and a knockout phase,
+     * the Nations League groups and a final round; in both, a section that is not a plain
+     * matchday is a round and must not count towards any table.
+     */
     static String labelOf(CompetitionFormat format, String sectionName) {
         if (format == CompetitionFormat.KNOCKOUT) {
             return sectionName;
         }
-        return format == CompetitionFormat.GROUPS && !isGroup(format, sectionName) ? sectionName : null;
+        if (sectionName == null || isGroup(format, sectionName) || PLAIN_MATCHDAY.matcher(sectionName).matches()) {
+            return null;
+        }
+        return sectionName;
     }
 
     /** Spec 06: the group a matchday belongs to, where the section is one. */

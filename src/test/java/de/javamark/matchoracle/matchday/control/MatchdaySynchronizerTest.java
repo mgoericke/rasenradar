@@ -46,4 +46,23 @@ class MatchdaySynchronizerTest {
         assertNull(MatchdaySynchronizer.groupOf(CompetitionFormat.GROUPS, null));
         assertNull(MatchdaySynchronizer.labelOf(CompetitionFormat.GROUPS, null));
     }
+
+    @Test
+    void aTableCompetitionCanEndInKnockoutRounds() {
+        // Spec 06: die Champions League spielt erst eine Ligaphase, dann eine K.-o.-Phase.
+        // Ein Abschnitt, der ein Spieltag ist, bleibt einer; alles andere ist eine Runde.
+        assertNull(MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, "7. Spieltag"));
+        assertNull(MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, "1.Spieltag"));
+
+        assertEquals("Viertelfinale Hinspiele", MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, "Viertelfinale Hinspiele"));
+        assertEquals("Finale", MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, "Finale"));
+        assertEquals("Playoffs", MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, "Playoffs"));
+    }
+
+    @Test
+    void aTableCompetitionWithoutSectionNamesKeepsCountingMatchdays() {
+        // Die beiden Bundesligen liefern keinen brauchbaren Abschnittsnamen.
+        assertNull(MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, null));
+        assertNull(MatchdaySynchronizer.groupOf(CompetitionFormat.TABLE, null));
+    }
 }

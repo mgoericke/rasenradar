@@ -34,7 +34,7 @@ class CompetitionFormatTest {
     @Test
     void historyDepthIsAPropertyOfTheCompetition() {
         assertEquals(5, League.BUNDESLIGA_1.historySeasons());
-        assertEquals(0, League.CHAMPIONS_LEAGUE.historySeasons());
+        assertEquals(1, League.CHAMPIONS_LEAGUE.historySeasons());
         assertEquals(3, League.DFB_POKAL.historySeasons());
     }
 

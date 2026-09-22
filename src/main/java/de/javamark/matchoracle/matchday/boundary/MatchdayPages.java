@@ -255,10 +255,13 @@ public class MatchdayPages {
 
         String base = "/" + shortcut + "/" + matchday.season + "/";
         String prev = matchday.number > 1 ? base + (matchday.number - 1) : null;
-        String next = Matchday.find(matchday.league, matchday.season, matchday.number + 1).map(n -> base + n.number).orElse(null);
+        String next = Matchday.find(matchday.league, matchday.season, matchday.number + 1)
+                .filter(n -> n.label == null) // spec 06: the pager stays inside the league phase
+                .map(n -> base + n.number).orElse(null);
 
         return new MatchdayPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.season, matchday.number,
-                prev, next, days, rows, standings.includesProvisional(), DataInfo.of(matchday, Instant.now()));
+                prev, next, days, rows, standings.includesProvisional(), DataInfo.of(matchday, Instant.now()),
+                roundSections(matchday.league, matchday.season, shortcut, now));
     }
 
     private MatchPage matchPage(Match match) {
@@ -288,6 +291,30 @@ public class MatchdayPages {
 
     /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */
     /**
+     * Spec 06: the knockout rounds of a season as a band — the Champions League after its
+     * league phase, the Nations League after its groups. Open is the round being played.
+     */
+    private List<RoundSection> roundSections(League league, int season, String shortcut, Instant now) {
+        List<Matchday> rounds = Matchday.findRounds(league, season);
+        if (rounds.isEmpty()) {
+            return List.of();
+        }
+        int open = rounds.stream()
+                .filter(r -> Match.findByMatchday(r).stream().anyMatch(m -> !m.isPlayed()))
+                .mapToInt(r -> r.number).min()
+                .orElse(rounds.get(rounds.size() - 1).number);
+        List<RoundSection> sections = new ArrayList<>();
+        for (Matchday round : rounds) {
+            List<Match> matches = Match.findByMatchday(round);
+            matches.sort(Comparator.comparing((Match m) -> m.kickoff));
+            sections.add(new RoundSection(round.displayName(), matches.size(), dateRange(matches),
+                    matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList(),
+                    round.number == open));
+        }
+        return sections;
+    }
+
+    /**
      * Spec 06: all groups of a group competition, each with its own table and its matches of
      * the shown matchday. One competition page, not one entry per group.
      */
@@ -297,8 +324,7 @@ public class MatchdayPages {
         // phase of its own and does not share the groups' counting, so it always sits at the end
         List<Matchday> groups = Matchday.findAll(league, season, number).stream()
                 .filter(m -> m.groupName != null).toList();
-        List<Matchday> finalRound = Matchday.<Matchday>list(
-                "league = ?1 and season = ?2 and groupName is null order by number", league, season);
+        List<Matchday> finalRound = Matchday.findRounds(league, season);
         if (groups.isEmpty() && finalRound.isEmpty()) {
             throw new NotFoundException("matchday not found");
         }
@@ -317,13 +343,7 @@ public class MatchdayPages {
                     matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList()));
         }
         // spec 06: sections of the final round are rounds, not groups — no table
-        for (Matchday round : finalRound) {
-            List<Match> matches = Match.findByMatchday(round);
-            matches.sort(Comparator.comparing((Match m) -> m.kickoff));
-            rounds.add(new RoundSection(round.displayName(), matches.size(), dateRange(matches),
-                    matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList(),
-                    true));
-        }
+        rounds.addAll(roundSections(league, season, shortcut, now));
         String base = "/" + shortcut + "/" + season + "/";
         String prev = number > 1 ? base + (number - 1) : null;
         boolean hasNext = Matchday.findAll(league, season, number + 1).stream().anyMatch(m -> m.groupName != null);
