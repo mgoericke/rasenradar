@@ -61,6 +61,31 @@ public class Match extends PanacheEntity {
     @OrderBy("position")
     public List<Goal> goals = new ArrayList<>();
 
+    /** Spec 06: how the match was decided; always REGULAR outside a knockout competition. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    public Decision decision = Decision.REGULAR;
+
+    /** Spec 06: the shootout aggregate, null unless the match was decided on penalties. */
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "home", column = @Column(name = "penalty_home")),
+            @AttributeOverride(name = "away", column = @Column(name = "penalty_away"))
+    })
+    public Score penaltyScore;
+
+    /**
+     * Spec 06: the shootout decides, then extra time, then the 90 minutes. Empty for a
+     * draw and for a match that has not been played.
+     */
+    public Optional<Team> winner() {
+        Score decisive = penaltyScore != null ? penaltyScore : fullTimeScore;
+        if (decisive == null || decisive.home == decisive.away) {
+            return Optional.empty();
+        }
+        return Optional.of(decisive.home > decisive.away ? homeTeam : awayTeam);
+    }
+
     public static Optional<Match> findByExternalId(int externalId) {
         return find("externalId", externalId).firstResultOptional();
     }

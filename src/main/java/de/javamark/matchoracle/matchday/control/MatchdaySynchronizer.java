@@ -1,6 +1,7 @@
 package de.javamark.matchoracle.matchday.control;
 
 import de.javamark.matchoracle.matchday.entity.CompetitionFormat;
+import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
@@ -225,8 +226,13 @@ public class MatchdaySynchronizer {
         match.awayTeam = upsert(source.team2());
         match.kickoff = source.kickoff();
         match.halfTimeScore = source.result(OpenLigaDbMatch.Result.HALF_TIME).map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
-        match.fullTimeScore = source.finalResult().map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
-        replaceGoals(match, source.goalsOrEmpty());
+        // spec 06: extra time is the score of the match; the shootout only decides the winner
+        match.fullTimeScore = source.extraTimeResult().or(source::ninetyMinuteResult)
+                .map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
+        match.penaltyScore = source.penaltyResult().map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
+        match.decision = match.penaltyScore != null ? Decision.PENALTIES
+                : source.extraTimeResult().isPresent() ? Decision.EXTRA_TIME : Decision.REGULAR;
+        replaceGoals(match, source.matchGoals());
         match.sourceLastChangedAt = sourceLastUpdate;
         if (isNew) {
             // persist last: Hibernate checks not-null properties at persist time
