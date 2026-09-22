@@ -1,5 +1,6 @@
 package de.javamark.matchoracle.matchday.control;
 
+import de.javamark.matchoracle.matchday.entity.CompetitionFormat;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
@@ -71,27 +72,84 @@ public class MatchdaySynchronizer {
         return newlyPlayed;
     }
 
-    /** Reloads one matchday if the source reports a change since the last sync. Returns the ids of matches that got a score for the first time. */
+    /**
+     * Reloads one section of the source if it reports a change since the last sync. A section is
+     * a matchday in a league, a round in a cup, and a whole group in a group competition — see
+     * {@link #storeSection}. Returns the ids of matches that got a score for the first time.
+     */
     @Transactional
-    public List<Long> syncMatchday(League league, int season, int number) {
-        Instant sourceLastChange = OpenLigaDb.toInstant(client.lastChange(league.sourceShortcut(), season, number));
-        Matchday existing = Matchday.find(league, season, number).orElse(null);
+    public List<Long> syncMatchday(League league, int season, int sectionNumber) {
+        Instant sourceLastChange = OpenLigaDb.toInstant(client.lastChange(league.sourceShortcut(), season, sectionNumber));
         Instant now = Instant.now();
-        if (existing != null && existing.sourceLastChangedAt != null
-                && !sourceLastChange.isAfter(existing.sourceLastChangedAt)) {
-            LOG.debugf("%s %d/%d unchanged since %s", league, season, number, sourceLastChange);
-            existing.lastCheckedAt = now;
+        if (isUnchanged(league, season, sectionNumber, sourceLastChange, now)) {
+            LOG.debugf("%s %d/%d unchanged since %s", league, season, sectionNumber, sourceLastChange);
             return List.of();
         }
-        List<OpenLigaDbMatch> matches = client.matchday(league.sourceShortcut(), season, number);
+        List<OpenLigaDbMatch> matches = client.matchday(league.sourceShortcut(), season, sectionNumber);
         if (matches.isEmpty()) {
             return List.of();
         }
-        Matchday matchday = existing != null ? existing : newMatchday(league, season, number);
-        List<Long> newlyPlayed = matches.stream().map(m -> upsert(matchday, m)).filter(java.util.Objects::nonNull).toList();
+        List<Long> newlyPlayed = storeSection(league, season, sectionNumber, matches, sourceLastChange, now);
+        LOG.infof("%s %d/%d: synced %d matches (source changed %s)", league, season, sectionNumber, matches.size(), sourceLastChange);
+        return newlyPlayed;
+    }
+
+    /**
+     * True when the source reports no change for this section since the last sync. In a group
+     * competition one section covers several matchdays; they all carry the same bookkeeping,
+     * so any one of them answers for the section.
+     */
+    private boolean isUnchanged(League league, int season, int sectionNumber, Instant sourceLastChange, Instant now) {
+        List<Matchday> known = Matchday.findSection(league, season, sectionNumber);
+        if (known.isEmpty() || known.stream().anyMatch(m -> m.sourceLastChangedAt == null
+                || sourceLastChange.isAfter(m.sourceLastChangedAt))) {
+            return false;
+        }
+        known.forEach(m -> m.lastCheckedAt = now);
+        return true;
+    }
+
+    /** Spec 06: in a knockout competition the source's section name is the round's name. */
+    static String labelOf(CompetitionFormat format, String sectionName) {
+        return format == CompetitionFormat.KNOCKOUT ? sectionName : null;
+    }
+
+    /** Spec 06: in a group competition it is the group the matchday belongs to. */
+    static String groupOf(CompetitionFormat format, String sectionName) {
+        return format == CompetitionFormat.GROUPS ? sectionName : null;
+    }
+
+    /**
+     * One section of the source: a matchday in a league, a round in a cup, a whole group in a
+     * group competition. Only the last one turns into several matchdays — the source names the
+     * group but not the matchday, so it is derived (spec 06, see {@link GroupMatchdays}).
+     */
+    private List<Long> storeSection(League league, int season, int sectionNumber,
+                                    List<OpenLigaDbMatch> matches, Instant sourceLastChange, Instant now) {
+        String sectionName = matches.get(0).group().name();
+        if (league.format() == CompetitionFormat.GROUPS) {
+            String groupName = groupOf(league.format(), sectionName);
+            List<Long> newlyPlayed = new ArrayList<>();
+            GroupMatchdays.byMatchday(matches).forEach((number, matchesOfDay) -> {
+                Matchday matchday = Matchday.find(league, season, groupName, number)
+                        .orElseGet(() -> newMatchday(league, season, groupName, null, number, sectionNumber));
+                newlyPlayed.addAll(store(matchday, matchesOfDay, sourceLastChange, now));
+            });
+            return newlyPlayed;
+        }
+        String label = labelOf(league.format(), sectionName);
+        Matchday matchday = Matchday.find(league, season, null, sectionNumber)
+                .orElseGet(() -> newMatchday(league, season, null, label, sectionNumber, sectionNumber));
+        matchday.label = label; // a round can be renamed at the source between syncs
+        return store(matchday, matches, sourceLastChange, now);
+    }
+
+    /** Upserts the matches of one matchday and records the sync bookkeeping on it. */
+    private List<Long> store(Matchday matchday, List<OpenLigaDbMatch> matches, Instant sourceLastChange, Instant now) {
+        List<Long> newlyPlayed = matches.stream().map(m -> upsert(matchday, m))
+                .filter(java.util.Objects::nonNull).toList();
         matchday.sourceLastChangedAt = sourceLastChange;
         matchday.lastCheckedAt = now;
-        LOG.infof("%s %d/%d: synced %d matches (source changed %s)", league, season, number, matches.size(), sourceLastChange);
         return newlyPlayed;
     }
 
@@ -121,25 +179,27 @@ public class MatchdaySynchronizer {
     @Transactional
     public void importSeason(League league, int season) {
         List<OpenLigaDbMatch> matches = client.season(league.sourceShortcut(), season);
-        Map<Integer, List<OpenLigaDbMatch>> byMatchday = matches.stream()
+        Map<Integer, List<OpenLigaDbMatch>> bySection = matches.stream()
                 .collect(Collectors.groupingBy(m -> m.group().number(), TreeMap::new, Collectors.toList()));
-        byMatchday.forEach((number, matchesOfDay) -> {
-            Matchday matchday = Matchday.find(league, season, number)
-                    .orElseGet(() -> newMatchday(league, season, number));
-            matchesOfDay.forEach(m -> upsert(matchday, m));
-            matchday.sourceLastChangedAt = matchesOfDay.stream()
+        Instant now = Instant.now();
+        bySection.forEach((sectionNumber, matchesOfSection) -> {
+            Instant sourceLastChange = matchesOfSection.stream()
                     .map(m -> OpenLigaDb.toInstant(m.lastUpdate()))
                     .max(Instant::compareTo).orElse(null);
-            matchday.lastCheckedAt = Instant.now();
+            storeSection(league, season, sectionNumber, matchesOfSection, sourceLastChange, now);
         });
-        LOG.infof("%s %d: imported %d matches on %d matchdays", league, season, matches.size(), byMatchday.size());
+        LOG.infof("%s %d: imported %d matches in %d sections", league, season, matches.size(), bySection.size());
     }
 
-    private static Matchday newMatchday(League league, int season, int number) {
+    private static Matchday newMatchday(League league, int season, String groupName, String label,
+                                        int number, int sectionNumber) {
         Matchday matchday = new Matchday();
         matchday.league = league;
         matchday.season = season;
+        matchday.groupName = groupName;
+        matchday.label = label;
         matchday.number = number;
+        matchday.sectionNumber = sectionNumber;
         matchday.persist();
         return matchday;
     }

@@ -16,7 +16,7 @@
 - **Java 21** — keine Sprachfeatures darüber hinaus, auch wenn lokal ein neueres JDK läuft.
 - **BCE-Architektur**, von ArchUnit erzwungen: `boundary` → `control`/`entity`, `control` → `entity`, `entity` kennt keine der beiden. Kein Zugriff in fremde Feature-Packages. Alles in diesem Plan bleibt im Package `matchday`, außer der ausdrücklich benannten Änderung in `season/boundary`.
 - **Panache Active Record** — Finder als `static` Methoden auf der Entity, keine Repository-Klassen.
-- **Flyway** besitzt das Schema, Hibernate validiert nur. Freie Migrationen der Reihe nach: `V13` (Task 2), `V14` (Task 5), `V15` (Task 8).
+- **Flyway** besitzt das Schema, Hibernate validiert nur. Migrationen der Reihe nach: `V13` (Task 2), `V14` (Task 4, bei der Umsetzung dazugekommen — siehe dort), `V15` (Task 5), `V16` (Task 8).
 - **Die Testsuite prüft das Schema nicht.** Es gibt keinen `@QuarkusTest` und keinen Integrationstest; `./mvnw test` startet die Anwendung nie. Jede Migration wird deshalb von Hand geprüft, mit abgeschaltetem Scheduler, damit kein Prognoselauf Kosten verursacht:
   ```bash
   ./mvnw quarkus:dev -Dquarkus.http.port=8081 -Dquarkus.scheduler.enabled=false
@@ -467,6 +467,9 @@ Ein Abschnitt der Quelle (`getmatchdata/{liga}/{saison}/{n}`) ist bei TABLE und 
 
 **Interfaces:**
 - Consumes: `GroupMatchdays.byMatchday(...)` und `OpenLigaDbMatch.Group.name()` aus Task 3, `League.format()` aus Task 1, `Matchday.find(League, int, String, int)` aus Task 2
+- Produces: `Matchday.sectionNumber` und `Matchday.findSection(League, int, int)`
+
+> **Bei der Umsetzung dazugekommen:** Die Änderungsprüfung läuft, bevor die Begegnungen geladen werden — sie kennt nur die Abschnittsnummer der Quelle, nicht den Gruppennamen. In einem Gruppenwettbewerb tragen die Spieltage einer Gruppe aber die Nummern 1 bis 6, sodass sich ohne gespeicherte Abschnittsnummer nicht feststellen lässt, welche Spieltage zu einem Abschnitt gehören. `Matchday` bekommt deshalb `sectionNumber` (Migration `V14`), in Liga und Pokal gleich `number`.
 - Produces: `MatchdaySynchronizer.syncMatchday(League, int season, int sectionNumber)` behält Signatur und Rückgabewert (`List<Long>` der erstmals gewerteten Matches), deckt nun aber alle drei Formen ab.
 
 - [ ] **Step 1: Write the failing test**
@@ -605,7 +608,7 @@ Die Quelle weist fünf Ergebnistypen aus: `1` Halbzeit, `2` „Endergebnis", `3`
 - Modify: `src/main/java/de/javamark/matchoracle/matchday/entity/Match.java`
 - Modify: `src/test/java/de/javamark/matchoracle/matchday/control/OpenLigaDbMatchTest.java` (drei bestehende Tests auf die umbenannte Konstante umstellen)
 - Create: `src/main/java/de/javamark/matchoracle/matchday/entity/Decision.java`
-- Create: `src/main/resources/db/migration/V14__match_decision.sql`
+- Create: `src/main/resources/db/migration/V15__match_decision.sql`
 - Test: `src/test/java/de/javamark/matchoracle/matchday/control/OpenLigaDbMatchTest.java` (ergänzen)
 
 **Interfaces:**
@@ -777,7 +780,7 @@ In `MatchdaySynchronizer.upsert` die Ergebniszeile ersetzen:
         replaceGoals(match, source.matchGoals());
 ```
 
-`V14__match_decision.sql`:
+`V15__match_decision.sql`:
 
 ```sql
 -- Spec 06: a knockout match can go to extra time or a penalty shootout. The shootout
@@ -1079,7 +1082,7 @@ Die Spielklasse ist das, was aus einer Ergebniszeile eine Pokalgeschichte macht.
 **Files:**
 - Create: `src/main/java/de/javamark/matchoracle/matchday/entity/TeamTier.java`
 - Create: `src/main/java/de/javamark/matchoracle/matchday/control/TeamTierImporter.java`
-- Create: `src/main/resources/db/migration/V15__team_tier.sql`
+- Create: `src/main/resources/db/migration/V16__team_tier.sql`
 - Modify: `src/main/java/de/javamark/matchoracle/matchday/control/MatchdaySynchronizer.java`
 - Test: `src/test/java/de/javamark/matchoracle/matchday/entity/TeamTierTest.java`
 
@@ -1167,7 +1170,7 @@ public enum Tier {
 
 `TeamTierImporter`: liest `client.teams("bl1"|"bl2"|"bl3", season)` und schreibt je Mannschaft die Zuordnung. `bl3` wird dabei nur als Kürzel an den vorhandenen Client gereicht — kein Eintrag im `League`-Enum. Aufruf aus `MatchdaySynchronizer.importSeason` bzw. `refreshTeams`, sobald eine Pokalsaison geladen wird; die Zuordnung gilt je Saison und ändert sich innerhalb einer Saison nicht, ein Abruf je Saison genügt.
 
-`V15__team_tier.sql`:
+`V16__team_tier.sql`:
 
 ```sql
 -- Spec 06: which division a club played in during a season — the basis for "Ueberraschung"

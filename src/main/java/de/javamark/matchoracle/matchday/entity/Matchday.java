@@ -42,6 +42,14 @@ public class Matchday extends PanacheEntity {
     @Column(length = 40)
     public String label;
 
+    /**
+     * Which section of the external source this matchday came from — the unit the source
+     * synchronises and reports changes for. Equal to {@link #number} everywhere except in a
+     * group competition, where one section is a whole group and holds several matchdays.
+     */
+    @Column(nullable = false)
+    public int sectionNumber;
+
     /** Last change reported by the external source; null if never synced. */
     public Instant sourceLastChangedAt;
 
@@ -56,6 +64,11 @@ public class Matchday extends PanacheEntity {
     /** Short form for the competitions without groups. */
     public static Optional<Matchday> find(League league, int season, int number) {
         return find(league, season, null, number);
+    }
+
+    /** Every matchday that came from one section of the source — several only in a group competition. */
+    public static List<Matchday> findSection(League league, int season, int sectionNumber) {
+        return list("league = ?1 and season = ?2 and sectionNumber = ?3", league, season, sectionNumber);
     }
 
     public static Optional<Matchday> find(League league, int season, String groupName, int number) {
