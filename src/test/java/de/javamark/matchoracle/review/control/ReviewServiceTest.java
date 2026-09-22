@@ -69,7 +69,6 @@ class ReviewServiceTest {
         // baseline Brier: 6 home wins → 0.25+0.09+0.04 = 0.38; 4 draws → 0.25+0.49+0.04 = 0.78; mean 0.54
         assertEquals(0.54, report.baseline().averageBrier(), 1e-9);
         assertEquals(1 - 0.3 / 0.54, report.skillScore(), 1e-9);
-        assertEquals(6, report.alwaysHome().hits());
     }
 
     @Test

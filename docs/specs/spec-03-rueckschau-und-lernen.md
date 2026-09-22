@@ -53,8 +53,8 @@ samt damaligem Ausgang bereit.
 - Jede Ausgangslage trägt eine **Basisprognose**: eine reine Statistik aus dem
   Torschnitt beider Mannschaften (Heim gegen Auswärts) und dem Heimvorteil, ohne
   KI, mit dem Wissensstand von vor dem Anstoß. Sie ist der Maßstab, an dem sich
-  jede Prognose messen lassen muss: Die Trefferbilanz zeigt Prognose, Basisprognose
-  und die Faustregel „immer Heimsieg" auf denselben Begegnungen nebeneinander
+  jede Prognose messen lassen muss: Die Trefferbilanz zeigt Prognose und
+  Basisprognose auf denselben Begegnungen nebeneinander
   (Tendenztreffer und Brier-Score) sowie einen Skill-Score (Verbesserung des
   Brier-Scores gegenüber der Basisprognose). Für den Vergleich gilt dieselbe
   Mindestanzahl wie für die Trefferquote.

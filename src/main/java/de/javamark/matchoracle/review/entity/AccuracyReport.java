@@ -8,16 +8,13 @@ import java.util.List;
  */
 public record AccuracyReport(String league, boolean backtest, int evaluated, int hits, Double hitRate, Double averageConfidence,
                              Double averageBrier, int required, List<MatchdayPoint> perMatchday,
-                             Comparison baseline, Comparison alwaysHome, Double skillScore, List<RecentResult> recent,
+                             Comparison baseline, Double skillScore, List<RecentResult> recent,
                              List<CalibrationGroup> calibration, ContrarianReport contrarian) {
 
     public record MatchdayPoint(int season, int matchday, int evaluated, int hits, int baselineHits, String recap) {
     }
 
-    /**
-     * A yardstick on the same matches: the baseline forecast, or the trivial rule "always
-     * a home win". Rates are null below the required number, like the hit rate itself.
-     */
+    /** A yardstick on the same matches: the baseline forecast. Rates are null below the required number, like the hit rate itself. */
     public record Comparison(int evaluated, int hits, Double hitRate, Double averageBrier) {
     }
 

@@ -118,8 +118,7 @@ public class ReviewPages {
             String oracleBrier = r.averageBrier() == null ? null : String.format("%.2f", r.averageBrier());
             List<YardstickRow> yardsticks = List.of(
                     new YardstickRow("KI-Vorschau", r.hitRate() == null ? null : (int) Math.round(r.hitRate() * 100), oracleBrier, true),
-                    YardstickRow.of("Basisprognose (Statistik)", r.baseline(), false),
-                    YardstickRow.of("Immer Heimsieg", r.alwaysHome(), false));
+                    YardstickRow.of("Basisprognose (Statistik)", r.baseline(), false));
             return new LeagueAccuracy(shortcut, name, r.backtest(), r.evaluated(), r.hits(),
                     r.hitRate() == null ? null : (int) Math.round(r.hitRate() * 100),
                     r.averageConfidence() == null ? null : (int) Math.round(r.averageConfidence() * 100),
@@ -160,14 +159,13 @@ public class ReviewPages {
     /** Spec 05, "Wer liegt vorne?": the fragment matchday's home page loads via htmx — matchday never touches this feature. */
     record LeaderboardFragment(boolean reliable, int evaluated, int required, List<LeaderboardRow> rows) {
         static LeaderboardFragment of(AccuracyReport r) {
-            boolean comparable = r.hitRate() != null && r.baseline().hitRate() != null && r.alwaysHome().hitRate() != null;
+            boolean comparable = r.hitRate() != null && r.baseline().hitRate() != null;
             if (!comparable) {
                 return new LeaderboardFragment(false, r.evaluated(), r.required(), List.of());
             }
             List<LeaderboardRow> rows = new java.util.ArrayList<>(List.of(
                     new LeaderboardRow("KI-Vorschau", true, (int) Math.round(r.hitRate() * 100)),
-                    new LeaderboardRow("Basisprognose (Statistik)", false, (int) Math.round(r.baseline().hitRate() * 100)),
-                    new LeaderboardRow("Immer Heimsieg", false, (int) Math.round(r.alwaysHome().hitRate() * 100))));
+                    new LeaderboardRow("Basisprognose (Statistik)", false, (int) Math.round(r.baseline().hitRate() * 100))));
             rows.sort(Comparator.comparingInt(LeaderboardRow::hitRatePercent).reversed());
             return new LeaderboardFragment(true, r.evaluated(), r.required(), rows);
         }
