@@ -1261,6 +1261,7 @@ Expected: FAIL — `zone` liefert heute für jede Liga eine Zone.
 - **Pokallauf** auf der Vereinsseite: je Runde eine Zeile mit Gegner, Ergebnis und Ausgang, endend mit dem Ausscheiden („im Achtelfinale aus") oder dem Titel. Ersetzt den Tabellenteil, der im K.-o.-Wettbewerb entfällt.
 - **Überraschungen** der Ausgabe: ein Abschnitt unter dem Rundenband mit den Begegnungen, die `TeamTier.isUpset(...)` erfüllt, sortiert nach Klassenabstand, dann nach Runde. Keine eigene Farbe — die Klassenangabe trägt die Bedeutung; Grün/Rot bleiben Sieg und Niederlage aus Vereinssicht vorbehalten, Messing bleibt gesperrt.
 - Für die Abstufung der Spielklassen die vorhandenen Tokens `--ink`, `--ink-soft`, `--ink-mute` verwenden statt neuer Farben (siehe `docs/styleguide.md`).
+- **Navigationsabzeichen** (vom Nutzer während der Umsetzung entschieden): `.badge` ist heute eine feste Scheibe von 1,35 rem für *die Ligazahl* — „DFB" passt nicht hinein, und Wettbewerbe ohne Zahl gehören auch nicht in ein Zahlenabzeichen. Die Form passt sich an: Kreis für ein einzelnes Zeichen (1, 2), mitwachsende abgerundete Plakette für Kürzel (CL, DFB, NL). Umsetzung über `min-width` statt fester `width` plus `padding` und `border-radius: 999px`; die Kreisform ergibt sich dann von selbst, solange der Inhalt ein Zeichen ist. Keine Wettbewerbs-Logos — die Quelle liefert keine, und die echten sind Marken. **Vor der CSS-Änderung den Baustein in `docs/styleguide.md` nachziehen** (CLAUDE.md verlangt das).
 
 - [ ] **Step 4: Run test to verify it passes**
 

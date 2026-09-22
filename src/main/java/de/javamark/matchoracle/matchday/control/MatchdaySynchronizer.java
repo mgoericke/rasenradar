@@ -39,6 +39,9 @@ public class MatchdaySynchronizer {
     @RestClient
     OpenLigaDbClient client;
 
+    @Inject
+    TeamTierImporter teamTiers;
+
     /** Matchdays before and after the current one that are checked for changes. */
     @ConfigProperty(name = "matchoracle.matchday.sync-window", defaultValue = "1")
     int syncWindow;
@@ -58,6 +61,7 @@ public class MatchdaySynchronizer {
                 int number = current.get(0).group().number();
                 importMissingSeasons(league, season);
                 refreshTeams(league, season);
+                refreshTiersIfNeeded(league, season);
                 for (int n = Math.max(1, number - syncWindow); n <= number + syncWindow; n++) {
                     newlyPlayed.addAll(syncMatchday(league, season, n));
                 }
@@ -157,6 +161,17 @@ public class MatchdaySynchronizer {
     }
 
     /**
+     * Spec 06: a knockout competition needs to know which division each club plays in, because
+     * that is what makes a result a surprise. Only there — in a league every club is of that
+     * league's own division anyway.
+     */
+    private void refreshTiersIfNeeded(League league, int season) {
+        if (league.format() == CompetitionFormat.KNOCKOUT) {
+            teamTiers.importSeason(season);
+        }
+    }
+
+    /**
      * Initial import: the current season and the configured number of past seasons
      * are loaded once, as soon as no matchday of that season is known yet.
      */
@@ -166,6 +181,9 @@ public class MatchdaySynchronizer {
             if (Matchday.count("league = ?1 and season = ?2", league, season) == 0) {
                 importSeason(league, season);
             }
+            // also for a season whose matches were already there: the divisions may still be
+            // missing, e.g. because that season was imported before this feature existed
+            refreshTiersIfNeeded(league, season);
         }
     }
 
