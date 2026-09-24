@@ -235,7 +235,10 @@ docker compose logs -f umami   # wartet auf "Server started"
 ```
 
 Erstanmeldung mit `admin` / `umami` — **Passwort sofort ändern**, die Instanz ist öffentlich
-erreichbar.
+erreichbar. **Danach abmelden und neu anmelden.** Umami bindet das Sitzungs-Token an den Hash des
+Passworts (`src/lib/auth.ts`: "Reject tokens issued before the current password"), stellt beim
+Ändern aber kein neues Token aus: die Oberfläche sieht weiter angemeldet aus, jede Aktion scheitert
+aber mit *Unauthorized* — auch das Anlegen der Website im nächsten Schritt.
 
 **5. Website anlegen:** Settings → Websites → Add website, Name „Rasen-Radar", Domain
 `rasen-radar.de`. Umami zeigt danach die Website-ID (UUID).
