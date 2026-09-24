@@ -27,6 +27,9 @@ services:
       # switches the local fallback off, so a failed cloud call reports its own error
       # and the Terminplanung retries the forecast an hour later.
       QUARKUS_LANGCHAIN4J_ANTHROPIC_CLOUD_API_KEY: ${ANTHROPIC_API_KEY}
+      # Visitor statistics: empty until the website has been created in Umami (see DEPLOYMENT.md).
+      # Empty means no tracker in the page at all — the site works either way.
+      MATCHORACLE_ANALYTICS_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/q/health/ready" ]
       interval: 10s
@@ -67,6 +70,44 @@ services:
       - "traefik.http.routers.rasenradar-old-domain.tls.certresolver=letsencrypt"
       - "traefik.http.routers.rasenradar-old-domain.service=rasenradar"
       - "traefik.http.routers.rasenradar-old-domain.middlewares=rasenradar-old-domain-redirect"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Umami — visitor statistics, self-hosted. Cookie-free and without personal data, so the
+  # site needs no consent banner. Shares the Postgres instance above; its database "umami"
+  # has to be created once by hand (see DEPLOYMENT.md), because the volume already exists
+  # and Postgres only runs its init scripts on a fresh one.
+  # ─────────────────────────────────────────────────────────────────────────────
+  umami:
+    image: ghcr.io/umami-software/umami:3.4.0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - proxy
+      - internal
+    # Umami runs its own schema migrations at startup and reaps old data itself;
+    # init: true gives the Node process a proper PID 1 so it stops cleanly.
+    init: true
+    environment:
+      DATABASE_URL: postgresql://matchoracle:${MATCHORACLE_DB_PASSWORD}@postgres:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      TWO_FACTOR_ENCRYPTION_KEY: ${UMAMI_TWO_FACTOR_KEY}
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/api/heartbeat" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.umami.loadbalancer.server.port=3000"
+      # Own subdomain, own certificate. The dashboard has its own login — do change the
+      # default password on the first visit, the instance is reachable from the internet.
+      - "traefik.http.routers.umami.rule=Host(`stats.rasen-radar.de`)"
+      - "traefik.http.routers.umami.entrypoints=websecure"
+      - "traefik.http.routers.umami.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.umami.service=umami"
 
   # ─────────────────────────────────────────────────────────────────────────────
   # PostgreSQL — plain, no extensions needed (dev uses the same image)

@@ -10,9 +10,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/** Values available in every Qute template without being passed in explicitly — currently the
- * absolute origin for canonical/Open Graph URLs, and a cache-busting asset version, since
- * {@code base.html} is shared across all features. */
+/** Values available in every Qute template without being passed in explicitly — the absolute
+ * origin for canonical/Open Graph URLs, a cache-busting asset version, and the visitor-statistics
+ * tracker, since {@code base.html} is shared across all features. */
 @TemplateGlobal
 public final class SiteGlobals {
 
@@ -23,6 +23,23 @@ public final class SiteGlobals {
 
     static String siteBaseUrl() {
         return ConfigProvider.getConfig().getValue("matchoracle.site.base-url", String.class);
+    }
+
+    /** Self-hosted Umami. The tracker is only written into the page when a website id is
+     * configured: it stays empty everywhere but production, so developing does not count towards
+     * the numbers. Set as MATCHORACLE_ANALYTICS_WEBSITE_ID in the deployment stack. */
+    static String analyticsWebsiteId() {
+        return ConfigProvider.getConfig().getOptionalValue("matchoracle.analytics.website-id", String.class).orElse("");
+    }
+
+    static String analyticsScriptUrl() {
+        return ConfigProvider.getConfig().getOptionalValue("matchoracle.analytics.script-url", String.class).orElse("");
+    }
+
+    /** Both halves have to be there — a tracker without an id collects nothing, an id without a
+     * tracker is dead configuration. */
+    static boolean analyticsEnabled() {
+        return !analyticsWebsiteId().isBlank() && !analyticsScriptUrl().isBlank();
     }
 
     /** A short hash of {@code app.css}'s content, appended as a query parameter so a CDN or browser
