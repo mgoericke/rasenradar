@@ -12,9 +12,11 @@ KI-Vorschau-auslösenden POST-Routen sind per Basic Auth geschützt (Kostenschut
 ## Architektur
 
 ```
-Internet → Traefik (proxy-Netz, :443) → rasenradar (:8080)
+Internet → Traefik (proxy-Netz, :443) → rasenradar (:8080)   [rasen-radar.de]
                                               ↓
                                          postgres (internal-Netz, :5432)
+                                              ↑
+                                        umami (:3000)        [stats.rasen-radar.de]
 ```
 
 - `proxy`-Netz: extern, wird von Traefik verwaltet — muss auf dem Server existieren.
@@ -191,6 +193,70 @@ Die `.env`-Datei auf dem Server bleibt unberührt — sie wird nur manuell gepfl
 
 Beim allerersten Start importiert `MatchdaySynchronizer` die laufende Saison plus zwei Vorsaisons
 je Liga von OpenLigaDB (`importMissingSeasons`) — das kann beim ersten Hochfahren einen Moment dauern.
+
+---
+
+## Besucherstatistik (Umami)
+
+Selbst gehostet, deshalb bleiben die Daten auf demselben Server. Umami setzt keine Cookies und
+speichert keine IP-Adressen: ein Besucher wird über einen täglich wechselnden Hash erkannt. Damit
+braucht die Seite kein Zustimmungsbanner — und die Zahlen stimmen, weil niemand wegklicken kann.
+Erfasst werden Seitenaufruf, Referrer, Land, Browser, Betriebssystem und Bildschirmgröße.
+
+- Dashboard: `https://stats.rasen-radar.de` (eigener Traefik-Router, eigenes Zertifikat)
+- Image: `ghcr.io/umami-software/umami:3.4.0`, Schema-Migrationen laufen beim Start selbst
+- Datenbank: `umami` in derselben Postgres-Instanz, User `matchoracle`
+
+### Einmalige Einrichtung
+
+**1. DNS:** `stats.rasen-radar.de` als A-Record auf dieselbe Server-IP wie `rasen-radar.de`.
+Ohne den Eintrag bekommt Traefik kein Let's-Encrypt-Zertifikat.
+
+**2. Secrets in die `.env` auf dem Server** (`UMAMI_WEBSITE_ID` bleibt zunächst leer):
+
+```bash
+openssl rand -hex 32   # → UMAMI_APP_SECRET
+openssl rand -hex 32   # → UMAMI_TWO_FACTOR_KEY
+```
+
+**3. Datenbank anlegen.** Das Postgres-Volume existiert bereits, `POSTGRES_DB` greift also nicht
+mehr — die zweite Datenbank muss einmalig von Hand angelegt werden:
+
+```bash
+cd /opt/rasenradar   # bzw. DEPLOY_PATH
+docker compose exec postgres createdb -U matchoracle umami
+```
+
+**4. Umami starten** und im Dashboard anmelden:
+
+```bash
+docker compose up -d umami
+docker compose logs -f umami   # wartet auf "Server started"
+```
+
+Erstanmeldung mit `admin` / `umami` — **Passwort sofort ändern**, die Instanz ist öffentlich
+erreichbar.
+
+**5. Website anlegen:** Settings → Websites → Add website, Name „Rasen-Radar", Domain
+`rasen-radar.de`. Umami zeigt danach die Website-ID (UUID).
+
+**6. ID in die `.env` eintragen** und die Anwendung neu starten, damit sie das Tracking-Script
+ausliefert:
+
+```bash
+# UMAMI_WEBSITE_ID=<die UUID aus dem Dashboard>
+docker compose up -d rasenradar
+```
+
+Ohne ID bindet die Anwendung gar kein Script ein (`matchoracle.analytics.website-id` ist leer) —
+die Seite funktioniert also in jedem Zwischenzustand. Prüfen lässt sich das im Seitenquelltext:
+`<script src="https://stats.rasen-radar.de/script.js" data-website-id="…">`.
+
+### Warum die Zahlen von Server-Logs abweichen
+
+Umami zählt nur Aufrufe, bei denen JavaScript läuft — Suchmaschinen-Crawler und Bots fehlen
+deshalb, Besucher mit Script-Blocker ebenfalls. Das ist gewollt: gezählt werden Menschen, nicht
+Requests.
 
 ---
 

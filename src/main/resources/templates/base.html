@@ -28,6 +28,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/app.css?v={assetVersion}">
   <script src="/vendor/htmx-2.0.10.min.js" defer></script>
+  {! Visitor statistics: self-hosted Umami, no cookies and no personal data. The tracker hooks into
+      history.pushState, so it also counts the pages htmx swaps in through hx-boost. Only rendered
+      when a website id is configured — dev and test render nothing at all. data-do-not-track is
+      opt-in in Umami: without it the tracker ignores the browser's Do-Not-Track setting, and the
+      privacy statement promises otherwise. !}
+  {#if analyticsEnabled}
+  <script src="{analyticsScriptUrl}" data-website-id="{analyticsWebsiteId}" data-do-not-track="true" defer></script>
+  {/if}
 </head>
 <body hx-boost="true">
   <header class="topnav">
