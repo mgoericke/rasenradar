@@ -7,10 +7,13 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -171,10 +174,17 @@ public class ReviewPages {
         }
     }
 
-    /** Loaded via htmx from matchday's home page — never called directly by matchday's Java code. */
+    /**
+     * Loaded via htmx from matchday's home page — never called directly by matchday's Java code.
+     * Opened directly (a shared link, a crawler) the bare fragment would arrive without any layout,
+     * so anything but an htmx request is sent to the page that shows the same numbers in full.
+     */
     @GET
     @Path("/leaderboard")
-    public TemplateInstance leaderboard() {
-        return Templates.leaderboard(LeaderboardFragment.of(review.combinedAccuracy()));
+    public Response leaderboard(@HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/trefferbilanz")).build();
+        }
+        return Response.ok(Templates.leaderboard(LeaderboardFragment.of(review.combinedAccuracy()))).build();
     }
 }
