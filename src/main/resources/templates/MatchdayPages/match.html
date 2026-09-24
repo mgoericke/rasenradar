@@ -1,6 +1,9 @@
 {#include base nav=page.nav data=page.data}
-{#title}{page.match.home} – {page.match.away}{/title}
-{#description}{page.match.home} gegen {page.match.away}, {page.day}: Ergebnis, Tore und direkter Vergleich beider Teams.{/description}
+{! The score is what people search for once a match is played ("dortmund bremen ergebnis"); before
+   kickoff the encounter itself is all there is, and the prognosis has its own page (see forecast.html)
+   — two pages claiming the same words would only compete with each other. !}
+{#title}{page.match.home} – {page.match.away}{#if page.match.played}: {page.match.score}{/if}{/title}
+{#description}{#if page.match.played}{page.match.home} gegen {page.match.away} am {page.day}: Endstand {page.match.score}, alle Tore mit Torschützen, die Form beider Mannschaften und der direkte Vergleich.{#else}{page.match.home} gegen {page.match.away} am {page.day}: die Form beider Mannschaften, ihre Heim- und Auswärtsbilanz und alle bisherigen Duelle.{/if}{/description}
 {#body}
 <article class="match">
   <p class="breadcrumb"><a href="{page.matchdayLink}">{page.number}. Spieltag</a> · {page.day}, {page.match.time} Uhr</p>

@@ -1,6 +1,9 @@
 {#include base nav=page.nav data=page.data}
-{#title}{page.name} – {page.season}{/title}
-{#description}Spielplan, Tabellenplatz und Bilanz von {page.name} in der {page.nav.leagueName} {page.season}.{/description}
+{! A club's name alone is a search nobody wins against the club itself, kicker and transfermarkt.
+   What is worth naming is what only this page has — and the AI prognoses only exist for the
+   running season and only in the two Bundesligas, so every other page says what it really holds. !}
+{#title}{page.name} {page.season}{#if page.currentSeason && page.nav.forecastSupported}: Form, Spielplan und KI-Prognosen{#else}: Spielplan, Bilanz und Torschützen{/if}{/title}
+{#description}{page.name} in der {page.nav.leagueName} {page.season}: Tabellenplatz, Form, Bilanz und Torschützen{#if page.currentSeason && page.nav.forecastSupported} – dazu eine KI-Prognose zu jeder kommenden Begegnung{/if}.{/description}
 {#body}
 <article class="club">
   <header class="club-head">
