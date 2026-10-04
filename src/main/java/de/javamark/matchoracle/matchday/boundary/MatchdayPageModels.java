@@ -390,6 +390,16 @@ public final class MatchdayPageModels {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }
+
+        /**
+         * Whether this club page actually carries AI forecasts: they exist for the running season
+         * only (a past season's matches are all played) and only where spec 02 reaches. Both halves
+         * have to hold, so the question lives here rather than being spelled out per template —
+         * a page must never promise a forecast it cannot show.
+         */
+        public boolean showsForecasts() {
+            return currentSeason && nav.forecastSupported();
+        }
     }
 
     static String dayLabel(Instant kickoff) {
