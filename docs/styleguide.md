@@ -102,17 +102,14 @@ Regeln:
   sind auf 700px zentriert (`.masthead`) — ein ruhiger Fokuspunkt. Darunter geht `.landing`
   auf volle Breite: Spotlight und Liga-Karten (`.landing-grid`,
   `repeat(auto-fit, minmax(320px, 1fr))`) nutzen die Seitenbreite.
-- **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): die Begegnungen, die
-  *jetzt* zählen, in einer von drei Phasen — nächster Anstoß-Block mit KI-Richtwert,
-  alle laufenden Spiele, oder die Ergebnisse des letzten Blocks samt Abgleich mit der
-  KI-Vorschau. Helle Karte über volle Breite, Überschrift links in normaler Schreibweise
-  (keine Eyebrow), nur in der Phase „Läuft" in `--loss`. Ein Blick-Streifen: Paarungen
-  mit **Kurznamen** (volle Namen stehen in den Liga-Karten), durch Haarlinien getrennt.
-  Die KI-Zelle steht **neben** dem Link, nicht darin: „KI" in `--ink-soft`, der Richtwert
-  in Display-Schrift mit 2 px-Messinglinie darunter (Messing als Linie, nicht als
-  Kleinschrift — die würde den Kontrast verfehlen). Abgleich als Text: „getroffen" in
-  `--ink` 600, „daneben" in `--ink-soft` — bewusst ohne Grün/Rot, das bleibt
-  Sieg/Niederlage vorbehalten; die Unterzeile sagt, dass es um die Tendenz geht.
+- **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): was als Nächstes zählt —
+  alle laufenden Spiele, sonst der nächste Anstoß-Block mit KI-Richtwert. **Nie ein
+  Ergebnis**: die stehen in den Liga-Karten darunter. Helle Karte über volle Breite,
+  Überschrift links in normaler Schreibweise (keine Eyebrow), nur in der Phase „Läuft" in
+  `--loss`. Ein Blick-Streifen: Paarungen mit **Kurznamen** (volle Namen stehen in den
+  Liga-Karten), durch Haarlinien getrennt. Die KI-Zelle steht **neben** dem Link, nicht
+  darin: „KI" in `--ink-soft`, der Richtwert in Display-Schrift mit 2 px-Messinglinie
+  darunter (Messing als Linie, nicht als Kleinschrift — die würde den Kontrast verfehlen).
   Breite steuert der Spotlight selbst per Container Query: zwei Spalten erst, wenn jede
   ≥ 25 rem hat; einspaltig klappen Zeilen ab der fünften hinter „Alle n Spiele zeigen"
   (CSS-only Checkbox, wie die Tabs), damit die Liga-Karten oben bleiben; unter 30 rem

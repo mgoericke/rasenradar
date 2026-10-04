@@ -101,7 +101,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Gruppe (Gruppe A … D) | `Matchday.groupName` — eigene Tabelle und eigener Spieltagszähler je Gruppe |
 | Blickfang der Startseite | `Spotlight` |
 | Anstoß-Block (alle Begegnungen beider Bundesligen mit derselben Anstoßzeit) | `KickoffSlot` |
-| Phase des Blickfangs (Vorschau / Läuft / Ergebnisse) | `SpotlightPhase.PREVIEW` / `LIVE` / `RESULTS` |
+| Phase des Blickfangs (Vorschau / Läuft) | `SpotlightPhase.PREVIEW` / `LIVE` |
 | Saisonaussicht | `SeasonOutlook` (Package `season`) |
 | Platzierungsziel (Meisterschaft, Europapokal, Auf-/Abstieg, Play-off, K.-o.-Runde, Ausscheiden) | `PlacementGoal` — Definition der Schwellenwerte je Liga lebt in `matchday`, da sie dieselbe ist wie bei den Tabellenzonen-Farben |
 | Zustandekommen (einer Prognose) | `ForecastTrace` |

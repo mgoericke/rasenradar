@@ -212,21 +212,14 @@ public class ForecastPages {
      * The match page belongs to the matchday feature and composes this on the HTML level, so it stays unaware of forecasts.
      */
     /**
-     * Spec 01, "Blickfang der Startseite": the KI-Vorschau cell of one spotlight row. Before the final
-     * whistle only the guide value; afterwards also whether the tendency was right. {@code hit} is
-     * null while there is no score yet; {@code expectedScore} is null without a forecast before kickoff.
-     * Display only — never feeds the Rückschau (spec 03).
+     * Spec 01, "Blickfang der Startseite": the KI-Vorschau cell of one spotlight row — the guide value
+     * of the last forecast before kickoff, or null without one.
      */
-    record SpotlightForecastView(long matchId, String expectedScore, String tendency, int probabilityPercent,
-                                 Boolean hit, boolean provisional) {
-        static SpotlightForecastView of(long matchId, Optional<Forecast> forecast, MatchdayFacade.MatchScore score) {
-            if (forecast.isEmpty()) {
-                return new SpotlightForecastView(matchId, null, null, 0, null, false);
-            }
-            MarkerView marker = MarkerView.of(forecast.get());
-            Boolean hit = score == null ? null : forecast.get().tendency() == Outcome.of(score.homeGoals(), score.awayGoals());
-            return new SpotlightForecastView(matchId, marker.expectedScore(), marker.tendency(), marker.probabilityPercent(),
-                    hit, score != null && score.provisional());
+    record SpotlightForecastView(long matchId, String expectedScore, String tendency, int probabilityPercent) {
+        static SpotlightForecastView of(long matchId, Optional<Forecast> forecast) {
+            return forecast.map(MarkerView::of)
+                    .map(m -> new SpotlightForecastView(matchId, m.expectedScore(), m.tendency(), m.probabilityPercent()))
+                    .orElse(new SpotlightForecastView(matchId, null, null, 0));
         }
 
         public boolean missing() {
@@ -253,10 +246,8 @@ public class ForecastPages {
         if (htmxRequest == null) {
             return Response.seeOther(URI.create("/")).build();
         }
-        List<Long> ids = matchIds.stream().limit(MAX_SPOTLIGHT_ROWS).toList();
-        Map<Long, MatchdayFacade.MatchScore> scores = matchday.scoresOf(ids);
-        return Response.ok(Templates.spotlightForecasts(ids.stream()
-                .map(id -> SpotlightForecastView.of(id, Forecast.latestBeforeKickoff(Forecast.findByMatch(id)), scores.get(id)))
+        return Response.ok(Templates.spotlightForecasts(matchIds.stream().limit(MAX_SPOTLIGHT_ROWS)
+                .map(id -> SpotlightForecastView.of(id, Forecast.latestBeforeKickoff(Forecast.findByMatch(id))))
                 .toList())).build();
     }
 

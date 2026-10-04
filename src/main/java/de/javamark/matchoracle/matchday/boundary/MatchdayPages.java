@@ -112,10 +112,6 @@ public class MatchdayPages {
     @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
     Duration liveWindow;
 
-    /** Spec 01, "Blickfang der Startseite": how long the last block's results stay before the next block's preview takes over. */
-    @ConfigProperty(name = "matchoracle.matchday.spotlight-results-hold", defaultValue = "PT1H")
-    Duration spotlightResultsHold;
-
     /** Landing page: current matchday of both Bundesligas in short form, so a first visit shows both leagues. */
     @GET
     public TemplateInstance home() {
@@ -130,14 +126,14 @@ public class MatchdayPages {
                 candidates.addAll(spotlightCandidates(matchday));
             });
         }
-        Spotlight spotlight = SpotlightSelector.select(candidates, now, liveWindow, spotlightResultsHold)
+        Spotlight spotlight = SpotlightSelector.select(candidates, now, liveWindow)
                 .map(s -> spotlight(s, now)).orElse(null);
         return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections, MatchdayPageModels.LEADERBOARD_LINK));
     }
 
     /**
-     * The displayed matchday plus its neighbours: the last block can lie in the previous matchday
-     * (Monday after a matchday) and the next block in the following one (Sunday evening).
+     * The displayed matchday plus its neighbours: a match can still be running in the previous
+     * matchday, and the next block can lie in the following one (Sunday evening).
      */
     private static List<Match> spotlightCandidates(Matchday displayed) {
         List<Match> matches = new ArrayList<>();

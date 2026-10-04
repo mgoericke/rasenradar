@@ -309,7 +309,7 @@ h2 { font-size: 1.1rem; }
   list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr)); column-gap: 2.5rem;
 }
-.spotlight-row { display: grid; grid-template-columns: minmax(0, 1fr) 6.5rem; align-items: center; gap: .75rem; border-top: 1px solid var(--line); }
+.spotlight-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem; align-items: center; gap: .75rem; border-top: 1px solid var(--line); }
 .spotlight.is-live .spotlight-row { grid-template-columns: minmax(0, 1fr); }
 .spotlight-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); padding: .6rem .25rem; }
 .spotlight.is-live .spotlight-row .fixture { grid-template-columns: 3.2rem minmax(0, 1fr) auto minmax(0, 1fr); }
@@ -321,9 +321,6 @@ h2 { font-size: 1.1rem; }
   font-family: var(--display); font-weight: 700; font-size: 1rem; color: var(--ink);
   font-variant-numeric: tabular-nums; border-bottom: 2px solid var(--accent);
 }
-.spotlight-forecast-verdict { color: var(--ink-soft); }
-.spotlight-forecast-verdict.is-hit { color: var(--ink); font-weight: 600; }
-.spotlight-forecast-provisional { font-weight: 400; color: var(--ink-soft); }
 .spotlight-forecast-none { color: var(--ink-soft); }
 
 /* single column (no room for two): past four rows the rest folds behind a toggle, so the

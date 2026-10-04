@@ -295,12 +295,10 @@ public final class MatchdayPageModels {
             String heading = switch (phase) {
                 case PREVIEW -> "Als Nächstes: " + time(kickoff);
                 case LIVE -> "Läuft gerade";
-                case RESULTS -> "Ergebnisse von " + time(kickoff);
             };
             String subline = switch (phase) {
                 case PREVIEW -> dayLabel(kickoff) + " · mit KI-Richtwert je Spiel";
                 case LIVE -> rows.size() == 1 ? "1 Spiel · Ergebnis nach Abpfiff" : rows.size() + " Spiele · Ergebnisse nach Abpfiff";
-                case RESULTS -> dayLabel(kickoff) + " · KI-Tendenz vor dem Anstoß: getroffen oder daneben";
             };
             String ids = rows.stream().map(r -> "match=" + r.id()).collect(java.util.stream.Collectors.joining("&"));
             return new Spotlight(phase.name().toLowerCase(), heading, subline, rows, SPOTLIGHT_FORECASTS_LINK + "?" + ids);
@@ -309,13 +307,9 @@ public final class MatchdayPageModels {
         public boolean collapsible() {
             return rows.size() > VISIBLE_ON_PHONE;
         }
-
-        public boolean results() {
-            return "results".equals(phase);
-        }
     }
 
-    /** The forecast feature's fragment for the spotlight rows (KI-Richtwert, and after the final whistle the comparison). */
+    /** The forecast feature's fragment for the spotlight rows: the KI-Richtwert per match. */
     static final String SPOTLIGHT_FORECASTS_LINK = "/blickfang/ki-vorschau";
 
     record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
