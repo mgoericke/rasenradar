@@ -1,6 +1,8 @@
 {#include base nav=page.nav}
-{#title}KI-Vorschau {page.homeTeam} – {page.awayTeam}{/title}
-{#description}KI-Vorschau für {page.homeTeam} gegen {page.awayTeam}: Tendenz, Sicherheitsgrad und die Begründung von Form-, Duell- und Umfeldbewertung. Keine Quoten, keine Wettempfehlungen.{/description}
+{! Team names first — that is what a search starts with; the word people actually type for this
+   page is "Prognose", not the site's own term "Vorschau". !}
+{#title}{page.homeTeam} – {page.awayTeam}: KI-Prognose{/title}
+{#description}Wie geht {page.homeTeam} gegen {page.awayTeam} aus? Die KI-Prognose nennt Tendenz und Sicherheitsgrad und legt ihre Begründung offen — ohne Quoten und Wettempfehlungen.{/description}
 {#body}
 <article class="forecast-page">
   <p class="breadcrumb"><a href="{page.matchdayLink}">{page.matchdayNumber}. Spieltag</a> · <a href="{page.matchLink}">{page.homeTeam} – {page.awayTeam}</a> · {page.kickoff} Uhr</p>
