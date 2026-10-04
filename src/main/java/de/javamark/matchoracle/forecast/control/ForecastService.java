@@ -185,7 +185,7 @@ public class ForecastService {
         forecast.awayWin = sf.awayWin();
         forecast.expectedHomeGoals = sf.homeGoals();
         forecast.expectedAwayGoals = sf.awayGoals();
-        forecast.confidence = confidence(sf.scoreProbability(), failed);
+        forecast.confidence = confidence(sf, failed);
         forecast.reasoning = draft.reasoning();
 
         forecast.verdict = verdict.verdict();
@@ -222,8 +222,19 @@ public class ForecastService {
     /**
      * Confidence is not asked from the model (small models anchor on a default value) but derived:
      * the probability of the predicted tendency, lowered for every failed assessment.
+     *
+     * <p>It takes the whole estimate rather than a single number on purpose: the scoreline's own
+     * probability sits right next to the tendency's in {@link ScorelineForecast} and is a fraction
+     * of it (a 2:0 is worth some 11 % where the home win is worth 67 %). Passing that one instead
+     * went unnoticed for a while — every displayed confidence was far too low, and the review
+     * judged over- and underconfidence against it.
      */
-    static double confidence(double tendencyProbability, long failedAssessments) {
+    static double confidence(ScorelineForecast estimate, long failedAssessments) {
+        double tendencyProbability = switch (tendencyOf(estimate)) {
+            case HOME_WIN -> estimate.homeWin();
+            case DRAW -> estimate.draw();
+            case AWAY_WIN -> estimate.awayWin();
+        };
         return clamp(tendencyProbability) * Math.pow(CONFIDENCE_FACTOR_PER_FAILED_ASSESSMENT, failedAssessments);
     }
 
