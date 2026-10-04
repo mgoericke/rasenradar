@@ -66,6 +66,17 @@ h2 { font-size: 1.1rem; }
 .nav-link:hover { color: #fff; }
 .nav-link.is-active { color: #fff; border-color: var(--accent); }
 .topnav a:focus-visible { outline-color: var(--accent); }
+/* phones: brand on top, the five competitions in one swipeable row instead of three wrapped
+   rows that the sticky header would keep on screen for good */
+@media (max-width: 560px) {
+  .topnav-inner { padding-block: .5rem .1rem; row-gap: 0; }
+  .brand { width: 100%; }
+  .nav-links {
+    flex-wrap: nowrap; overflow-x: auto; width: calc(100% + 2rem); margin: 0 -1rem; padding: 0 1rem;
+    scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: 1rem;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+}
 /* competition badge: a disc for a league number, a pill for a shortcut ("CL", "DFB", "NL").
    Only leagues have a number — min-width keeps "1" and "2" perfectly round while a
    shortcut simply grows. */
@@ -284,15 +295,12 @@ h2 { font-size: 1.1rem; }
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--accent); border-color: var(--accent); color: var(--stage); }
 
-/* --- landing page: one centered reading column, not the two-column page grid ------- */
+/* --- landing page: full width, the matchday first — no masthead, the nav carries the brand */
 .landing { grid-column: 1 / -1; }
-.masthead { text-align: center; max-width: 700px; margin: 0 auto 2.5rem; }
-.masthead .kicker { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mute); }
-.landing-title { font-size: clamp(1.75rem, 6.5vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; margin: .3rem 0 0; text-wrap: balance; }
-.landing-intro { margin: .6rem auto 0; color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; }
+.landing-heading { font-size: clamp(1.35rem, 1rem + 1.4vw, 1.75rem); letter-spacing: -0.025em; margin: 0 0 1rem; text-wrap: balance; }
 
-/* Spec 01, "Blickfang der Startseite": the matches that count right now — next block,
-   running matches, or the last block's results next to what the KI-Vorschau expected */
+/* Spec 01, "Blickfang der Startseite": what comes next — the running matches, or the next
+   block with the KI-Vorschau's guide value. Never a result; those stand in the league cards. */
 .spotlight {
   container: spotlight / inline-size;
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
@@ -344,17 +352,18 @@ h2 { font-size: 1.1rem; }
 }
 @media (max-width: 560px) { .spotlight { padding: 1.1rem 1rem .4rem; } }
 
-/* Spec 05, "Wer liegt vorne?": the leaderboard fragment on the landing page, below the spotlight */
-.leaderboard-slot { max-width: 420px; margin: 0 auto 3rem; }
+/* Spec 05, "Wer liegt vorne?": the leaderboard fragment at the end of the landing page */
+.landing-leaderboard { max-width: 420px; margin: 3rem 0 1rem; }
+.landing-leaderboard h2 { font-size: 1.2rem; margin: 0 0 .8rem; }
 .leaderboard { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; font-size: .95rem; }
 .leaderboard li + li { border-top: 1px solid var(--line); }
 .leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
 .leaderboard-rate { font-family: var(--display); font-weight: 700; }
-.leaderboard-caption { text-align: center; margin: .6rem 0 0; font-size: .85rem; }
+.leaderboard-caption { margin: .6rem 0 0; font-size: .85rem; }
 
 /* one league, full column width, stacked instead of side by side */
-.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1.5rem; }
 .landing-league {
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
   padding: 1.4rem 1.5rem 1.5rem;

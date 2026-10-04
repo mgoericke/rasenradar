@@ -313,6 +313,24 @@ public final class MatchdayPageModels {
     static final String SPOTLIGHT_FORECASTS_LINK = "/blickfang/ki-vorschau";
 
     record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
+
+        /**
+         * The page heading tells a returning fan where both leagues stand — "Bundesliga: 5. und 7. Spieltag",
+         * in league order, since each league keeps its own counter (spec 01).
+         */
+        public String heading() {
+            List<Integer> numbers = leagues.stream().map(LandingLeagueSection::matchdayNumber).toList();
+            if (numbers.isEmpty()) {
+                return "Bundesliga";
+            }
+            if (numbers.size() == 1) {
+                return leagues.getFirst().name() + ": " + numbers.getFirst() + ". Spieltag";
+            }
+            if (numbers.stream().distinct().count() == 1) {
+                return "Bundesliga: " + numbers.getFirst() + ". Spieltag";
+            }
+            return "Bundesliga: " + numbers.stream().map(n -> n + ".").collect(java.util.stream.Collectors.joining(" und ")) + " Spieltag";
+        }
     }
 
     /** Spec 05, "Wer liegt vorne?": the review feature's own fragment endpoint, loaded via htmx — matchday stays unaware of it otherwise. */

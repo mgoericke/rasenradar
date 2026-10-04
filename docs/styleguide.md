@@ -82,6 +82,10 @@ Regeln:
   rein aus der Anstoßzeit abgeleitet, siehe Spec 1), ersetzt „Läuft" den Platzhalter —
   Text-Schrift statt Display, `--loss`-Rahmen ohne Füllung: auffällig, aber erkennbar kein
   Ergebnis.
+- **Navigation auf dem Telefon** (`.nav-links` unter 560 px): Marke oben, darunter alle
+  Wettbewerbe in **einer** wischbaren Zeile mit vollem Namen, ohne sichtbaren Scrollbalken —
+  kein Umbruch in mehrere Zeilen, die die mitlaufende Navigation dauerhaft stehen ließe.
+  `nav.js` scrollt den aktiven Eintrag in die Mitte.
 - **Wettbewerbsabzeichen** (`.badge`): kleines Zeichen links am Navigationseintrag,
   Display-Schrift 700, Haarrahmen; aktiv in Messing gefüllt. Ein einzelnes Zeichen
   (die Ligazahl „1", „2") ergibt eine runde Scheibe, ein Kürzel („CL", „DFB", „NL")
@@ -98,10 +102,11 @@ Regeln:
   Rahmen). Wege zur KI-Vorschau tragen den Messing-Rahmen (`.link-button.ai`).
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
-- **Zentrierter Einstieg über vollbreitem Karten-Grid** (Landingpage): Titel/Einleitung
-  sind auf 700px zentriert (`.masthead`) — ein ruhiger Fokuspunkt. Darunter geht `.landing`
-  auf volle Breite: Spotlight und Liga-Karten (`.landing-grid`,
-  `repeat(auto-fit, minmax(320px, 1fr))`) nutzen die Seitenbreite.
+- **Landingpage: der Spieltag zuerst.** Kein Kopfbereich mit Schriftzug — die Marke steht
+  schon in der Navigation. Die H1 (`.landing-heading`) sagt klein und linksbündig, wo
+  beide Ligen stehen („Bundesliga: 5. und 7. Spieltag"). Darunter Spotlight und
+  Liga-Karten (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) über volle Breite;
+  die Rangliste „Wer liegt vorne?" (`.landing-leaderboard`) steht am Ende.
 - **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): was als Nächstes zählt —
   alle laufenden Spiele, sonst der nächste Anstoß-Block mit KI-Richtwert. **Nie ein
   Ergebnis**: die stehen in den Liga-Karten darunter. Helle Karte über volle Breite,
