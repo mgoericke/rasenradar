@@ -11,6 +11,7 @@ import jakarta.persistence.OrderBy;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,16 @@ public class Forecast extends PanacheEntity {
 
     public static Optional<Forecast> findLatestByMatch(long matchId) {
         return find("matchId = ?1 order by createdAt desc", matchId).firstResultOptional();
+    }
+
+    /**
+     * Spec 01, "Blickfang der Startseite": the forecast the spotlight compares against — the last one
+     * made before kickoff. Backtests are made after the match and never count.
+     */
+    public static Optional<Forecast> latestBeforeKickoff(List<Forecast> forecastsOfOneMatch) {
+        return forecastsOfOneMatch.stream()
+                .filter(f -> !f.backtest && f.createdAt.isBefore(f.kickoff))
+                .max(Comparator.comparing(f -> f.createdAt));
     }
 
     /** Latest forecast per match of a matchday, for the overview. */

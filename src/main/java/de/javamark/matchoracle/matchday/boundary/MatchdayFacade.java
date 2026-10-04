@@ -24,7 +24,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** Java entry point for other features (forecast, review). Cross-feature access goes through here, never through entities. */
@@ -35,6 +37,10 @@ public class MatchdayFacade {
     }
 
     public record Fixture(long homeTeamId, long awayTeamId) {
+    }
+
+    /** A match's score as far as it is known; {@code provisional} until the result is FINAL (spec 01). */
+    public record MatchScore(int homeGoals, int awayGoals, boolean provisional) {
     }
 
     public record TeamState(long teamId, int points, int goalDifference, int goalsFor, Balance homeRecord, Balance awayRecord) {
@@ -85,6 +91,17 @@ public class MatchdayFacade {
                 .createQuery("select m.id from Match m where m.resultStatus = :status", Long.class)
                 .setParameter("status", ResultStatus.FINAL)
                 .getResultList();
+    }
+
+    /** Scores of the given matches that have one, keyed by match id — for the spotlight's comparison with the KI-Vorschau. */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Map<Long, MatchScore> scoresOf(List<Long> matchIds) {
+        Map<Long, MatchScore> scores = new HashMap<>();
+        for (Long id : matchIds) {
+            Match.<Match>findByIdOptional(id).filter(Match::isPlayed).ifPresent(m -> scores.put(m.id,
+                    new MatchScore(m.fullTimeScore.home, m.fullTimeScore.away, m.resultStatus == ResultStatus.PROVISIONAL)));
+        }
+        return scores;
     }
 
     /** The latest known season of a league (the current one), e.g. 2026. */

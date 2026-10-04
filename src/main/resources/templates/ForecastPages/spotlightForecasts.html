@@ -1,0 +1,12 @@
+{#for r in rows}
+<span id="spotlight-forecast-{r.matchId}" hx-swap-oob="true" class="spotlight-forecast{#if r.missing} is-missing{/if}">
+  {#if r.missing}
+  <span class="spotlight-forecast-none">keine KI-Vorschau</span>
+  {#else}
+  <span class="spotlight-forecast-value"><span class="spotlight-forecast-label" aria-hidden="true">KI</span><span class="sr-only">KI-Richtwert</span> <span class="spotlight-forecast-score">{r.expectedScore}</span><span class="sr-only">, Tendenz zum {r.tendency}, {r.probabilityPercent} %</span></span>
+  {#if r.hit != null}
+  <span class="spotlight-forecast-verdict{#if r.hit} is-hit{/if}">{#if r.hit}getroffen{#else}daneben{/if}{#if r.provisional}<span class="spotlight-forecast-provisional"> · vorläufig</span>{/if}</span>
+  {/if}
+  {/if}
+</span>
+{/for}

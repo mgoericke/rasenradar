@@ -7,6 +7,7 @@ import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.Match;
+import de.javamark.matchoracle.matchday.entity.SpotlightPhase;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
@@ -64,7 +65,7 @@ public final class MatchdayPageModels {
      * live score (Spec 1, Abgrenzung: keine Live-Ergebnisse während laufender Spiele).
      */
     static boolean isLive(Instant kickoff, boolean played, Instant now, Duration liveWindow) {
-        return !played && !kickoff.isAfter(now) && now.isBefore(kickoff.plus(liveWindow));
+        return Match.isLive(kickoff, played, now, liveWindow);
     }
 
     /** "vor 12 Minuten", "vor 3 Stunden" — the age of the data. */
@@ -280,10 +281,42 @@ public final class MatchdayPageModels {
                                 int matchdayNumber, List<DayGroup> days, List<StandingRow> tableTop, boolean tableProvisional) {
     }
 
-    /** The one match closest to kickoff (or currently live) across both leagues, ahead of the league sections. */
-    record Spotlight(String matchLink, String forecastLink, String homeTeam, String awayTeam, String homeIcon, String awayIcon,
-                     String time, String date, boolean live) {
+    /**
+     * Spec 01, "Blickfang der Startseite": the matches that count right now, ahead of the league sections.
+     * {@code forecastPath} is the forecast feature's fragment that fills in the KI-Vorschau per row —
+     * matchday only knows its address, as with the leaderboard.
+     */
+    record Spotlight(String phase, String heading, String subline, List<MatchRow> rows, String forecastPath) {
+
+        /** On narrow screens, rows beyond this many fold behind a "show all" toggle. */
+        static final int VISIBLE_ON_PHONE = 4;
+
+        static Spotlight of(SpotlightPhase phase, Instant kickoff, List<MatchRow> rows) {
+            String heading = switch (phase) {
+                case PREVIEW -> "Als Nächstes: " + time(kickoff);
+                case LIVE -> "Läuft gerade";
+                case RESULTS -> "Ergebnisse von " + time(kickoff);
+            };
+            String subline = switch (phase) {
+                case PREVIEW -> dayLabel(kickoff) + " · mit KI-Richtwert je Spiel";
+                case LIVE -> rows.size() == 1 ? "1 Spiel · Ergebnis nach Abpfiff" : rows.size() + " Spiele · Ergebnisse nach Abpfiff";
+                case RESULTS -> dayLabel(kickoff) + " · KI-Tendenz vor dem Anstoß: getroffen oder daneben";
+            };
+            String ids = rows.stream().map(r -> "match=" + r.id()).collect(java.util.stream.Collectors.joining("&"));
+            return new Spotlight(phase.name().toLowerCase(), heading, subline, rows, SPOTLIGHT_FORECASTS_LINK + "?" + ids);
+        }
+
+        public boolean collapsible() {
+            return rows.size() > VISIBLE_ON_PHONE;
+        }
+
+        public boolean results() {
+            return "results".equals(phase);
+        }
     }
+
+    /** The forecast feature's fragment for the spotlight rows (KI-Richtwert, and after the final whistle the comparison). */
+    static final String SPOTLIGHT_FORECASTS_LINK = "/blickfang/ki-vorschau";
 
     record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
     }

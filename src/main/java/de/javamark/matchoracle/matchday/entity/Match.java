@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +97,15 @@ public class Match extends PanacheEntity {
 
     public boolean isPlayed() {
         return fullTimeScore != null;
+    }
+
+    /** Spec 01, "Kennzeichnung laufender Spiele": derived from the kickoff alone — never a live score. */
+    public static boolean isLive(Instant kickoff, boolean played, Instant now, Duration liveWindow) {
+        return !played && !kickoff.isAfter(now) && now.isBefore(kickoff.plus(liveWindow));
+    }
+
+    public boolean isLive(Instant now, Duration liveWindow) {
+        return isLive(kickoff, isPlayed(), now, liveWindow);
     }
 
     public boolean involves(Team team) {

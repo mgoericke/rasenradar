@@ -99,14 +99,24 @@ Regeln:
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
 - **Zentrierter Einstieg über vollbreitem Karten-Grid** (Landingpage): Titel/Einleitung
-  und die Spotlight-Begegnung sind auf 700px zentriert (`.masthead`, `.spotlight`) — ein
-  ruhiger Fokuspunkt. Darunter geht `.landing` wieder auf volle Breite, die Liga-Karten
-  (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) stehen nebeneinander, nicht
-  in derselben schmalen Spalte — sie sollen die Seitenbreite nutzen.
-- **Spotlight** (`.spotlight`): eine einzelne hervorgehobene Begegnung über der
-  Liga-Übersicht — die zeitlich nächste über beide Ligen hinweg, oder eine gerade laufende
-  mit Vorrang. Helle Karte wie jede andere, kein eigener Bühnen-Auftritt; die KI-Vorschau
-  darin (Balken, Richtwert, Sicherheit) ist dieselbe Fragment-Ansicht wie auf der Spielseite.
+  sind auf 700px zentriert (`.masthead`) — ein ruhiger Fokuspunkt. Darunter geht `.landing`
+  auf volle Breite: Spotlight und Liga-Karten (`.landing-grid`,
+  `repeat(auto-fit, minmax(320px, 1fr))`) nutzen die Seitenbreite.
+- **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): die Begegnungen, die
+  *jetzt* zählen, in einer von drei Phasen — nächster Anstoß-Block mit KI-Richtwert,
+  alle laufenden Spiele, oder die Ergebnisse des letzten Blocks samt Abgleich mit der
+  KI-Vorschau. Helle Karte über volle Breite, Überschrift links in normaler Schreibweise
+  (keine Eyebrow), nur in der Phase „Läuft" in `--loss`. Ein Blick-Streifen: Paarungen
+  mit **Kurznamen** (volle Namen stehen in den Liga-Karten), durch Haarlinien getrennt.
+  Die KI-Zelle steht **neben** dem Link, nicht darin: „KI" in `--ink-soft`, der Richtwert
+  in Display-Schrift mit 2 px-Messinglinie darunter (Messing als Linie, nicht als
+  Kleinschrift — die würde den Kontrast verfehlen). Abgleich als Text: „getroffen" in
+  `--ink` 600, „daneben" in `--ink-soft` — bewusst ohne Grün/Rot, das bleibt
+  Sieg/Niederlage vorbehalten; die Unterzeile sagt, dass es um die Tendenz geht.
+  Breite steuert der Spotlight selbst per Container Query: zwei Spalten erst, wenn jede
+  ≥ 25 rem hat; einspaltig klappen Zeilen ab der fünften hinter „Alle n Spiele zeigen"
+  (CSS-only Checkbox, wie die Tabs), damit die Liga-Karten oben bleiben; unter 30 rem
+  rutscht die KI-Zelle zentriert unter die Paarung.
 - **CSS-only Tabs** (`.landing-tabs`): versteckte, aber fokussierbare Radio-Buttons mit
   Label als Umschalter zwischen zwei Ansichten (Landingpage: Spieltag/Tabelle je
   Liga-Abschnitt); sichtbarer Zustand über `:checked` und den `~`-Geschwister-Selektor, kein
