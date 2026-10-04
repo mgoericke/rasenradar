@@ -182,7 +182,8 @@ public final class MatchdayPageModels {
     }
 
     /** Spec 06: one group of a group competition — its own table and its matches of the shown matchday. */
-    record GroupSection(String name, List<StandingRow> table, List<MatchRow> matches) {
+    /** A group's matches come by day, like on the matchday page — the time alone does not say when (spec 06). */
+    record GroupSection(String name, List<StandingRow> table, List<DayGroup> days) {
     }
 
     /** {@code rounds} carries a group competition's final round — empty while it is in the group stage. */

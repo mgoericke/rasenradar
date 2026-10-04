@@ -34,27 +34,30 @@
       </tbody>
     </table>
 
-    <ol class="fixtures">
-      {#for m in g.matches}
-      <li>
-        <a class="fixture" href="{m.link}">
-          <span class="time">{m.time}</span>
-          <span class="home">
-            <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
-          </span>
-          <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
-            {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
-          </span>
-          <span class="away">
-            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
-            <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
-          </span>
-          <span class="half">{#if m.halfTime}({m.halfTime}){/if}</span>
-        </a>
-      </li>
-      {/for}
-    </ol>
+    {#for day in g.days}
+      <h3 class="day">{day.label}</h3>
+      <ol class="fixtures">
+        {#for m in day.matches}
+        <li>
+          <a class="fixture" href="{m.link}">
+            <span class="time">{m.time}</span>
+            <span class="home">
+              <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
+              {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+            </span>
+            <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
+              {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+            </span>
+            <span class="away">
+              {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+              <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
+            </span>
+            <span class="half">{#if m.halfTime}({m.halfTime}){/if}</span>
+          </a>
+        </li>
+        {/for}
+      </ol>
+    {/for}
   </section>
   {/for}
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -62,7 +63,7 @@ public class MatchdaySynchronizer {
                 importMissingSeasons(league, season);
                 refreshTeams(league, season);
                 refreshTiersIfNeeded(league, season);
-                for (int n = Math.max(1, number - syncWindow); n <= number + syncWindow; n++) {
+                for (int n : sectionsToCheck(league.format(), number, syncWindow, Matchday.sectionNumbers(league, season))) {
                     newlyPlayed.addAll(syncMatchday(league, season, n));
                 }
             } catch (RuntimeException e) {
@@ -71,6 +72,24 @@ public class MatchdaySynchronizer {
             }
         }
         return newlyPlayed;
+    }
+
+    /**
+     * Which sections of the source to check in one run: the current one +/- the window. In a group
+     * competition a section is a whole group, and the groups play side by side — the source's
+     * "current" section is just one of them, so every known section is checked as well. Otherwise
+     * a group outside the window (Nations League: group D while the source reports group B) would
+     * never get its results.
+     */
+    static List<Integer> sectionsToCheck(CompetitionFormat format, int current, int window, List<Integer> knownSections) {
+        TreeSet<Integer> sections = new TreeSet<>();
+        for (int n = Math.max(1, current - window); n <= current + window; n++) {
+            sections.add(n);
+        }
+        if (format == CompetitionFormat.GROUPS) {
+            sections.addAll(knownSections);
+        }
+        return List.copyOf(sections);
     }
 
     /**

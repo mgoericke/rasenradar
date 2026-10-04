@@ -3,6 +3,8 @@ package de.javamark.matchoracle.matchday.control;
 import de.javamark.matchoracle.matchday.entity.CompetitionFormat;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -64,5 +66,18 @@ class MatchdaySynchronizerTest {
         // Die beiden Bundesligen liefern keinen brauchbaren Abschnittsnamen.
         assertNull(MatchdaySynchronizer.labelOf(CompetitionFormat.TABLE, null));
         assertNull(MatchdaySynchronizer.groupOf(CompetitionFormat.TABLE, null));
+    }
+
+    @Test
+    void inAGroupCompetitionEveryKnownGroupIsCheckedNotOnlyTheSourcesCurrentOne() {
+        // Nations League: the source reports group B (2) as current; group D (4) and the final round (5) must not go stale
+        assertEquals(List.of(1, 2, 3, 4, 5),
+                MatchdaySynchronizer.sectionsToCheck(CompetitionFormat.GROUPS, 2, 1, List.of(1, 2, 3, 4, 5)));
+    }
+
+    @Test
+    void inALeagueOnlyTheWindowAroundTheCurrentMatchdayIsChecked() {
+        assertEquals(List.of(6, 7, 8),
+                MatchdaySynchronizer.sectionsToCheck(CompetitionFormat.TABLE, 7, 1, List.of(1, 2, 3, 4, 5, 6, 7, 8, 9)));
     }
 }
