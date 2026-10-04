@@ -70,6 +70,28 @@ frühere Begegnungen bewerten zu können.
   ein Bewertungsmaßstab und ohne Neuauslieferung änderbar. Bleibt innerhalb der
   Abgrenzung „Keine Live-Ergebnisse während laufender Spiele" — es wird
   angezeigt, *dass* ein Spiel läuft, nicht *wie* es gerade steht.
+- **Blickfang der Startseite:** Über den Spieltagen beider Bundesligen zeigt die
+  Startseite die Begegnungen, die *jetzt* zählen. Bezugsgröße ist der
+  **Anstoß-Block**: alle Begegnungen beider Bundesligen mit derselben
+  Anstoßzeit. Der Blickfang befindet sich immer in genau einer von drei Phasen:
+  - **Vorschau** — kein Spiel läuft, und kein beendeter Block ist mehr
+    aktuell: die Begegnungen des nächsten Blocks, je Begegnung mit dem
+    Richtwert der KI-Vorschau (Spec 2), sofern einer vorliegt.
+  - **Läuft** — mindestens ein Spiel läuft: alle laufenden Begegnungen beider
+    Ligen, ohne Spielstand (siehe „Kennzeichnung laufender Spiele").
+  - **Ergebnisse** — der letzte Block ist beendet: dessen Begegnungen mit
+    Ergebnis, vorläufige als solche kenntlich, und daneben, was die KI-Vorschau
+    erwartet hatte und ob ihre Tendenz getroffen wurde. Diese Phase bleibt
+    stehen, bis der Anstoß des nächsten Blocks näher rückt als eine Schwelle;
+    die Schwelle ist ein Bewertungsmaßstab und ohne Neuauslieferung änderbar.
+
+  Für den Abgleich zählt ausschließlich die letzte Prognose vor dem Anstoß;
+  Prognosen aus dem Rücktest zählen nicht. Begegnungen ohne solche Prognose
+  sagen das ausdrücklich, statt eine Lücke zu lassen. Der Abgleich ist reine
+  Anzeige: Er fließt nicht in Rückschau oder Trefferbilanz ein (Spec 3), und
+  bei vorläufigem Ergebnis ist auch der Abgleich als vorläufig kenntlich. Steht kein Block an — etwa in der Sommer- oder Länderspielpause —,
+  entfällt der Blickfang. Pokal, Nations League und Champions League bleiben
+  außen vor.
 - **Identität von Mannschaften:** Eine Mannschaft wird über eine stabile
   Kennung der Spieldatenquelle identifiziert, die Saisonwechsel sowie Auf- und
   Abstieg überdauert. Name und Kürzel sind änderbare Eigenschaften, keine
@@ -83,3 +105,12 @@ frühere Begegnungen bewerten zu können.
   ohne dass jemand manuell eingreift.
 - Für eine beliebige Begegnung lassen sich Form beider Mannschaften und die
   bisherigen direkten Duelle abrufen.
+- Der Blickfang der Startseite zeigt vor einem Block dessen Begegnungen mit
+  KI-Richtwert, während laufender Spiele alle laufenden Begegnungen beider Ligen
+  ohne Spielstand und nach einem Block dessen Ergebnisse samt Abgleich mit der
+  letzten Prognose vor dem Anstoß.
+- Nach einem beendeten Block bleiben dessen Ergebnisse stehen, bis der nächste
+  Block näher rückt als die eingestellte Schwelle; eine Änderung der Schwelle
+  wirkt ohne Neuauslieferung.
+- Ein vorläufiges Ergebnis im Blickfang ist als vorläufig kenntlich, und kein
+  Abgleich im Blickfang verändert Rückschau oder Trefferbilanz.
