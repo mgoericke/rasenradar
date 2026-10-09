@@ -3,33 +3,42 @@
 {#description}Rasen-Radar: Ergebnisse, Tabellen und Formkurven aus 1. und 2. Bundesliga – dazu eine KI-Vorschau je Spieltag, ohne Quoten oder Wettempfehlungen.{/description}
 {#body}
 <section class="landing" aria-labelledby="landing-heading">
-  <div class="masthead">
-    <h1 id="landing-heading" class="landing-title">Rasen-Radar</h1>
-    <p class="landing-intro">1. und 2. Bundesliga im Überblick: aktueller Spieltag, Tabelle und KI-Vorschau.</p>
-  </div>
+  <h1 id="landing-heading" class="landing-heading">{page.heading}</h1>
 
   {#if page.spotlight}
-  <section class="spotlight" aria-labelledby="spotlight-heading">
-    <p class="spotlight-eyebrow {#if page.spotlight.live}is-live{/if}" id="spotlight-heading">{#if page.spotlight.live}Läuft gerade{#else}Nächster Anstoß{/if}</p>
-    <div class="spotlight-teams">
-      <div class="spotlight-side">
-        {#if page.spotlight.homeIcon}<img class="crest" src="{page.spotlight.homeIcon}" alt="" loading="lazy">{/if}
-        <span class="team-name">{page.spotlight.homeTeam}</span>
-      </div>
-      <div class="spotlight-kickoff">
-        <span class="time">{page.spotlight.time}</span>
-        <span class="date">{page.spotlight.date}</span>
-      </div>
-      <div class="spotlight-side">
-        {#if page.spotlight.awayIcon}<img class="crest" src="{page.spotlight.awayIcon}" alt="" loading="lazy">{/if}
-        <span class="team-name">{page.spotlight.awayTeam}</span>
-      </div>
+  {#let sp=page.spotlight}
+  <section class="spotlight is-{sp.phase}" aria-labelledby="spotlight-heading" aria-describedby="spotlight-subline"
+           {#if sp.phase != 'live'}hx-get="{sp.forecastPath}" hx-trigger="load" hx-swap="none"{/if}>
+    <div class="spotlight-head">
+      <h2 id="spotlight-heading">{sp.heading}</h2>
+      <p id="spotlight-subline" class="spotlight-subline">{sp.subline}</p>
     </div>
-    <div class="spotlight-forecast" hx-get="{page.spotlight.forecastLink}/summary?played=false" hx-trigger="load" hx-swap="innerHTML"></div>
+    {#if sp.collapsible}<input class="spotlight-all-input sr-only" type="checkbox" id="spotlight-all">{/if}
+    <ol class="spotlight-rows">
+      {#for r in sp.rows}
+      <li class="spotlight-row">
+        <a class="fixture" href="{r.link}">
+          {#if sp.phase == 'live'}<span class="time">{r.time}</span>{/if}
+          <span class="home">
+            <span class="team-name">{r.homeShort}</span>
+            {#if r.homeIcon}<img class="crest" src="{r.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          <span class="score {#if r.played}is-played{/if} {#if r.provisional}is-provisional{/if} {#if r.live}is-live{/if}">
+            {#if r.played}{r.score}{#else if r.live}Läuft{#else}–:–{/if}
+          </span>
+          <span class="away">
+            {#if r.awayIcon}<img class="crest" src="{r.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name">{r.awayShort}</span>
+          </span>
+        </a>
+        {#if sp.phase != 'live'}<span id="spotlight-forecast-{r.id}" class="spotlight-forecast is-pending"></span>{/if}
+      </li>
+      {/for}
+    </ol>
+    {#if sp.collapsible}<label class="spotlight-all" for="spotlight-all">Alle {sp.rows.size} Spiele zeigen</label>{/if}
   </section>
+  {/let}
   {/if}
-
-  <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
 
   <div class="landing-grid">
   {#for l in page.leagues}
@@ -96,6 +105,11 @@
   </section>
   {/for}
   </div>
+
+  <section class="landing-leaderboard" aria-labelledby="leaderboard-heading">
+    <h2 id="leaderboard-heading">Wer liegt vorne?</h2>
+    <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
+  </section>
 </section>
 {/body}
 {/include}

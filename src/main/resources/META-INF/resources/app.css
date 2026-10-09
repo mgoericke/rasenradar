@@ -66,6 +66,17 @@ h2 { font-size: 1.1rem; }
 .nav-link:hover { color: #fff; }
 .nav-link.is-active { color: #fff; border-color: var(--accent); }
 .topnav a:focus-visible { outline-color: var(--accent); }
+/* phones: brand on top, the five competitions in one swipeable row instead of three wrapped
+   rows that the sticky header would keep on screen for good */
+@media (max-width: 560px) {
+  .topnav-inner { padding-block: .5rem .1rem; row-gap: 0; }
+  .brand { width: 100%; }
+  .nav-links {
+    flex-wrap: nowrap; overflow-x: auto; width: calc(100% + 2rem); margin: 0 -1rem; padding: 0 1rem;
+    scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: 1rem;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+}
 /* competition badge: a disc for a league number, a pill for a shortcut ("CL", "DFB", "NL").
    Only leagues have a number — min-width keeps "1" and "2" perfectly round while a
    shortcut simply grows. */
@@ -284,42 +295,75 @@ h2 { font-size: 1.1rem; }
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--accent); border-color: var(--accent); color: var(--stage); }
 
-/* --- landing page: one centered reading column, not the two-column page grid ------- */
+/* --- landing page: full width, the matchday first — no masthead, the nav carries the brand */
 .landing { grid-column: 1 / -1; }
-.masthead { text-align: center; max-width: 700px; margin: 0 auto 2.5rem; }
-.masthead .kicker { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mute); }
-.landing-title { font-size: clamp(1.75rem, 6.5vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; margin: .3rem 0 0; text-wrap: balance; }
-.landing-intro { margin: .6rem auto 0; color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; }
+.landing-heading { font-size: clamp(1.35rem, 1rem + 1.4vw, 1.75rem); letter-spacing: -0.025em; margin: 0 0 1rem; text-wrap: balance; }
 
-/* the one upcoming (or currently live) match, ahead of both league sections */
+/* Spec 01, "Blickfang der Startseite": what comes next — the running matches, or the next
+   block with the KI-Vorschau's guide value. Never a result; those stand in the league cards. */
 .spotlight {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-  padding: 1.8rem 1.5rem 1.5rem; text-align: center; max-width: 700px; margin: 0 auto 3rem;
+  container: spotlight / inline-size;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.3rem 1.5rem .6rem; margin: 0 0 2rem;
 }
-.spotlight-eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin: 0 0 1.1rem; }
-.spotlight-eyebrow.is-live { color: var(--loss); }
-.spotlight-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
-.spotlight-side { display: flex; flex-direction: column; align-items: center; gap: .55rem; min-width: 0; }
-.spotlight-side .crest { width: 3rem; height: 3rem; }
-.spotlight-side .team-name { font-weight: 600; font-size: .98rem; text-wrap: balance; }
-.spotlight-kickoff { font-family: var(--display); font-weight: 700; }
-.spotlight-kickoff .time { font-size: 1.9rem; letter-spacing: -0.02em; }
-.spotlight-kickoff .date { display: block; font-family: var(--text); font-weight: 500; font-size: .78rem; color: var(--ink-mute); margin-top: .2rem; }
-.spotlight-forecast { margin-top: 1.5rem; padding-top: 1.3rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: .6rem; }
-.spotlight-forecast .mini-bars { width: 100%; max-width: 22rem; height: .5rem; }
-.spotlight-forecast .summary-figures { font-size: .92rem; }
+.spotlight-head { display: flex; align-items: baseline; gap: .35rem 1rem; flex-wrap: wrap; margin-bottom: .7rem; }
+.spotlight-head h2 { font-size: 1.35rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.spotlight.is-live .spotlight-head h2 { color: var(--loss); }
+.spotlight-subline { margin: 0; color: var(--ink-soft); font-size: .9rem; }
 
-/* Spec 05, "Wer liegt vorne?": the leaderboard fragment on the landing page, below the spotlight */
-.leaderboard-slot { max-width: 420px; margin: 0 auto 3rem; }
+/* a glance strip: short club names (full names stay in the league cards), hairline rows,
+   two columns only where each column still fits a pairing without truncating it */
+.spotlight-rows {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr)); column-gap: 2.5rem;
+}
+.spotlight-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem; align-items: center; gap: .75rem; border-top: 1px solid var(--line); }
+.spotlight.is-live .spotlight-row { grid-template-columns: minmax(0, 1fr); }
+.spotlight-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); padding: .6rem .25rem; }
+.spotlight.is-live .spotlight-row .fixture { grid-template-columns: 3.2rem minmax(0, 1fr) auto minmax(0, 1fr); }
+
+/* the KI cell sits beside the link, not inside it — readable without hover, reachable by touch */
+.spotlight-forecast { display: flex; flex-direction: column; gap: .1rem; font-size: .85rem; line-height: 1.3; min-height: 1.3em; }
+.spotlight-forecast-label { font-weight: 500; font-size: .8rem; color: var(--ink-soft); }
+.spotlight-forecast-score {
+  font-family: var(--display); font-weight: 700; font-size: 1rem; color: var(--ink);
+  font-variant-numeric: tabular-nums; border-bottom: 2px solid var(--accent);
+}
+.spotlight-forecast-none { color: var(--ink-soft); }
+
+/* single column (no room for two): past four rows the rest folds behind a toggle, so the
+   league cards stay near the top — "Der Spieltag zuerst" */
+.spotlight-all { display: none; }
+@container spotlight (width < 56rem) {
+  .spotlight-all-input:not(:checked) ~ .spotlight-rows .spotlight-row:nth-child(n+5) { display: none; }
+  .spotlight-all {
+    display: block; width: 100%; padding: .7rem 0; border-top: 1px solid var(--line);
+    font-size: .9rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center;
+  }
+  .spotlight-all:hover { color: var(--ink); }
+  .spotlight-all-input:checked ~ .spotlight-all { display: none; }
+  .spotlight-all-input:focus-visible ~ .spotlight-all { outline: 3px solid var(--win); outline-offset: -3px; }
+}
+/* phones: the KI cell moves under the pairing instead of squeezing the club names */
+@container spotlight (width < 30rem) {
+  .spotlight-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .spotlight-forecast { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: .2rem .7rem; padding: 0 .25rem .6rem; }
+  .spotlight-forecast:empty { display: none; }
+}
+@media (max-width: 560px) { .spotlight { padding: 1.1rem 1rem .4rem; } }
+
+/* Spec 05, "Wer liegt vorne?": the leaderboard fragment at the end of the landing page */
+.landing-leaderboard { max-width: 420px; margin: 3rem 0 1rem; }
+.landing-leaderboard h2 { font-size: 1.2rem; margin: 0 0 .8rem; }
 .leaderboard { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; font-size: .95rem; }
 .leaderboard li + li { border-top: 1px solid var(--line); }
 .leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
 .leaderboard-rate { font-family: var(--display); font-weight: 700; }
-.leaderboard-caption { text-align: center; margin: .6rem 0 0; font-size: .85rem; }
+.leaderboard-caption { margin: .6rem 0 0; font-size: .85rem; }
 
 /* one league, full column width, stacked instead of side by side */
-.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1.5rem; }
 .landing-league {
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
   padding: 1.4rem 1.5rem 1.5rem;

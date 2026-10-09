@@ -7,6 +7,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagueSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Spotlight;
+import de.javamark.matchoracle.matchday.control.SpotlightSelector;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
@@ -111,42 +112,43 @@ public class MatchdayPages {
     @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
     Duration liveWindow;
 
-    /** One match together with the league shortcut it needs for its links — the landing page's spotlight candidates. */
-    record CandidateMatch(Match match, String shortcut) {
-    }
-
-    /** Spec 1: a currently live match takes priority over a merely upcoming one; earliest kickoff breaks ties either way. */
-    static Optional<CandidateMatch> pickSpotlight(List<CandidateMatch> candidates, Instant now, Duration liveWindow) {
-        Comparator<CandidateMatch> byKickoff = Comparator.comparing(c -> c.match().kickoff);
-        return candidates.stream().filter(c -> MatchdayPageModels.isLive(c.match().kickoff, c.match().isPlayed(), now, liveWindow))
-                .min(byKickoff)
-                .or(() -> candidates.stream().filter(c -> !c.match().isPlayed() && c.match().kickoff.isAfter(now)).min(byKickoff));
-    }
-
     /** Landing page: current matchday of both Bundesligas in short form, so a first visit shows both leagues. */
     @GET
     public TemplateInstance home() {
         Instant now = Instant.now();
         List<LandingLeagueSection> sections = new ArrayList<>();
-        List<CandidateMatch> candidates = new ArrayList<>();
+        List<Match> candidates = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
             Matchday.findDisplayed(l, now).ifPresent(matchday -> {
                 String shortcut = matchday.league.sourceShortcut();
                 List<Match> matches = Match.findByMatchday(matchday);
                 sections.add(landingSection(matchday, matches, shortcut, now));
-                matches.forEach(m -> candidates.add(new CandidateMatch(m, shortcut)));
+                candidates.addAll(spotlightCandidates(matchday));
             });
         }
-        Spotlight spotlight = pickSpotlight(candidates, now, liveWindow).map(c -> spotlight(c, now)).orElse(null);
+        Spotlight spotlight = SpotlightSelector.select(candidates, now, liveWindow)
+                .map(s -> spotlight(s, now)).orElse(null);
         return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections, MatchdayPageModels.LEADERBOARD_LINK));
     }
 
-    private Spotlight spotlight(CandidateMatch c, Instant now) {
-        Match m = c.match();
-        String base = "/" + c.shortcut() + "/matches/" + m.id;
-        return new Spotlight(base, base + "/forecast", m.homeTeam.name, m.awayTeam.name, m.homeTeam.iconUrl, m.awayTeam.iconUrl,
-                MatchdayPageModels.time(m.kickoff), MatchdayPageModels.dayLabel(m.kickoff),
-                MatchdayPageModels.isLive(m.kickoff, m.isPlayed(), now, liveWindow));
+    /**
+     * The displayed matchday plus its neighbours: a match can still be running in the previous
+     * matchday, and the next block can lie in the following one (Sunday evening).
+     */
+    private static List<Match> spotlightCandidates(Matchday displayed) {
+        List<Match> matches = new ArrayList<>();
+        for (int number = displayed.number - 1; number <= displayed.number + 1; number++) {
+            Matchday.find(displayed.league, displayed.season, number).ifPresent(md -> matches.addAll(Match.findByMatchday(md)));
+        }
+        return matches;
+    }
+
+    private Spotlight spotlight(SpotlightSelector.Selection s, Instant now) {
+        List<MatchRow> rows = s.matches().stream()
+                .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.matchday.league.ordinal()))
+                .map(m -> MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow))
+                .toList();
+        return Spotlight.of(s.phase(), s.kickoff(), rows);
     }
 
     private static final int LANDING_TABLE_ROWS = 6;

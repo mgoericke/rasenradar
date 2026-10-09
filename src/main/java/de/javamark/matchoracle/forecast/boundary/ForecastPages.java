@@ -18,6 +18,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -57,6 +58,7 @@ public class ForecastPages {
         static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
+        static native TemplateInstance spotlightForecasts(List<SpotlightForecastView> rows);
     }
 
     @Inject
@@ -209,6 +211,22 @@ public class ForecastPages {
      * Fragment for the match page (loaded by htmx): the latest forecast, a running note, or the link to create one.
      * The match page belongs to the matchday feature and composes this on the HTML level, so it stays unaware of forecasts.
      */
+    /**
+     * Spec 01, "Blickfang der Startseite": the KI-Vorschau cell of one spotlight row — the guide value
+     * of the last forecast before kickoff, or null without one.
+     */
+    record SpotlightForecastView(long matchId, String expectedScore, String tendency, int probabilityPercent) {
+        static SpotlightForecastView of(long matchId, Optional<Forecast> forecast) {
+            return forecast.map(MarkerView::of)
+                    .map(m -> new SpotlightForecastView(matchId, m.expectedScore(), m.tendency(), m.probabilityPercent()))
+                    .orElse(new SpotlightForecastView(matchId, null, null, 0));
+        }
+
+        public boolean missing() {
+            return expectedScore == null;
+        }
+    }
+
     @GET
     @Path("/{league}/matches/{id}/forecast/summary")
     public TemplateInstance summaryFragment(@PathParam("league") String league, @PathParam("id") long matchId,
@@ -217,6 +235,24 @@ public class ForecastPages {
         ForecastView latest = Forecast.findLatestByMatch(matchId).map(ForecastView::of).orElse(null);
         return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest));
     }
+
+    /**
+     * Fragment for the landing page's spotlight (loaded by htmx): one out-of-band KI-Vorschau cell per row.
+     * Opened directly, the bare cells would arrive without layout — anything but htmx goes to the landing page.
+     */
+    @GET
+    @Path("/blickfang/ki-vorschau")
+    public Response spotlightFragment(@QueryParam("match") List<Long> matchIds, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        return Response.ok(Templates.spotlightForecasts(matchIds.stream().limit(MAX_SPOTLIGHT_ROWS)
+                .map(id -> SpotlightForecastView.of(id, Forecast.latestBeforeKickoff(Forecast.findByMatch(id))))
+                .toList())).build();
+    }
+
+    /** Both Bundesligas together never have more matches in one block; caps what a crafted URL can ask for. */
+    private static final int MAX_SPOTLIGHT_ROWS = 18;
 
     /** Fragment for the matchday page (loaded by htmx): out-of-band markers for every match that already has a forecast. */
     @GET

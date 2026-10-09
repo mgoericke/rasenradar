@@ -70,6 +70,19 @@ frühere Begegnungen bewerten zu können.
   ein Bewertungsmaßstab und ohne Neuauslieferung änderbar. Bleibt innerhalb der
   Abgrenzung „Keine Live-Ergebnisse während laufender Spiele" — es wird
   angezeigt, *dass* ein Spiel läuft, nicht *wie* es gerade steht.
+- **Blickfang der Startseite:** Über den Spieltagen beider Bundesligen zeigt die
+  Startseite die Begegnungen, die als Nächstes zählen. Bezugsgröße ist der
+  **Anstoß-Block**: alle Begegnungen beider Bundesligen mit derselben
+  Anstoßzeit. Der Blickfang befindet sich immer in genau einer von zwei Phasen:
+  - **Läuft** — mindestens ein Spiel läuft: alle laufenden Begegnungen beider
+    Ligen, ohne Spielstand (siehe „Kennzeichnung laufender Spiele").
+  - **Vorschau** — sonst: die Begegnungen des nächsten Blocks, je Begegnung mit
+    dem Richtwert der letzten KI-Vorschau vor dem Anstoß (Spec 2), sofern einer
+    vorliegt; Begegnungen ohne solche Vorschau sagen das ausdrücklich.
+
+  Ergebnisse zeigt der Blickfang nicht — sie stehen in den Spieltagen darunter.
+  Steht kein Block an (Saisonende, Sommerpause), entfällt der Blickfang. Pokal,
+  Nations League und Champions League bleiben außen vor.
 - **Identität von Mannschaften:** Eine Mannschaft wird über eine stabile
   Kennung der Spieldatenquelle identifiziert, die Saisonwechsel sowie Auf- und
   Abstieg überdauert. Name und Kürzel sind änderbare Eigenschaften, keine
@@ -83,3 +96,6 @@ frühere Begegnungen bewerten zu können.
   ohne dass jemand manuell eingreift.
 - Für eine beliebige Begegnung lassen sich Form beider Mannschaften und die
   bisherigen direkten Duelle abrufen.
+- Der Blickfang der Startseite zeigt während laufender Spiele alle laufenden
+  Begegnungen beider Ligen ohne Spielstand, sonst die Begegnungen des nächsten
+  Blocks mit KI-Richtwert — nie ein bereits beendetes Spiel.
