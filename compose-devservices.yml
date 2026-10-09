@@ -3,7 +3,10 @@
 # so nothing about it needs to be repeated in application.properties.
 services:
   db:
-    image: docker.io/library/postgres:18-alpine
+    # Docker Hub's official image via Google's mirror: GitHub runners share IPs and keep hitting
+    # Docker Hub's anonymous pull limit ("toomanyrequests"), which kills the test run before it starts.
+    # Same image, same digest.
+    image: mirror.gcr.io/library/postgres:18-alpine
     healthcheck:
       test: pg_isready -U matchoracle -d matchoracle
       interval: 5s
