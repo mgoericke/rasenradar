@@ -66,6 +66,15 @@ public class Matchday extends PanacheEntity {
         return find(league, season, null, number);
     }
 
+    /** The source sections already known for a season, ascending — for a group competition, its groups and final round. */
+    public static List<Integer> sectionNumbers(League league, int season) {
+        return getEntityManager()
+                .createQuery("select distinct m.sectionNumber from Matchday m where m.league = :league and m.season = :season"
+                        + " order by m.sectionNumber", Integer.class)
+                .setParameter("league", league).setParameter("season", season)
+                .getResultList();
+    }
+
     /** Every matchday that came from one section of the source — several only in a group competition. */
     public static List<Matchday> findSection(League league, int season, int sectionNumber) {
         return list("league = ?1 and season = ?2 and sectionNumber = ?3", league, season, sectionNumber);

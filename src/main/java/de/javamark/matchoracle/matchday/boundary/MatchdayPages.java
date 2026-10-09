@@ -70,6 +70,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -350,7 +351,7 @@ public class MatchdayPages {
             provisional = provisional || standings.includesProvisional();
             sections.add(new MatchdayPageModels.GroupSection(group.groupName,
                     standings.positions().stream().map(p -> StandingRow.of(p, league)).toList(),
-                    matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)).toList()));
+                    byDay(matches, m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow))));
         }
         // spec 06: sections of the final round are rounds, not groups — no table
         rounds.addAll(roundSections(league, season, shortcut, now));
@@ -361,6 +362,15 @@ public class MatchdayPages {
         Matchday reference = groups.isEmpty() ? finalRound.get(0) : groups.get(0);
         return new GroupsPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, number,
                 prev, next, sections, rounds, provisional, DataInfo.of(reference, now));
+    }
+
+    /** Matches in kickoff order, grouped under their day label ("Donnerstag, 24. September"). */
+    private static List<DayGroup> byDay(List<Match> matches, Function<Match, MatchRow> row) {
+        Map<String, List<MatchRow>> byDay = new LinkedHashMap<>();
+        for (Match m : matches) {
+            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(row.apply(m));
+        }
+        return byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
     }
 
     /** A detached stand-in used only to ask for the table *after* a matchday of the same group. */
