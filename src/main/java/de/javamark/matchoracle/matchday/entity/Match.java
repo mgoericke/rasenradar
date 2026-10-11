@@ -58,6 +58,17 @@ public class Match extends PanacheEntity {
     })
     public Score fullTimeScore;
 
+    /**
+     * Spec 01, "Zwischenstand": the score of a match in progress, as the source reports it. Display
+     * only — null once the match is finished, and never read by tables, form or the review.
+     */
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "home", column = @Column(name = "live_home")),
+            @AttributeOverride(name = "away", column = @Column(name = "live_away"))
+    })
+    public Score liveScore;
+
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position")
     public List<Goal> goals = new ArrayList<>();
@@ -97,6 +108,12 @@ public class Match extends PanacheEntity {
 
     public boolean isPlayed() {
         return fullTimeScore != null;
+    }
+
+    /** Spec 01, "Prüftakt": whether a match of the league is running right now — then the source is asked every minute. */
+    public static boolean anyRunning(League league, Instant now, Duration liveWindow) {
+        return count("matchday.league = ?1 and kickoff <= ?2 and kickoff > ?3 and fullTimeScore is null",
+                league, now, now.minus(liveWindow)) > 0;
     }
 
     /** Spec 01, "Kennzeichnung laufender Spiele": derived from the kickoff alone — never a live score. */

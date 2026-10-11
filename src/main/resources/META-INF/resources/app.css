@@ -147,8 +147,10 @@ h2 { font-size: 1.1rem; }
 }
 .score.is-played { background: var(--ink); color: #fff; border-color: var(--ink); }
 .score.is-played.is-provisional { background: transparent; color: var(--ink); border-color: var(--ink); border-style: dashed; }
-/* inferred from kickoff time only, never a live score — see Spec 1 */
+/* a running match (spec 01): "Läuft" while the source has no interim score yet, then the
+   interim score itself — red outline, never filled, so it can't be mistaken for a result */
 .score.is-live { font-family: var(--text); font-size: .78rem; font-weight: 600; letter-spacing: .02em; color: var(--loss); border-color: var(--loss); }
+.score.is-live.has-score { font-family: var(--display); font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
 
 /* standings */
 .standings { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; align-self: start; }
@@ -178,6 +180,7 @@ h2 { font-size: 1.1rem; }
 .scoreboard .score { font-size: clamp(2.2rem, 5.5vw, 3.4rem); min-width: 5.4rem; padding: .15rem .8rem; border-color: var(--stage-line); color: var(--stage-soft); }
 .scoreboard .score.is-played { background: #fff; color: var(--stage); border-color: #fff; }
 .scoreboard .score.is-played.is-provisional { background: transparent; color: #fff; border-color: var(--stage-soft); }
+.scoreboard .score.is-live.has-score { font-size: clamp(2.2rem, 5.5vw, 3.4rem); color: #fff; border-color: var(--loss); }
 .scoreboard .half { margin: .7rem 0 0; color: var(--stage-soft); }
 .scoreboard .crest.large { background: #fff; border-radius: 50%; padding: .25rem; width: 2.8rem; height: 2.8rem; }
 /* narrow screens: two team names either side of the score badge has no room to breathe — stack instead */

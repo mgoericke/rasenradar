@@ -134,7 +134,7 @@ public final class MatchdayPageModels {
     record MatchRow(long id, String link, String time, String home, String away, String homeShort, String awayShort,
                     String homeIcon, String awayIcon,
                     String score, String halfTime, boolean played, boolean provisional, boolean live,
-                    String decision, String homeTier, String awayTier) {
+                    String liveScore, String decision, String homeTier, String awayTier) {
         static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
             return of(m, leagueShortcut, now, liveWindow, null, null);
         }
@@ -149,6 +149,7 @@ public final class MatchdayPageModels {
                     m.halfTimeScore == null ? null : m.halfTimeScore.home + ":" + m.halfTimeScore.away,
                     m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
                     isLive(m.kickoff, m.isPlayed(), now, liveWindow),
+                    m.liveScore == null ? null : m.liveScore.home + ":" + m.liveScore.away,
                     decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier);
         }
     }
@@ -299,7 +300,7 @@ public final class MatchdayPageModels {
             };
             String subline = switch (phase) {
                 case PREVIEW -> dayLabel(kickoff) + " · mit KI-Richtwert je Spiel";
-                case LIVE -> rows.size() == 1 ? "1 Spiel · Ergebnis nach Abpfiff" : rows.size() + " Spiele · Ergebnisse nach Abpfiff";
+                case LIVE -> (rows.size() == 1 ? "1 Spiel" : rows.size() + " Spiele") + " · Zwischenstand";
             };
             String ids = rows.stream().map(r -> "match=" + r.id()).collect(java.util.stream.Collectors.joining("&"));
             return new Spotlight(phase.name().toLowerCase(), heading, subline, rows, SPOTLIGHT_FORECASTS_LINK + "?" + ids);

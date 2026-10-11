@@ -2,6 +2,8 @@ package de.javamark.matchoracle.matchday.control;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,6 +83,41 @@ class OpenLigaDbMatchTest {
 
         assertEquals(1, match.matchGoals().size());
         assertEquals("Echtes Tor", match.matchGoals().get(0).goalGetterName());
+    }
+
+    // --- Zwischenstand (spec 01) ------------------------------------------------------
+
+    private static final Instant KICKOFF = Instant.parse("2026-10-10T13:30:00Z");
+    private static final Instant DURING = KICKOFF.plus(Duration.ofMinutes(50));
+
+    @Test
+    void aRunningMatchTakesItsInterimScoreFromTheGoals() {
+        OpenLigaDbMatch match = running(false, List.of(new OpenLigaDbMatch.Result(OpenLigaDbMatch.Result.SUMMARY, 1, 0)), List.of(
+                new OpenLigaDbMatch.Goal(1, 0, 12, "Schütze A", false, false),
+                new OpenLigaDbMatch.Goal(1, 1, 47, "Schütze B", false, false)));
+
+        var live = match.liveScore(DURING).orElseThrow();
+        assertEquals(1, live.pointsTeam1());
+        assertEquals(1, live.pointsTeam2(), "the goals are ahead of a lagging summary entry");
+    }
+
+    @Test
+    void aRunningMatchWithoutGoalsStandsAtNilNil() {
+        var live = running(false, List.of(), List.of()).liveScore(DURING).orElseThrow();
+
+        assertEquals(0, live.pointsTeam1());
+        assertEquals(0, live.pointsTeam2());
+    }
+
+    @Test
+    void noInterimScoreBeforeKickoffOrOnceFinished() {
+        assertTrue(running(false, List.of(), List.of()).liveScore(KICKOFF.minus(Duration.ofMinutes(5))).isEmpty());
+        assertTrue(running(true, List.of(new OpenLigaDbMatch.Result(OpenLigaDbMatch.Result.SUMMARY, 2, 1)), List.of())
+                .liveScore(DURING).isEmpty(), "a finished match has a result, not an interim score");
+    }
+
+    private static OpenLigaDbMatch running(boolean finished, List<OpenLigaDbMatch.Result> results, List<OpenLigaDbMatch.Goal> goals) {
+        return new OpenLigaDbMatch(1, 2026, KICKOFF, null, finished, null, null, null, results, goals);
     }
 
     private static OpenLigaDbMatch match(boolean finished, List<OpenLigaDbMatch.Result> results) {

@@ -79,9 +79,9 @@ Regeln:
 - **Pillen** (`.pill`, `.score`): Radius 6 px, Display-Schrift 700. Endgültige Ergebnisse
   gefüllt (`--ink`, auf der Bühne weiß), vorläufige gestrichelt und ungefüllt, offene
   Spiele leise (`--ink-mute`, nur Rahmen). Läuft eine Begegnung gerade (`.score.is-live`,
-  rein aus der Anstoßzeit abgeleitet, siehe Spec 1), ersetzt „Läuft" den Platzhalter —
-  Text-Schrift statt Display, `--loss`-Rahmen ohne Füllung: auffällig, aber erkennbar kein
-  Ergebnis.
+  Spec 1), steht „Läuft" in Text-Schrift im `--loss`-Rahmen ohne Füllung, solange die
+  Quelle noch keinen Zwischenstand liefert; danach der Zwischenstand selbst (`.has-score`)
+  in Display-Schrift, weiter nur gerahmt und rot — auffällig, aber erkennbar kein Ergebnis.
 - **Navigation auf dem Telefon** (`.nav-links` unter 560 px): Marke oben, darunter alle
   Wettbewerbe in **einer** wischbaren Zeile mit vollem Namen, ohne sichtbaren Scrollbalken —
   kein Umbruch in mehrere Zeilen, die die mitlaufende Navigation dauerhaft stehen ließe.
@@ -108,7 +108,8 @@ Regeln:
   Liga-Karten (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) über volle Breite;
   die Rangliste „Wer liegt vorne?" (`.landing-leaderboard`) steht am Ende.
 - **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): was als Nächstes zählt —
-  alle laufenden Spiele, sonst der nächste Anstoß-Block mit KI-Richtwert. **Nie ein
+  alle laufenden Spiele mit Zwischenstand, sonst der nächste Anstoß-Block mit
+  KI-Richtwert. **Nie ein
   Ergebnis**: die stehen in den Liga-Karten darunter. Helle Karte über volle Breite,
   Überschrift links in normaler Schreibweise (keine Eyebrow), nur in der Phase „Läuft" in
   `--loss`. Ein Blick-Streifen: Paarungen mit **Kurznamen** (volle Namen stehen in den
