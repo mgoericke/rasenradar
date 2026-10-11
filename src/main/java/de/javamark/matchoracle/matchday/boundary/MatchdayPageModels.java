@@ -68,6 +68,34 @@ public final class MatchdayPageModels {
         return Match.isLive(kickoff, played, now, liveWindow);
     }
 
+    /** How far ahead of kickoff an open page starts asking for the score — so a page opened at 15:25 still goes live. */
+    static final Duration WATCH_AHEAD = Duration.ofMinutes(30);
+
+    /**
+     * Whether an open page keeps this match's score fresh by itself: from shortly before kickoff
+     * until there is a result (or the live window has passed). Outside of that the page stays quiet.
+     */
+    static boolean isWatched(Instant kickoff, boolean played, Instant now, Duration liveWindow) {
+        return !played && kickoff.isBefore(now.plus(WATCH_AHEAD)) && now.isBefore(kickoff.plus(liveWindow));
+    }
+
+    /** The live scores fragment for the watched matches among {@code rows}, or null when none is — then the page doesn't poll. */
+    static String livePollLink(java.util.stream.Stream<MatchRow> rows, boolean details) {
+        String ids = rows.filter(MatchRow::watched).map(r -> "match=" + r.id()).distinct()
+                .collect(java.util.stream.Collectors.joining("&"));
+        return ids.isEmpty() ? null : LIVE_SCORES_LINK + "?" + ids + (details ? "&details=true" : "");
+    }
+
+    /** Polled every minute by a page that shows a running match: fresh score cells, out of band. */
+    static final String LIVE_SCORES_LINK = "/live/spielstaende";
+
+    /**
+     * The answer to a poll: one score cell per requested match; on the match page also the
+     * half-time line and the goals. {@code keepPolling} is false once none of them runs any more.
+     */
+    record LiveScoresFragment(List<MatchRow> rows, MatchRow detail, List<GoalRow> goals, boolean keepPolling) {
+    }
+
     /** "vor 12 Minuten", "vor 3 Stunden" — the age of the data. */
     public static String age(Instant checkedAt, Instant now) {
         if (checkedAt == null) {
@@ -134,7 +162,7 @@ public final class MatchdayPageModels {
     record MatchRow(long id, String link, String time, String home, String away, String homeShort, String awayShort,
                     String homeIcon, String awayIcon,
                     String score, String halfTime, boolean played, boolean provisional, boolean live,
-                    String liveScore, String decision, String homeTier, String awayTier) {
+                    String liveScore, boolean watched, String decision, String homeTier, String awayTier) {
         static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
             return of(m, leagueShortcut, now, liveWindow, null, null);
         }
@@ -150,6 +178,7 @@ public final class MatchdayPageModels {
                     m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
                     isLive(m.kickoff, m.isPlayed(), now, liveWindow),
                     m.liveScore == null ? null : m.liveScore.home + ":" + m.liveScore.away,
+                    isWatched(m.kickoff, m.isPlayed(), now, liveWindow),
                     decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier);
         }
     }
@@ -181,16 +210,28 @@ public final class MatchdayPageModels {
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
                         List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data,
                         List<FunnelRow> funnel, FunnelFigures figures) {
+
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(rounds.stream().flatMap(r -> r.matches().stream()), false);
+        }
     }
 
-    /** Spec 06: one group of a group competition — its own table and its matches of the shown matchday. */
-    /** A group's matches come by day, like on the matchday page — the time alone does not say when (spec 06). */
+    /**
+     * Spec 06: one group of a group competition — its own table and its matches of the shown matchday,
+     * by day like on the matchday page (the time alone does not say when).
+     */
     record GroupSection(String name, List<StandingRow> table, List<DayGroup> days) {
     }
 
     /** {@code rounds} carries a group competition's final round — empty while it is in the group stage. */
     record GroupsPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                       List<GroupSection> groups, List<RoundSection> rounds, boolean standingsProvisional, DataInfo data) {
+
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
+                    groups.stream().flatMap(g -> g.days().stream()).flatMap(d -> d.matches().stream()),
+                    rounds.stream().flatMap(r -> r.matches().stream())), false);
+        }
     }
 
     record DayGroup(String label, List<MatchRow> matches) {
@@ -272,6 +313,12 @@ public final class MatchdayPageModels {
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds) {
+
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
+                    days.stream().flatMap(d -> d.matches().stream()),
+                    rounds.stream().flatMap(r -> r.matches().stream())), false);
+        }
     }
 
     /**
@@ -315,6 +362,12 @@ public final class MatchdayPageModels {
     static final String SPOTLIGHT_FORECASTS_LINK = "/blickfang/ki-vorschau";
 
     record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
+
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
+                    spotlight == null ? java.util.stream.Stream.empty() : spotlight.rows().stream(),
+                    leagues.stream().flatMap(l -> l.days().stream()).flatMap(d -> d.matches().stream())), false);
+        }
 
         /**
          * The page heading tells a returning fan where both leagues stand — "Bundesliga: 5. und 7. Spieltag",
@@ -375,6 +428,11 @@ public final class MatchdayPageModels {
                      String chartJson, DataInfo data) {
         public List<TeamSituation> teams() {
             return List.of(homeTeam, awayTeam);
+        }
+
+        /** The match page also refreshes the half-time line and the goals while the match runs. */
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(java.util.stream.Stream.of(match), true);
         }
     }
 
