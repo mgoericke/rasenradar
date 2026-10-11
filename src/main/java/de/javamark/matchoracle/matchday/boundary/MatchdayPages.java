@@ -4,6 +4,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveScoresFragment;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagueSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Spotlight;
@@ -54,13 +55,16 @@ import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -83,6 +87,7 @@ public class MatchdayPages {
     @CheckedTemplate
     static class Templates {
         static native TemplateInstance home(LandingPage page);
+        static native TemplateInstance liveScores(LiveScoresFragment fragment);
         static native TemplateInstance matchday(MatchdayPage page);
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance team(TeamPage page);
@@ -275,18 +280,49 @@ public class MatchdayPages {
                 roundSections(matchday.league, matchday.season, shortcut, now));
     }
 
-    private MatchPage matchPage(Match match) {
-        Matchday matchday = match.matchday;
-        String shortcut = matchday.league.sourceShortcut();
-        Standings standings = standingsCalculator.standingsBefore(matchday);
-        HeadToHead h2h = headToHeadCalculator.headToHeadBefore(match);
+    /**
+     * Polled every minute by a page that shows a running match (loaded by htmx, swaps out of band):
+     * fresh score cells for the requested matches, on the match page also half time and goals.
+     * Opened directly, the bare cells would arrive without layout — anything but htmx goes to "/".
+     */
+    @GET
+    @Path("/live/spielstaende")
+    public Response liveScores(@QueryParam("match") List<Long> matchIds, @QueryParam("details") boolean details,
+                               @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        List<Match> matches = matchIds.stream().limit(MAX_LIVE_SCORES).distinct()
+                .map(id -> Match.<Match>findByIdOptional(id)).flatMap(Optional::stream).toList();
+        List<MatchRow> rows = matches.stream()
+                .map(m -> MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow)).toList();
+        MatchRow detail = details && rows.size() == 1 ? rows.getFirst() : null;
+        List<GoalRow> goals = detail == null ? List.of() : goalRows(matches.getFirst());
+        boolean keepPolling = rows.stream().anyMatch(MatchRow::watched);
+        return Response.ok(Templates.liveScores(new LiveScoresFragment(rows, detail, goals, keepPolling))).build();
+    }
 
+    /** More than any page shows at once (two Bundesligas, one matchday each); caps what a crafted URL can ask for. */
+    private static final int MAX_LIVE_SCORES = 40;
+
+    private static List<GoalRow> goalRows(Match match) {
         List<GoalRow> goals = new ArrayList<>();
         int prevHome = 0;
         for (Goal g : match.goals) {
             goals.add(GoalRow.of(g, g.scoreAfter.home > prevHome));
             prevHome = g.scoreAfter.home;
         }
+        return goals;
+    }
+
+    private MatchPage matchPage(Match match) {
+        Matchday matchday = match.matchday;
+        String shortcut = matchday.league.sourceShortcut();
+        Standings standings = standingsCalculator.standingsBefore(matchday);
+        HeadToHead h2h = headToHeadCalculator.headToHeadBefore(match);
+
+        List<GoalRow> goals = goalRows(match);
 
         return new MatchPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.number,
                 "/" + shortcut + "/" + matchday.season + "/" + matchday.number,

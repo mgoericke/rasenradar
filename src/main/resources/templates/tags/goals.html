@@ -1,0 +1,10 @@
+{! The goals of a match, running score on the right. Always rendered, empty included, so the live
+   fragment has something to replace once the first goal falls. !}
+<ol class="goals" id="goals-{matchId}"{#if oob??} hx-swap-oob="true"{/if}>
+  {#for g in goals}
+  <li class="{#if g.forHome}for-home{#else}for-away{/if}">
+    <span class="scorer">{g.scorer}{#if g.note} <em>{g.note}</em>{/if} <span class="minute">{g.minute}</span></span>
+    <span class="running">{g.score}</span>
+  </li>
+  {/for}
+</ol>

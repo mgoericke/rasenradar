@@ -102,6 +102,12 @@ Regeln:
   Rahmen). Wege zur KI-Vorschau tragen den Messing-Rahmen (`.link-button.ai`).
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
+- **Laufende Spiele aktualisieren sich selbst** (`#live-poller`): Zeigt eine Seite ein Spiel,
+  das läuft oder in den nächsten 30 Minuten beginnt, fragt sie jede Minute die
+  Ergebnisfelder ab (Spielseite: auch Halbzeit und Torliste) und tauscht nur diese —
+  still, ohne Animation, ohne Hinweis. Das Ergebnisfeld ist dafür ein gemeinsamer
+  Baustein (`{#score}`), damit Seite und Nachladen gleich aussehen. Läuft nichts mehr,
+  hört die Seite auf zu fragen.
 - **Landingpage: der Spieltag zuerst.** Kein Kopfbereich mit Schriftzug — die Marke steht
   schon in der Navigation. Die H1 (`.landing-heading`) sagt klein und linksbündig, wo
   beide Ligen stehen („Bundesliga: 5. und 7. Spieltag"). Darunter Spotlight und

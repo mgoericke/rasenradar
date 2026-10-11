@@ -23,9 +23,7 @@
             <span class="team-name">{r.homeShort}</span>
             {#if r.homeIcon}<img class="crest" src="{r.homeIcon}" alt="" loading="lazy">{/if}
           </span>
-          <span class="score {#if r.played}is-played{/if} {#if r.provisional}is-provisional{/if} {#if r.live}is-live{/if} {#if r.liveScore}has-score{/if}">
-            {#if r.played}{r.score}{#else if r.live}{#if r.liveScore}{r.liveScore}{#else}Läuft{/if}{#else}–:–{/if}
-          </span>
+          {#score m=r /}
           <span class="away">
             {#if r.awayIcon}<img class="crest" src="{r.awayIcon}" alt="" loading="lazy">{/if}
             <span class="team-name">{r.awayShort}</span>
@@ -67,9 +65,7 @@
                 <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
                 {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
               </span>
-              <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if} {#if m.liveScore}has-score{/if}">
-                {#if m.played}{m.score}{#else if m.live}{#if m.liveScore}{m.liveScore}{#else}Läuft{/if}{#else}–:–{/if}
-              </span>
+              {#score m=m /}
               <span class="away">
                 {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
                 <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
@@ -111,5 +107,6 @@
     <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
   </section>
 </section>
+{#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s" hx-swap="none"></div>{/if}
 {/body}
 {/include}

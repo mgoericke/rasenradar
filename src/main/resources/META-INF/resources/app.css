@@ -204,6 +204,8 @@ h2 { font-size: 1.1rem; }
 
 /* goal sequence: home goals on the left, away goals on the right, running score in the middle */
 .goals { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .3rem; }
+/* always rendered so the live poll can fill it once the first goal falls; hidden while empty */
+.goals:not(:has(li)) { display: none; }
 .goals li { display: grid; grid-template-columns: 1fr 3.6rem 1fr; gap: 1rem; align-items: baseline; font-size: .95rem; }
 .goals li > * { grid-row: 1; }
 .goals .running { grid-column: 2; text-align: center; font-family: var(--display); font-weight: 600; }

@@ -119,4 +119,26 @@ class MatchdayPageModelsTest {
     void aTeamStillInTheCupHasNoOutcomeYet() {
         assertEquals("", MatchdayPageModels.cupRunOutcome(null, false));
     }
+
+    // --- live poll (spec 01, "Zwischenstand"): an open page refreshes itself only around a match ---
+
+    private static final Instant KICKOFF = Instant.parse("2026-10-10T13:30:00Z");
+    private static final Duration LIVE_WINDOW = Duration.ofMinutes(150);
+
+    @Test
+    void aRunningMatchIsWatched() {
+        assertTrue(MatchdayPageModels.isWatched(KICKOFF, false, KICKOFF.plus(Duration.ofMinutes(40)), LIVE_WINDOW));
+    }
+
+    @Test
+    void aPageOpenedShortlyBeforeKickoffAlreadyWatches() {
+        assertTrue(MatchdayPageModels.isWatched(KICKOFF, false, KICKOFF.minus(Duration.ofMinutes(10)), LIVE_WINDOW));
+        assertFalse(MatchdayPageModels.isWatched(KICKOFF, false, KICKOFF.minus(Duration.ofHours(2)), LIVE_WINDOW));
+    }
+
+    @Test
+    void aMatchWithAResultOrPastItsLiveWindowIsNoLongerWatched() {
+        assertFalse(MatchdayPageModels.isWatched(KICKOFF, true, KICKOFF.plus(Duration.ofMinutes(110)), LIVE_WINDOW));
+        assertFalse(MatchdayPageModels.isWatched(KICKOFF, false, KICKOFF.plus(Duration.ofHours(3)), LIVE_WINDOW));
+    }
 }
