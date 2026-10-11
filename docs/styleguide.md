@@ -29,7 +29,7 @@ Farbe, viel Luft. Genau das setzen wir **hell** um.
 | `--stage-line` | `rgba(255,255,255,.14)` | Linien und Rahmen auf der Bühne |
 | `--ink` | `#14201B` | Text, gespielte Ergebnisse |
 | `--ink-soft` | `#5A655F` | Nebentext |
-| `--ink-mute` | `#8C9691` | Beschriftungen, Zeiten, Platzziffern |
+| `--ink-mute` | `#66706B` | Beschriftungen, Zeiten, Platzziffern — ≥ 4,5:1 auf Grund und Karte (WCAG AA); vorher `#8C9691` mit 2,8:1 |
 | `--line` | `#E2E5E2` | Haarlinien |
 | `--win` | `#1A8A50` | Sieg, Aufstiegs-/CL-Zone, Auswärtssieg-Tendenz |
 | `--loss` | `#C63C3C` | Niederlage, Abstiegszone, Fehler, veraltete Daten |
@@ -112,7 +112,9 @@ Regeln:
   schon in der Navigation. Die H1 (`.landing-heading`) sagt klein und linksbündig, wo
   beide Ligen stehen („Bundesliga: 5. und 7. Spieltag"). Darunter Spotlight und
   Liga-Karten (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) über volle Breite;
-  die Rangliste „Wer liegt vorne?" (`.landing-leaderboard`) steht am Ende.
+  die Rangliste „Wer liegt vorne?" (`.landing-leaderboard`) steht am Ende. Zwei Liga-Karten
+  nebeneinander erst ab ~28 rem je Karte; die Paarungen darin (`.fixtures.compact`) geben
+  den Platz den Vereinsnamen: schmale Zeitspalte, enge Abstände, Markerspalte nur bei Bedarf.
 - **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): was als Nächstes zählt —
   alle laufenden Spiele mit Zwischenstand, sonst der nächste Anstoß-Block mit
   KI-Richtwert. **Nie ein
