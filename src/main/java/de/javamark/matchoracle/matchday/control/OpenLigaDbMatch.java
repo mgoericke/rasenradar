@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,22 @@ public record OpenLigaDbMatch(
      */
     public Optional<Result> ninetyMinuteResult() {
         return finished ? result(Result.NINETY_MINUTES).or(() -> result(Result.SUMMARY)) : Optional.empty();
+    }
+
+    /**
+     * Spec 01, "Zwischenstand": the running score of a match in progress, empty before kickoff and
+     * once it is finished (then {@link #ninetyMinuteResult()} takes over). The goals carry the
+     * running score with them and are the most reliable reading; the summary entry is the
+     * fallback, and a match under way without either stands at 0:0.
+     */
+    public Optional<Result> liveScore(Instant now) {
+        if (finished || kickoff.isAfter(now)) {
+            return Optional.empty();
+        }
+        Optional<Result> fromGoals = goals == null ? Optional.empty() : goals.stream()
+                .max(Comparator.comparingInt(g -> g.scoreTeam1() + g.scoreTeam2()))
+                .map(g -> new Result(Result.SUMMARY, g.scoreTeam1(), g.scoreTeam2()));
+        return fromGoals.or(() -> result(Result.SUMMARY)).or(() -> Optional.of(new Result(Result.SUMMARY, 0, 0)));
     }
 
     public Optional<Result> extraTimeResult() {

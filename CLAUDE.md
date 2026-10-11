@@ -68,6 +68,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Mannschaft | `Team` |
 | Tor (Minute, Schütze) | `Goal` |
 | Halbzeitstand / Endstand | `halfTimeScore` / `fullTimeScore` |
+| Zwischenstand (laufendes Spiel, kein Ergebnis) | `liveScore` |
 | vorläufig / endgültig | `ResultStatus.PROVISIONAL` / `FINAL` |
 | Form | `Form` |
 | Direktes Duell | `HeadToHead` |

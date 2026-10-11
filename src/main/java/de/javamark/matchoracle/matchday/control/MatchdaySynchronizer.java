@@ -18,12 +18,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -47,11 +49,26 @@ public class MatchdaySynchronizer {
     @ConfigProperty(name = "matchoracle.matchday.sync-window", defaultValue = "1")
     int syncWindow;
 
-    /** Checks the current matchday (+/- window) of both leagues and reloads what changed. Returns the ids of matches that got a score for the first time. */
+    /** Spec 01, "Prüftakt": how often a league without a running match is checked; while one runs, every scheduler tick. */
+    @ConfigProperty(name = "matchoracle.matchday.sync-interval")
+    Duration idleInterval;
+
+    @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
+    Duration liveWindow;
+
+    /** When each league last went to the source; in memory — after a restart every league syncs right away. */
+    private final Map<League, Instant> lastSyncAt = new ConcurrentHashMap<>();
+
+    /** Checks the current matchday (+/- window) of every competition that is due (see {@link SyncCadence}) and reloads what changed. Returns the ids of matches that got a score for the first time. */
     @ActivateRequestContext // Panache queries outside a transaction need a request context
     public List<Long> syncCurrentMatchdays() {
         List<Long> newlyPlayed = new ArrayList<>();
+        Instant now = Instant.now();
         for (League league : League.values()) {
+            if (!SyncCadence.isDue(Match.anyRunning(league, now, liveWindow), lastSyncAt.get(league), now, idleInterval)) {
+                continue;
+            }
+            lastSyncAt.put(league, now);
             try {
                 List<OpenLigaDbMatch> current = client.currentMatchday(league.sourceShortcut());
                 if (current.isEmpty()) {
@@ -189,7 +206,7 @@ public class MatchdaySynchronizer {
 
     /** Upserts the matches of one matchday and records the sync bookkeeping on it. */
     private List<Long> store(Matchday matchday, List<OpenLigaDbMatch> matches, Instant sourceLastChange, Instant now) {
-        List<Long> newlyPlayed = matches.stream().map(m -> upsert(matchday, m))
+        List<Long> newlyPlayed = matches.stream().map(m -> upsert(matchday, m, now))
                 .filter(java.util.Objects::nonNull).toList();
         matchday.sourceLastChangedAt = sourceLastChange;
         matchday.lastCheckedAt = now;
@@ -259,7 +276,7 @@ public class MatchdaySynchronizer {
     }
 
     /** Creates or updates one match. Results and goals are only touched if the source changed the match. Returns its id if this call gave it a score for the first time. */
-    Long upsert(Matchday matchday, OpenLigaDbMatch source) {
+    Long upsert(Matchday matchday, OpenLigaDbMatch source, Instant now) {
         Instant sourceLastUpdate = OpenLigaDb.toInstant(source.lastUpdate());
         Match match = Match.findByExternalId(source.id()).orElse(null);
         boolean isNew = match == null;
@@ -282,6 +299,8 @@ public class MatchdaySynchronizer {
         // spec 06: extra time is the score of the match; the shootout only decides the winner
         match.fullTimeScore = source.extraTimeResult().or(source::ninetyMinuteResult)
                 .map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
+        // spec 01, "Zwischenstand": display only, its own field — null again once there is a result
+        match.liveScore = source.liveScore(now).map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
         match.penaltyScore = source.penaltyResult().map(r -> new Score(r.pointsTeam1(), r.pointsTeam2())).orElse(null);
         match.decision = match.penaltyScore != null ? Decision.PENALTIES
                 : source.extraTimeResult().isPresent() ? Decision.EXTRA_TIME : Decision.REGULAR;

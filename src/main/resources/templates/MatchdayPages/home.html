@@ -23,8 +23,8 @@
             <span class="team-name">{r.homeShort}</span>
             {#if r.homeIcon}<img class="crest" src="{r.homeIcon}" alt="" loading="lazy">{/if}
           </span>
-          <span class="score {#if r.played}is-played{/if} {#if r.provisional}is-provisional{/if} {#if r.live}is-live{/if}">
-            {#if r.played}{r.score}{#else if r.live}Läuft{#else}–:–{/if}
+          <span class="score {#if r.played}is-played{/if} {#if r.provisional}is-provisional{/if} {#if r.live}is-live{/if} {#if r.liveScore}has-score{/if}">
+            {#if r.played}{r.score}{#else if r.live}{#if r.liveScore}{r.liveScore}{#else}Läuft{/if}{#else}–:–{/if}
           </span>
           <span class="away">
             {#if r.awayIcon}<img class="crest" src="{r.awayIcon}" alt="" loading="lazy">{/if}
@@ -67,8 +67,8 @@
                 <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
                 {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
               </span>
-              <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if}">
-                {#if m.played}{m.score}{#else if m.live}Läuft{#else}–:–{/if}
+              <span class="score {#if m.played}is-played{/if} {#if m.provisional}is-provisional{/if} {#if m.live}is-live{/if} {#if m.liveScore}has-score{/if}">
+                {#if m.played}{m.score}{#else if m.live}{#if m.liveScore}{m.liveScore}{#else}Läuft{/if}{#else}–:–{/if}
               </span>
               <span class="away">
                 {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}

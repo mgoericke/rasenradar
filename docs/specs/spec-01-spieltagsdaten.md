@@ -39,10 +39,14 @@ frühere Begegnungen bewerten zu können.
 - Fällt die externe Quelle aus, arbeitet das System mit dem letzten bekannten
   Stand weiter und weist dessen Alter aus.
 - Die Herkunft der Daten wird gegenüber dem Betrachter ausgewiesen.
+- Der Zwischenstand eines laufenden Spiels ist reine Anzeige: Er gilt nicht als
+  Ergebnis, auch nicht als vorläufiges, und fließt weder in Tabelle noch Form noch
+  Rückschau ein.
 
 ## Abgrenzung
 
-- Keine Live-Ergebnisse während laufender Spiele.
+- Kein Liveticker über Zwischenstand und Tore hinaus: keine Spielminute, keine
+  Karten, Wechsel oder sonstigen Spielereignisse.
 - Keine Spielerstatistiken über die Torschützen hinaus.
 - Keine Wettbewerbe über die beiden Bundesligen, die Champions-League-Ligaphase,
   den DFB-Pokal und die Nations League hinaus. Die beiden letztgenannten und die
@@ -63,19 +67,20 @@ frühere Begegnungen bewerten zu können.
   24 Stunden vergangen sind und es sich in dieser Zeit nicht mehr geändert hat.
   Die Frist ist ein Bewertungsmaßstab und ohne Neuauslieferung änderbar.
 - **Prüftakt:** Das System prüft alle 15 Minuten, ob sich an einem Spieltag
-  etwas geändert hat. Der Takt ist ohne Neuauslieferung änderbar.
+  etwas geändert hat; solange in einer Liga ein Spiel läuft, jede Minute. Beide
+  Takte sind ohne Neuauslieferung änderbar.
 - **Kennzeichnung laufender Spiele:** Ein Spiel gilt als „läuft" innerhalb eines
   großzügigen Zeitfensters nach dem Anstoß, solange noch kein Endstand vorliegt
-  — rein aus der Anstoßzeit abgeleitet, ohne Live-Ergebnis. Das Zeitfenster ist
-  ein Bewertungsmaßstab und ohne Neuauslieferung änderbar. Bleibt innerhalb der
-  Abgrenzung „Keine Live-Ergebnisse während laufender Spiele" — es wird
-  angezeigt, *dass* ein Spiel läuft, nicht *wie* es gerade steht.
+  — aus der Anstoßzeit abgeleitet. Das Zeitfenster ist ein Bewertungsmaßstab und
+  ohne Neuauslieferung änderbar. Während ein Spiel läuft, zeigt das System den
+  **Zwischenstand** und die bisherigen Tore, so wie die Quelle sie liefert;
+  liefert sie noch nichts, steht dort nur, dass das Spiel läuft.
 - **Blickfang der Startseite:** Über den Spieltagen beider Bundesligen zeigt die
   Startseite die Begegnungen, die als Nächstes zählen. Bezugsgröße ist der
   **Anstoß-Block**: alle Begegnungen beider Bundesligen mit derselben
   Anstoßzeit. Der Blickfang befindet sich immer in genau einer von zwei Phasen:
   - **Läuft** — mindestens ein Spiel läuft: alle laufenden Begegnungen beider
-    Ligen, ohne Spielstand (siehe „Kennzeichnung laufender Spiele").
+    Ligen mit Zwischenstand (siehe „Kennzeichnung laufender Spiele").
   - **Vorschau** — sonst: die Begegnungen des nächsten Blocks, je Begegnung mit
     dem Richtwert der letzten KI-Vorschau vor dem Anstoß (Spec 2), sofern einer
     vorliegt; Begegnungen ohne solche Vorschau sagen das ausdrücklich.
@@ -97,5 +102,8 @@ frühere Begegnungen bewerten zu können.
 - Für eine beliebige Begegnung lassen sich Form beider Mannschaften und die
   bisherigen direkten Duelle abrufen.
 - Der Blickfang der Startseite zeigt während laufender Spiele alle laufenden
-  Begegnungen beider Ligen ohne Spielstand, sonst die Begegnungen des nächsten
+  Begegnungen beider Ligen mit Zwischenstand, sonst die Begegnungen des nächsten
   Blocks mit KI-Richtwert — nie ein bereits beendetes Spiel.
+- Solange in einer Liga ein Spiel läuft, wird mindestens einmal pro Minute
+  nachgeladen; ein Tor erscheint spätestens eine Minute, nachdem die Quelle es führt.
+- Ein Zwischenstand verändert weder Tabelle noch Form noch Rückschau.

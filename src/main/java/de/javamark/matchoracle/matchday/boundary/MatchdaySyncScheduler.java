@@ -30,7 +30,7 @@ public class MatchdaySyncScheduler {
     @Inject
     Event<MatchPlayed> matchPlayed;
 
-    @Scheduled(every = "${matchoracle.matchday.sync-interval}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(every = "${matchoracle.matchday.sync-tick}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void syncAndFinalize() {
         // announce each newly played match to other features (spec 04's season outlook reacts to it)
         for (Long matchId : synchronizer.syncCurrentMatchdays()) {
