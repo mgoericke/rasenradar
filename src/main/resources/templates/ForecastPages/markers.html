@@ -1,4 +1,7 @@
+{! Out-of-band KI-Vorschau markers for a fixture list. The marker sits inside the fixture link,
+   so it must not be focusable itself; the meaning travels as text for screen readers and as a
+   tooltip for the mouse. !}
 {#for m in markers}
-<span id="forecast-marker-{m.matchId}" hx-swap-oob="true" class="forecast-marker" tabindex="0"
-      title="Tendenz zum {m.tendency}, Wahrscheinlichkeit {m.probabilityPercent} %">{m.expectedScore}</span>
+<span id="forecast-marker-{m.matchId}" hx-swap-oob="true" class="forecast-marker"
+      title="KI-Richtwert {m.expectedScore}: Tendenz zum {m.tendency}, Wahrscheinlichkeit {m.probabilityPercent} %"><span class="sr-only">KI-Richtwert </span>{m.expectedScore}<span class="sr-only">, Tendenz zum {m.tendency}, {m.probabilityPercent} %</span></span>
 {/for}

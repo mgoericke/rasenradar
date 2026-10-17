@@ -12,7 +12,7 @@
     return;
   }
   var colors = ['#14201B', '#1E9E5A'];
-  var mutedColor = '#8C9691'; // --ink-mute — a previous season shown as a faded reference line
+  var mutedColor = '#8C9691'; // lighter than --ink-mute on purpose: a previous season is a faded reference line, not text
   new Chart(el, {
     type: 'line',
     data: {

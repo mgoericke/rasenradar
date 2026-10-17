@@ -7,8 +7,10 @@
 
   {#if page.spotlight}
   {#let sp=page.spotlight}
-  <section class="spotlight is-{sp.phase}" aria-labelledby="spotlight-heading" aria-describedby="spotlight-subline"
-           {#if sp.phase != 'live'}hx-get="{sp.forecastPath}" hx-trigger="load" hx-swap="none"{/if}>
+  <section class="spotlight is-{sp.phase}" aria-labelledby="spotlight-heading" aria-describedby="spotlight-subline">
+    {! the KI-Richtwerte arrive out of band; the request sits on its own element because hx-swap
+       is inherited — on the section it would turn every boosted link inside into a no-op !}
+    {#if sp.phase != 'live'}<div hx-get="{sp.forecastPath}" hx-trigger="load" hx-swap="none"></div>{/if}
     <div class="spotlight-head">
       <h2 id="spotlight-heading">{sp.heading}</h2>
       <p id="spotlight-subline" class="spotlight-subline">{sp.subline}</p>

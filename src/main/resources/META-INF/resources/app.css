@@ -9,7 +9,7 @@
   --stage-line: rgba(255, 255, 255, .14);
   --ink: #14201B;
   --ink-soft: #5A655F;
-  --ink-mute: #8C9691;
+  --ink-mute: #66706B;
   --line: #E2E5E2;
   --win: #1A8A50;
   --loss: #C63C3C;
@@ -252,7 +252,7 @@ h2 { font-size: 1.1rem; }
 .footer-links { display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; }
 .footer-links a { color: var(--ink-soft); font-weight: 500; font-size: .92rem; }
 .footer-links a:hover, .footer-links a.is-active { color: var(--ink); }
-.provenance { margin: 0; color: var(--ink-mute); font-size: .85rem; max-width: 70ch; }
+.provenance { margin: 0; color: var(--ink-mute); font-size: .85rem; max-width: 62ch; }
 .provenance a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 .provenance a:hover { color: var(--ink); border-color: var(--ink); }
 .provenance.is-stale { color: var(--loss); }
@@ -272,8 +272,8 @@ h2 { font-size: 1.1rem; }
 .footer-col { color: var(--ink-mute); font-size: .85rem; line-height: 1.7; min-width: 10rem; }
 .footer-col p { margin: 0; }
 .footer-heading {
-  font-family: var(--display); font-weight: 600; font-size: .75rem; letter-spacing: .04em;
-  color: var(--ink-soft); text-transform: uppercase; margin-bottom: .5rem !important;
+  font-family: var(--display); font-weight: 600; font-size: .9rem; letter-spacing: -0.01em;
+  color: var(--ink-soft); margin-bottom: .5rem !important;
 }
 .footer-col a { color: var(--ink-mute); border-bottom: 1px solid var(--line); }
 .footer-col a:hover { color: var(--ink); border-color: var(--ink); }
@@ -368,10 +368,12 @@ h2 { font-size: 1.1rem; }
 .leaderboard-caption { margin: .6rem 0 0; font-size: .85rem; }
 
 /* one league, full column width, stacked instead of side by side */
-.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1.5rem; }
+/* two league cards side by side only where each still fits a pairing without truncating the
+   club names (~28rem); below that they stack at full width */
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: 1.5rem; }
 .landing-league {
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-  padding: 1.4rem 1.5rem 1.5rem;
+  padding: 1.4rem clamp(1rem, 3vw, 1.5rem) 1.5rem;
 }
 .landing-league-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
 .landing-league-head h2 { display: flex; align-items: center; gap: .55rem; font-size: 1.35rem; font-weight: 700; margin: 0; }
@@ -409,7 +411,15 @@ h2 { font-size: 1.1rem; }
 
 /* two cards side by side leave less room per name than the full matchday page ever does —
    short team names here regardless of viewport width, not just as a narrow-screen fallback */
-.fixtures.compact .fixture { padding: .6rem .8rem; }
+/* landing cards: the club names get the room — narrower time column, tighter gaps, the
+   marker column collapses when empty */
+.fixtures.compact .fixture { grid-template-columns: 2.6rem minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: .5rem; padding: .6rem .7rem; }
+.fixtures.compact .score { min-width: 3rem; }
+@media (max-width: 560px) {
+  /* phones: same idea, tighter still — never smaller type, only less chrome */
+  .fixtures.compact .fixture { grid-template-columns: 2.3rem minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: .35rem; padding: .55rem .5rem; }
+  .fixtures.compact .score { min-width: 2.6rem; padding-inline: .3rem; }
+}
 .fixtures.compact .team-name.full { display: none; }
 .fixtures.compact .team-name.short { display: block; }
 
@@ -544,7 +554,7 @@ h2 { font-size: 1.1rem; }
   border-bottom: 1px dotted var(--ink-mute); cursor: help;
 }
 .forecast-marker.is-empty { display: none; }
-.forecast-marker:hover, .forecast-marker:focus-visible { color: var(--ink); border-color: var(--ink); }
+.fixture:hover .forecast-marker, .fixture:focus-visible .forecast-marker { color: var(--ink); border-color: var(--ink); }
 
 /* club page */
 .club { grid-column: 1 / -1; max-width: 1100px; }
