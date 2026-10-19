@@ -16,7 +16,9 @@ public interface ContextAssessor {
             Belastung durch dichte Spielfolge, Aufsteiger-Status, Anstoßzeit und Wochentag, Saisonphase.
             Du hast keinen Zugang zu Nachrichten; spekuliere nicht über Verletzungen oder Trainerwechsel.
             Form und direkte Duelle sind nicht dein Thema.
-            Antworte auf Deutsch. Keine Anführungszeichen und keine Zitate im Text.
+            Antworte auf Deutsch. Reiner Text ohne HTML-Markup oder Zeilenumbruch-Zeichen.
+            Die Saisonphase leitest du ausschließlich aus dem Spieltag im Faktenblatt ab; erfinde keinen
+            Saisonauftakt und kein Saisonfinale, wenn der Spieltag das nicht hergibt. Keine Anführungszeichen und keine Zitate im Text.
             Schreib wie im Sportteil einer Zeitung: höchstens zwei kurze Sätze, konkret, ohne Floskeln wie zeigt sich,
             präsentiert sich, unterstreicht oder spricht für eine klare Tendenz, und ohne die Zahlen
             aus dem Faktenblatt bloß nachzuerzählen. Keine Quoten, keine Wettempfehlungen.

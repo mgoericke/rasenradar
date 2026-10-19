@@ -19,9 +19,11 @@ final class RetrospectiveText {
         StringBuilder sb = new StringBuilder();
         sb.append("Vergleichsfälle sind Begegnungen mit ähnlicher Ausgangslage (Tabellenabstand, Form beider Mannschaften, ")
                 .append("Heim- und Auswärtsstärke, Aufsteiger-Status) – unabhängig von den beteiligten Vereinen. ")
-                .append("Lies sie als Basisrate für diese Konstellation, nicht als Aussage über die Vereine.\n");
+                .append("Sie gelten als Basisrate für diese Konstellation, nicht als Aussage über die Vereine.\n");
         sb.append(cases.size()).append(" vergleichbare frühere Begegnungen: ")
-                .append(homeWins).append(" Heimsiege, ").append(draws).append(" Unentschieden, ").append(awayWins).append(" Auswärtssiege.\n");
+                .append(homeWins).append(homeWins == 1 ? " Heimsieg, " : " Heimsiege, ")
+                .append(draws).append(" Unentschieden, ")
+                .append(awayWins).append(awayWins == 1 ? " Auswärtssieg.\n" : " Auswärtssiege.\n");
         for (SimilarCase c : cases) {
             var s = c.situation();
             sb.append("- ").append(s.homeTeam).append(" ").append(s.homeGoals).append(":").append(s.awayGoals).append(" ").append(s.awayTeam)

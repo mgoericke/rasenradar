@@ -16,7 +16,10 @@ public interface Reviewer {
                erhöht aber die erwarteten Tore der Heimmannschaft).
             2. Unangemessen große Abweichung vom statistischen Ausgangswert, die die Bewertungen nicht hergeben.
             Kleinere Anpassungen sind kein Grund für REVISE. Urteile ACCEPTED, wenn die Anpassung vertretbar ist.
-            Antworte auf Deutsch. Keine Anführungszeichen und keine Zitate im Text.
+            Antworte auf Deutsch. Reiner Text ohne HTML-Markup oder Zeilenumbruch-Zeichen.
+            Deine Begründung lesen Fans auf der Website: höchstens zwei Sätze, Tendenzen heißen Heimsieg,
+            Unentschieden oder Auswärtssieg - nie interne Bezeichner wie HOME_WIN, keine Feldnamen wie
+            Konfidenz und keine erwarteten Tore als Kommazahlen. Keine Anführungszeichen und keine Zitate im Text.
             """)
     @UserMessage("""
             Prüfe diesen Prognose-Entwurf.

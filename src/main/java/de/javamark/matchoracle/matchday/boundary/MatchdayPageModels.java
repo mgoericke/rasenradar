@@ -103,9 +103,9 @@ public final class MatchdayPageModels {
         }
         Duration d = Duration.between(checkedAt, now);
         if (d.toMinutes() < 1) return "gerade eben";
-        if (d.toMinutes() < 60) return "vor " + d.toMinutes() + " Minuten";
-        if (d.toHours() < 24) return "vor " + d.toHours() + " Stunden";
-        return "vor " + d.toDays() + " Tagen";
+        if (d.toMinutes() < 60) return "vor " + d.toMinutes() + (d.toMinutes() == 1 ? " Minute" : " Minuten");
+        if (d.toHours() < 24) return "vor " + d.toHours() + (d.toHours() == 1 ? " Stunde" : " Stunden");
+        return "vor " + d.toDays() + (d.toDays() == 1 ? " Tag" : " Tagen");
     }
 
     public record NavLeague(String shortcut, String name, String badge, boolean active) {
