@@ -75,19 +75,20 @@ frühere Begegnungen bewerten zu können.
   ohne Neuauslieferung änderbar. Während ein Spiel läuft, zeigt das System den
   **Zwischenstand** und die bisherigen Tore, so wie die Quelle sie liefert;
   liefert sie noch nichts, steht dort nur, dass das Spiel läuft.
-- **Blickfang der Startseite:** Über den Spieltagen beider Bundesligen zeigt die
-  Startseite die Begegnungen, die als Nächstes zählen. Bezugsgröße ist der
-  **Anstoß-Block**: alle Begegnungen beider Bundesligen mit derselben
-  Anstoßzeit. Der Blickfang befindet sich immer in genau einer von zwei Phasen:
-  - **Läuft** — mindestens ein Spiel läuft: alle laufenden Begegnungen beider
-    Ligen mit Zwischenstand (siehe „Kennzeichnung laufender Spiele").
-  - **Vorschau** — sonst: die Begegnungen des nächsten Blocks, je Begegnung mit
-    dem Richtwert der letzten KI-Vorschau vor dem Anstoß (Spec 2), sofern einer
-    vorliegt; Begegnungen ohne solche Vorschau sagen das ausdrücklich.
-
-  Ergebnisse zeigt der Blickfang nicht — sie stehen in den Spieltagen darunter.
-  Steht kein Block an (Saisonende, Sommerpause), entfällt der Blickfang. Pokal,
-  Nations League und Champions League bleiben außen vor.
+- **Spieltags-Strom der Startseite:** Die Startseite zeigt die aktuell
+  angezeigten Spieltage beider Bundesligen als *einen* chronologischen Strom,
+  geordnet nach Tag und **Anstoß-Block** (alle Begegnungen beider Bundesligen mit
+  derselben Anstoßzeit) — nicht als eine Liste pro Liga. Jede Begegnung trägt
+  den Richtwert der letzten KI-Vorschau vor dem Anstoß (Spec 2), nach dem Abpfiff
+  zusätzlich, ob deren Tendenz getroffen wurde; jeder Anstoß-Block nennt, wie
+  viele seiner Tendenzen getroffen wurden. Bei vorläufigem Ergebnis ist auch
+  dieses Urteil vorläufig; in Rückschau oder Trefferbilanz fließt es nicht ein
+  (Spec 3). Laufende Begegnungen sind im Strom kenntlich und lassen sich, wie
+  beendete und anstehende, gezielt herausfiltern; ebenso jede der beiden Ligen.
+  Ist vom angezeigten Spieltag schon mindestens eine Begegnung gespielt, folgen
+  darunter die Begegnungen des nächsten Spieltags beider Ligen mit ihren
+  KI-Richtwerten. Pokal, Nations League und Champions League gehören nicht in
+  den Strom.
 - **Identität von Mannschaften:** Eine Mannschaft wird über eine stabile
   Kennung der Spieldatenquelle identifiziert, die Saisonwechsel sowie Auf- und
   Abstieg überdauert. Name und Kürzel sind änderbare Eigenschaften, keine
@@ -101,9 +102,11 @@ frühere Begegnungen bewerten zu können.
   ohne dass jemand manuell eingreift.
 - Für eine beliebige Begegnung lassen sich Form beider Mannschaften und die
   bisherigen direkten Duelle abrufen.
-- Der Blickfang der Startseite zeigt während laufender Spiele alle laufenden
-  Begegnungen beider Ligen mit Zwischenstand, sonst die Begegnungen des nächsten
-  Blocks mit KI-Richtwert — nie ein bereits beendetes Spiel.
+- Die Startseite zeigt die Begegnungen beider Bundesligen in einem Strom nach
+  Tag und Anstoßzeit; jede beendete Begegnung mit KI-Vorschau sagt, ob deren
+  Tendenz getroffen wurde.
+- Ist vom angezeigten Spieltag mindestens eine Begegnung gespielt, zeigt die
+  Startseite darunter den nächsten Spieltag beider Ligen mit KI-Richtwerten.
 - Solange in einer Liga ein Spiel läuft, wird mindestens einmal pro Minute
   nachgeladen; ein Tor erscheint spätestens eine Minute, nachdem die Quelle es führt.
 - Ein Zwischenstand verändert weder Tabelle noch Form noch Rückschau.

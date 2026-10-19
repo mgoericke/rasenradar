@@ -1,0 +1,17 @@
+{! Spec 01, "Spieltags-Strom": the KI cells and per-block summaries of the landing page, swapped in out of band. !}
+{#for c in cells}
+<span id="ki-{c.matchId}" hx-swap-oob="true" class="stream-ki{#if c.missing} is-missing{/if}">
+  {#if c.missing}
+  <span class="stream-ki-none">keine KI-Vorschau</span>
+  {#else}
+  <span class="stream-ki-value"><span aria-hidden="true">KI</span><span class="sr-only">KI-Richtwert</span> <span class="stream-ki-score">{c.expectedScore}</span></span>
+  {#if c.hit != null}
+  <span class="stream-ki-verdict{#if c.hit} is-hit{/if}">{#if c.exact}exakt getroffen{#else if c.hit}getroffen{#else}daneben{/if}{#if c.provisional}<span class="stream-ki-provisional"> · vorläufig</span>{/if}</span>
+  {#else}
+  <span class="stream-ki-tendency">{c.tendency} {c.probabilityPercent} %</span>
+  {/if}
+  {/if}
+</span>
+{/for}
+{#for s in slots}{#if s.judged > 0}<span id="slot-ki-{s.key}" hx-swap-oob="true" class="slot-ki">KI {s.hits} von {s.judged} getroffen{#if s.provisional} · vorläufig{/if}</span>
+{/if}{/for}

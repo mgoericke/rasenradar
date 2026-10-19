@@ -2,113 +2,91 @@
 {#title}Aktueller Spieltag{/title}
 {#description}Rasen-Radar: Ergebnisse, Tabellen und Formkurven aus 1. und 2. Bundesliga – dazu eine KI-Vorschau je Spieltag, ohne Quoten oder Wettempfehlungen.{/description}
 {#body}
+{! Spec 01, "Spieltags-Strom der Startseite": both Bundesligas as one stream by day and kickoff block,
+   the next matchday below, tables and KI-Bilanz beside it. The radios drive the phone view and the
+   table tabs in CSS; stream.js adds the status/league filter (without it every match simply shows). !}
 <section class="landing" aria-labelledby="landing-heading">
-  <h1 id="landing-heading" class="landing-heading">{page.heading}</h1>
+  <input class="view-input sr-only" type="radio" name="landing-view" id="view-spiele" checked>
+  <input class="view-input sr-only" type="radio" name="landing-view" id="view-tabelle">
+  <input class="view-input sr-only" type="radio" name="landing-view" id="view-bilanz">
 
-  {#if page.spotlight}
-  {#let sp=page.spotlight}
-  <section class="spotlight is-{sp.phase}" aria-labelledby="spotlight-heading" aria-describedby="spotlight-subline">
-    {! the KI-Richtwerte arrive out of band; the request sits on its own element because hx-swap
-       is inherited — on the section it would turn every boosted link inside into a no-op !}
-    {#if sp.phase != 'live'}<div hx-get="{sp.forecastPath}" hx-trigger="load" hx-swap="none"></div>{/if}
-    <div class="spotlight-head">
-      <h2 id="spotlight-heading">{sp.heading}</h2>
-      <p id="spotlight-subline" class="spotlight-subline">{sp.subline}</p>
-    </div>
-    {#if sp.collapsible}<input class="spotlight-all-input sr-only" type="checkbox" id="spotlight-all">{/if}
-    <ol class="spotlight-rows">
-      {#for r in sp.rows}
-      <li class="spotlight-row">
-        <a class="fixture" href="{r.link}">
-          {#if sp.phase == 'live'}<span class="time">{r.time}</span>{/if}
-          <span class="home">
-            <span class="team-name">{r.homeShort}</span>
-            {#if r.homeIcon}<img class="crest" src="{r.homeIcon}" alt="" loading="lazy">{/if}
-          </span>
-          {#score m=r /}
-          <span class="away">
-            {#if r.awayIcon}<img class="crest" src="{r.awayIcon}" alt="" loading="lazy">{/if}
-            <span class="team-name">{r.awayShort}</span>
-          </span>
-        </a>
-        {#if sp.phase != 'live'}<span id="spotlight-forecast-{r.id}" class="spotlight-forecast is-pending"></span>{/if}
-      </li>
+  <header class="landing-head">
+    <h1 id="landing-heading" class="landing-heading">{page.heading}</h1>
+    <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.name}</b> {l.matchdayNumber}. Spieltag</a>{#if l_hasNext} · {/if}{/for}</p>
+  </header>
+
+  <div class="stream-filters" role="toolbar" aria-label="Spiele filtern" hidden>
+    <span class="seg" role="group" aria-label="Status">
+      <button type="button" data-status="alle" aria-pressed="true">Alle</button>
+      <button type="button" data-status="live" aria-pressed="false" {#if page.liveCount == 0}disabled{/if}>Live ({page.liveCount})</button>
+      <button type="button" data-status="beendet" aria-pressed="false">Beendet</button>
+      <button type="button" data-status="anstehend" aria-pressed="false">Anstehend</button>
+    </span>
+    <span class="stream-leagues" role="group" aria-label="Ligen">
+      {#for l in page.leagues}
+      <button type="button" class="chip" data-league="{l.shortcut}" aria-pressed="true"><span class="badge">{l.badge}</span>{l.name}</button>
       {/for}
-    </ol>
-    {#if sp.collapsible}<label class="spotlight-all" for="spotlight-all">Alle {sp.rows.size} Spiele zeigen</label>{/if}
-  </section>
-  {/let}
-  {/if}
-
-  <div class="landing-grid">
-  {#for l in page.leagues}
-  <section class="landing-league" aria-labelledby="landing-league-{l.badge}">
-    <div class="landing-league-head">
-      <h2 id="landing-league-{l.badge}"><span class="badge">{l.badge}</span> {l.name}</h2>
-      <a class="landing-league-link" href="{l.matchdayLink}">Zum {l.matchdayNumber}. Spieltag →</a>
-    </div>
-
-    <fieldset class="landing-tabs">
-      <legend class="sr-only">Ansicht wählen: {l.name}</legend>
-      <input class="landing-tab-input matches" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-matches" checked>
-      <label class="landing-tab-label" for="landing-view-{l.badge}-matches">{l.matchdayNumber}. Spieltag</label>
-      <input class="landing-tab-input table" type="radio" name="landing-view-{l.badge}" id="landing-view-{l.badge}-table">
-      <label class="landing-tab-label" for="landing-view-{l.badge}-table">Tabelle</label>
-
-      <div class="landing-panel matches">
-        {#for day in l.days}
-        <p class="landing-day">{day.label}</p>
-        <ol class="fixtures compact">
-          {#for m in day.matches}
-          <li>
-            <a class="fixture" href="{m.link}">
-              <span class="time">{m.time}</span>
-              <span class="home">
-                <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-                {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
-              </span>
-              {#score m=m /}
-              <span class="away">
-                {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
-                <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
-              </span>
-              <span class="half">{#if !m.played}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
-            </a>
-          </li>
-          {/for}
-        </ol>
-        {/for}
-        <div hx-get="{l.markersPath}" hx-trigger="load" hx-swap="none"></div>
-      </div>
-
-      <div class="landing-panel table">
-        <table>
-          <thead>
-            <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr>
-          </thead>
-          <tbody>
-            {#for r in l.tableTop}
-            <tr class="{r.zone}">
-              <td class="pos">{r.position}</td>
-              <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
-              <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
-            </tr>
-            {/for}
-          </tbody>
-        </table>
-        {#if l.tableProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
-        <p class="note"><a href="{l.matchdayLink}">Ganze Tabelle ansehen</a></p>
-      </div>
-    </fieldset>
-  </section>
-  {/for}
+    </span>
   </div>
 
-  <section class="landing-leaderboard" aria-labelledby="leaderboard-heading">
-    <h2 id="leaderboard-heading">Wer liegt vorne?</h2>
-    <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
-  </section>
+  <div class="seg view-switch" role="group" aria-label="Ansicht">
+    <label for="view-spiele">Spiele</label><label for="view-tabelle">Tabelle</label><label for="view-bilanz">KI-Bilanz</label>
+  </div>
+
+  <div class="landing-layout">
+    <div class="stream">
+      {#if page.days}
+      <section class="stream-part" aria-labelledby="stream-now">
+        <h2 id="stream-now" class="stream-title">Spieltag <small>mit Urteil über die KI-Vorschau nach dem Abpfiff</small></h2>
+        {#if page.forecastPath}<div hx-get="{page.forecastPath}" hx-trigger="load" hx-swap="none"></div>{/if}
+        {#for d in page.days}{#include MatchdayPages/streamDay d=d /}{/for}
+        <p class="stream-empty" hidden>Keine Spiele für diese Auswahl. <button type="button" class="chip" data-reset>Filter zurücksetzen</button></p>
+      </section>
+      {#else}
+      <p class="stream-empty">Gerade steht kein Spieltag an.</p>
+      {/if}
+      {#if page.nextDays}
+      <section class="stream-part" aria-labelledby="stream-next">
+        <h2 id="stream-next" class="stream-title">Nächster Spieltag <small>KI-Richtwerte vor dem Anstoß</small></h2>
+        {#if page.nextForecastPath}<div hx-get="{page.nextForecastPath}" hx-trigger="load" hx-swap="none"></div>{/if}
+        {#for d in page.nextDays}{#include MatchdayPages/streamDay d=d /}{/for}
+      </section>
+      {/if}
+    </div>
+
+    <aside class="landing-rail">
+      <section class="rail-card rail-table" aria-labelledby="rail-table">
+        <h2 id="rail-table">Tabelle</h2>
+        {#for l in page.leagues}<input class="table-input sr-only" type="radio" name="rail-table" id="table-{l.shortcut}" {#if l_isFirst}checked{/if}>{/for}
+        <div class="rail-tabs">{#for l in page.leagues}<label for="table-{l.shortcut}">{l.name}</label>{/for}</div>
+        {#for l in page.leagues}
+        <div class="rail-panel table-{l.shortcut}">
+          <table class="stream-table">
+            <caption class="sr-only">Tabelle {l.name}</caption>
+            <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr></thead>
+            <tbody>
+              {#for r in l.table}
+              <tr class="{r.zone}">
+                <td class="pos">{r.position}</td>
+                <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.teamShort}</a></td>
+                <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+              </tr>
+              {/for}
+            </tbody>
+          </table>
+          <p class="note">{#if l.tableProvisional}Enthält vorläufige Ergebnisse · {/if}<a href="{l.matchdayLink}">Spieltag und ganze Tabelle</a></p>
+        </div>
+        {/for}
+      </section>
+
+      <section class="rail-card rail-bilanz" aria-labelledby="rail-bilanz">
+        <h2 id="rail-bilanz">KI-Bilanz</h2>
+        <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
+      </section>
+    </aside>
+  </div>
 </section>
+<script src="/stream.js?v={assetVersion}"></script>
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s" hx-swap="none"></div>{/if}
 {/body}
 {/include}

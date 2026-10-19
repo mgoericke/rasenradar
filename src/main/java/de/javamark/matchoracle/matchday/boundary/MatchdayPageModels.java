@@ -7,7 +7,6 @@ import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.Match;
-import de.javamark.matchoracle.matchday.entity.SpotlightPhase;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
@@ -290,13 +289,14 @@ public final class MatchdayPageModels {
     }
 
     record StandingRow(int position, String team, String teamLink, String icon, int played, int wins, int draws, int losses,
-                       String goals, String difference, int points, String zone) {
+                       String goals, String difference, int points, String zone, String teamShort) {
         static StandingRow of(StandingPosition p, League league) {
             Balance b = p.balance();
             int diff = b.goalDifference();
             return new StandingRow(p.position(), p.team().name, MatchdayPageModels.teamLink(p.team(), league.sourceShortcut()), p.team().iconUrl,
                     b.played(), b.wins(), b.draws(), b.losses(),
-                    b.goalsFor() + ":" + b.goalsAgainst(), (diff > 0 ? "+" : "") + diff, b.points(), MatchdayPageModels.zone(league, p.position()));
+                    b.goalsFor() + ":" + b.goalsAgainst(), (diff > 0 ? "+" : "") + diff, b.points(), MatchdayPageModels.zone(league, p.position()),
+                    p.team().shortName == null ? p.team().name : p.team().shortName);
         }
     }
 
@@ -326,66 +326,58 @@ public final class MatchdayPageModels {
      * matchday page, plus a short table preview (top {@code tableTop.size()} rows only — the full
      * table lives on the matchday page behind {@code matchdayLink}).
      */
-    record LandingLeagueSection(String badge, String name, String matchdayLink, String forecastsLink, String markersPath,
-                                int matchdayNumber, List<DayGroup> days, List<StandingRow> tableTop, boolean tableProvisional) {
+    /** One league in the landing page header and table rail: badge, name, the matchday shown, where its full page is. */
+    record LandingLeague(String shortcut, String badge, String name, int matchdayNumber, String matchdayLink,
+                         List<StandingRow> table, boolean tableProvisional) {
+    }
+
+    /** A match in the stream, with the league it belongs to — the stream mixes both. */
+    record StreamRow(String league, String badge, MatchRow match) {
+    }
+
+    /** A kickoff block of the stream; {@code key} ties the forecast fragment's per-block summary to it. */
+    record StreamSlot(String time, String key, List<StreamRow> rows) {
+    }
+
+    record StreamDayView(String label, List<StreamSlot> slots) {
     }
 
     /**
-     * Spec 01, "Blickfang der Startseite": the matches that count right now, ahead of the league sections.
-     * {@code forecastPath} is the forecast feature's fragment that fills in the KI-Vorschau per row —
-     * matchday only knows its address, as with the leaderboard.
+     * Spec 01, "Spieltags-Strom der Startseite": both Bundesligas as one stream by day and kickoff block,
+     * the next matchday below once the shown one has started, the tables and the KI-Bilanz beside it.
+     * {@code forecastPath} / {@code nextForecastPath} are the forecast feature's fragments that fill in the
+     * KI cells — matchday only knows their address, as with the leaderboard.
      */
-    record Spotlight(String phase, String heading, String subline, List<MatchRow> rows, String forecastPath) {
+    record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
+                       List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink) {
 
-        /** On narrow screens, rows beyond this many fold behind a "show all" toggle. */
-        static final int VISIBLE_ON_PHONE = 4;
-
-        static Spotlight of(SpotlightPhase phase, Instant kickoff, List<MatchRow> rows) {
-            String heading = switch (phase) {
-                case PREVIEW -> "Als Nächstes: " + time(kickoff);
-                case LIVE -> "Läuft gerade";
-            };
-            String subline = switch (phase) {
-                case PREVIEW -> dayLabel(kickoff) + " · mit KI-Richtwert je Spiel";
-                case LIVE -> (rows.size() == 1 ? "1 Spiel" : rows.size() + " Spiele") + " · Zwischenstand";
-            };
-            String ids = rows.stream().map(r -> "match=" + r.id()).collect(java.util.stream.Collectors.joining("&"));
-            return new Spotlight(phase.name().toLowerCase(), heading, subline, rows, SPOTLIGHT_FORECASTS_LINK + "?" + ids);
+        public String livePollLink() {
+            return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())
+                    .flatMap(s -> s.rows().stream()).map(StreamRow::match), false);
         }
 
-        public boolean collapsible() {
-            return rows.size() > VISIBLE_ON_PHONE;
+        /** "Bundesliga, 9.–11. Oktober" — the period, since each league keeps its own matchday counter (spec 01). */
+        public String heading() {
+            return dateRange == null ? "Bundesliga" : "Bundesliga, " + dateRange;
         }
     }
 
-    /** The forecast feature's fragment for the spotlight rows: the KI-Richtwert per match. */
-    static final String SPOTLIGHT_FORECASTS_LINK = "/blickfang/ki-vorschau";
+    /** The forecast feature's fragment for the stream's KI cells (guide value, verdict, per-block summary). */
+    static final String STREAM_FORECASTS_LINK = "/strom/ki-vorschau";
 
-    record LandingPage(Nav nav, Spotlight spotlight, List<LandingLeagueSection> leagues, String leaderboardLink) {
+    /** "9.–11. Oktober", "30. Oktober – 1. November", "9. Oktober" — the days the stream covers. */
+    static String dateRange(java.time.LocalDate first, java.time.LocalDate last) {
+        DateTimeFormatter dayMonth = DateTimeFormatter.ofPattern("d. MMMM", Locale.GERMAN);
+        if (first.equals(last)) return dayMonth.format(first);
+        if (first.getMonth() == last.getMonth()) return first.getDayOfMonth() + ".–" + dayMonth.format(last);
+        return dayMonth.format(first) + " – " + dayMonth.format(last);
+    }
 
-        public String livePollLink() {
-            return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
-                    spotlight == null ? java.util.stream.Stream.empty() : spotlight.rows().stream(),
-                    leagues.stream().flatMap(l -> l.days().stream()).flatMap(d -> d.matches().stream())), false);
-        }
-
-        /**
-         * The page heading tells a returning fan where both leagues stand — "Bundesliga: 5. und 7. Spieltag",
-         * in league order, since each league keeps its own counter (spec 01).
-         */
-        public String heading() {
-            List<Integer> numbers = leagues.stream().map(LandingLeagueSection::matchdayNumber).toList();
-            if (numbers.isEmpty()) {
-                return "Bundesliga";
-            }
-            if (numbers.size() == 1) {
-                return leagues.getFirst().name() + ": " + numbers.getFirst() + ". Spieltag";
-            }
-            if (numbers.stream().distinct().count() == 1) {
-                return "Bundesliga: " + numbers.getFirst() + ". Spieltag";
-            }
-            return "Bundesliga: " + numbers.stream().map(n -> n + ".").collect(java.util.stream.Collectors.joining(" und ")) + " Spieltag";
-        }
+    /** The match ids of the stream (or the next matchday) as the query of a forecast fragment link. */
+    static String forecastLink(List<StreamDayView> days) {
+        String ids = days.stream().flatMap(d -> d.slots().stream()).flatMap(s -> s.rows().stream())
+                .map(r -> "match=" + r.match().id()).collect(java.util.stream.Collectors.joining("&"));
+        return ids.isEmpty() ? null : STREAM_FORECASTS_LINK + "?" + ids;
     }
 
     /** Spec 05, "Wer liegt vorne?": the review feature's own fragment endpoint, loaded via htmx — matchday stays unaware of it otherwise. */

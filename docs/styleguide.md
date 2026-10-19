@@ -108,31 +108,21 @@ Regeln:
   still, ohne Animation, ohne Hinweis. Das Ergebnisfeld ist dafür ein gemeinsamer
   Baustein (`{#score}`), damit Seite und Nachladen gleich aussehen. Läuft nichts mehr,
   hört die Seite auf zu fragen.
-- **Landingpage: der Spieltag zuerst.** Kein Kopfbereich mit Schriftzug — die Marke steht
-  schon in der Navigation. Die H1 (`.landing-heading`) sagt klein und linksbündig, wo
-  beide Ligen stehen („Bundesliga: 5. und 7. Spieltag"). Darunter Spotlight und
-  Liga-Karten (`.landing-grid`, `repeat(auto-fit, minmax(320px, 1fr))`) über volle Breite;
-  die Rangliste „Wer liegt vorne?" (`.landing-leaderboard`) steht am Ende. Zwei Liga-Karten
-  nebeneinander erst ab ~28 rem je Karte; die Paarungen darin (`.fixtures.compact`) geben
-  den Platz den Vereinsnamen: schmale Zeitspalte, enge Abstände, Markerspalte nur bei Bedarf.
-- **Spotlight** (`.spotlight`, Spec 1 „Blickfang der Startseite"): was als Nächstes zählt —
-  alle laufenden Spiele mit Zwischenstand, sonst der nächste Anstoß-Block mit
-  KI-Richtwert. **Nie ein
-  Ergebnis**: die stehen in den Liga-Karten darunter. Helle Karte über volle Breite,
-  Überschrift links in normaler Schreibweise (keine Eyebrow), nur in der Phase „Läuft" in
-  `--loss`. Ein Blick-Streifen: Paarungen mit **Kurznamen** (volle Namen stehen in den
-  Liga-Karten), durch Haarlinien getrennt. Die KI-Zelle steht **neben** dem Link, nicht
-  darin: „KI" in `--ink-soft`, der Richtwert in Display-Schrift mit 2 px-Messinglinie
-  darunter (Messing als Linie, nicht als Kleinschrift — die würde den Kontrast verfehlen).
-  Breite steuert der Spotlight selbst per Container Query: zwei Spalten erst, wenn jede
-  ≥ 25 rem hat; einspaltig klappen Zeilen ab der fünften hinter „Alle n Spiele zeigen"
-  (CSS-only Checkbox, wie die Tabs), damit die Liga-Karten oben bleiben; unter 30 rem
-  rutscht die KI-Zelle zentriert unter die Paarung.
-- **CSS-only Tabs** (`.landing-tabs`): versteckte, aber fokussierbare Radio-Buttons mit
-  Label als Umschalter zwischen zwei Ansichten (Landingpage: Spieltag/Tabelle je
-  Liga-Abschnitt); sichtbarer Zustand über `:checked` und den `~`-Geschwister-Selektor, kein
-  JavaScript. Native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters, das eigene
-  Tastatursteuerung (Pfeiltasten, Roving Tabindex) per Skript bräuchte.
+- **Landingpage: Spieltags-Strom** (Spec 1). Kein Kopfbereich mit Schriftzug — die Marke steht
+  in der Navigation. H1 „Bundesliga, 23.–25. Oktober", darunter beide Spieltage verlinkt.
+  Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
+  (`.stream-slot`, weiße Karte, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
+  trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):
+  Richtwert in Display-Schrift mit 2 px-Messinglinie, davor die Tendenz mit Wahrscheinlichkeit,
+  danach das Urteil — „getroffen" in `--ink` 600 mit gefülltem `--win`-Punkt, „daneben" in
+  `--ink-soft` mit leerem Ring, bei vorläufigem Ergebnis „· vorläufig". Darüber eine klebende
+  Filterleiste (Segment Alle/Live/Beendet/Anstehend, Liga-Chips; `stream.js`, ohne Skript
+  unsichtbar). Rechts eine klebende Spalte (21 rem) mit Tabelle (Tabs je Liga, Kurznamen)
+  und KI-Bilanz. Unter 1000 px fällt die Spalte weg und ein Segment Spiele | Tabelle |
+  KI-Bilanz schaltet um; unter 720 px rutscht die KI-Zelle zentriert unter die Paarung.
+- **Radio-Umschalter ohne Skript** (Ansicht auf dem Telefon, Tabellen-Tabs): versteckte, aber
+  fokussierbare Radio-Buttons mit Label, sichtbarer Zustand über `:checked` und den
+  `~`-Geschwister-Selektor — native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters.
 
 ## Sprache im UI
 

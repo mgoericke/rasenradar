@@ -300,128 +300,113 @@ h2 { font-size: 1.1rem; }
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--accent); border-color: var(--accent); color: var(--stage); }
 
-/* --- landing page: full width, the matchday first — no masthead, the nav carries the brand */
+/* --- landing page, spec 01 "Spieltags-Strom": one stream by day and kickoff block across both
+   Bundesligas, tables and KI-Bilanz in a rail beside it ----------------------------------- */
 .landing { grid-column: 1 / -1; }
-.landing-heading { font-size: clamp(1.35rem, 1rem + 1.4vw, 1.75rem); letter-spacing: -0.025em; margin: 0 0 1rem; text-wrap: balance; }
+.landing-head { margin-bottom: 1rem; }
+.landing-heading { font-size: clamp(1.45rem, 1rem + 1.8vw, 2.1rem); letter-spacing: -0.03em; margin: 0; text-wrap: balance; }
+.landing-sub { margin: .3rem 0 0; color: var(--ink-soft); }
+.landing-sub a:hover { color: var(--ink); }
+.landing-sub b { color: var(--ink); font-weight: 600; }
 
-/* Spec 01, "Blickfang der Startseite": what comes next — the running matches, or the next
-   block with the KI-Vorschau's guide value. Never a result; those stand in the league cards. */
-.spotlight {
-  container: spotlight / inline-size;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-  padding: 1.3rem 1.5rem .6rem; margin: 0 0 2rem;
-}
-.spotlight-head { display: flex; align-items: baseline; gap: .35rem 1rem; flex-wrap: wrap; margin-bottom: .7rem; }
-.spotlight-head h2 { font-size: 1.35rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.spotlight.is-live .spotlight-head h2 { color: var(--loss); }
-.spotlight-subline { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+/* segmented control and chips: filter bar and phone view switch */
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.seg button, .seg label { font: 500 .88rem var(--text); color: var(--ink-soft); background: none; border: 0; padding: .35rem .8rem; border-radius: 999px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.seg button:disabled { color: var(--ink-mute); cursor: default; }
+.chip { font: 500 .88rem var(--text); display: inline-flex; gap: .4rem; align-items: center; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .3rem .75rem; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
+.chip[aria-pressed="false"] { color: var(--ink-mute); }
+.chip .badge { border-color: currentColor; color: currentColor; }
 
-/* a glance strip: short club names (full names stay in the league cards), hairline rows,
-   two columns only where each column still fits a pairing without truncating it */
-.spotlight-rows {
-  list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr)); column-gap: 2.5rem;
-}
-.spotlight-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem; align-items: center; gap: .75rem; border-top: 1px solid var(--line); }
-.spotlight.is-live .spotlight-row { grid-template-columns: minmax(0, 1fr); }
-.spotlight-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); padding: .6rem .25rem; }
-.spotlight.is-live .spotlight-row .fixture { grid-template-columns: 3.2rem minmax(0, 1fr) auto minmax(0, 1fr); }
+.stream-filters { position: sticky; top: 3.6rem; z-index: 6; background: var(--ground); display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; padding: .55rem 0 .7rem; border-bottom: 1px solid var(--line); }
+.stream-filters[hidden] { display: none; }
+.stream-leagues { display: flex; gap: .4rem; flex-wrap: wrap; }
+.view-switch { display: none; }
 
-/* the KI cell sits beside the link, not inside it — readable without hover, reachable by touch */
-.spotlight-forecast { display: flex; flex-direction: column; gap: .1rem; font-size: .85rem; line-height: 1.3; min-height: 1.3em; }
-.spotlight-forecast-label { font-weight: 500; font-size: .8rem; color: var(--ink-soft); }
-.spotlight-forecast-score {
-  font-family: var(--display); font-weight: 700; font-size: 1rem; color: var(--ink);
-  font-variant-numeric: tabular-nums; border-bottom: 2px solid var(--accent);
-}
-.spotlight-forecast-none { color: var(--ink-soft); }
+.landing-layout { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 2.2rem; align-items: start; margin-top: 1.2rem; }
 
-/* single column (no room for two): past four rows the rest folds behind a toggle, so the
-   league cards stay near the top — "Der Spieltag zuerst" */
-.spotlight-all { display: none; }
-@container spotlight (width < 56rem) {
-  .spotlight-all-input:not(:checked) ~ .spotlight-rows .spotlight-row:nth-child(n+5) { display: none; }
-  .spotlight-all {
-    display: block; width: 100%; padding: .7rem 0; border-top: 1px solid var(--line);
-    font-size: .9rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center;
-  }
-  .spotlight-all:hover { color: var(--ink); }
-  .spotlight-all-input:checked ~ .spotlight-all { display: none; }
-  .spotlight-all-input:focus-visible ~ .spotlight-all { outline: 3px solid var(--win); outline-offset: -3px; }
-}
-/* phones: the KI cell moves under the pairing instead of squeezing the club names */
-@container spotlight (width < 30rem) {
-  .spotlight-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .spotlight-forecast { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: .2rem .7rem; padding: 0 .25rem .6rem; }
-  .spotlight-forecast:empty { display: none; }
-}
-@media (max-width: 560px) { .spotlight { padding: 1.1rem 1rem .4rem; } }
+/* the stream */
+.stream-part + .stream-part { margin-top: 2.6rem; }
+.stream-title { font-size: 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .7rem; }
+.stream-title small { font: 400 .88rem var(--text); color: var(--ink-soft); }
+.stream-day-label { font: 600 .92rem var(--text); color: var(--ink-soft); margin: 1.1rem 0 .45rem; }
+.stream-slot { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stream-slot + .stream-slot { margin-top: .6rem; }
+.stream-slot-head { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; color: var(--ink-mute); padding: .5rem .9rem 0; }
+.slot-ki { color: var(--ink-soft); }
+.stream-rows { list-style: none; margin: 0; padding: 0; }
+.stream-row { display: grid; grid-template-columns: minmax(0, 1fr) 8.8rem; align-items: center; gap: .6rem; padding-right: .9rem; }
+.stream-row + .stream-row { border-top: 1px solid var(--line); }
+.stream-row[hidden], .stream-slot[hidden], .stream-day[hidden] { display: none; }
+.stream-row .fixture { grid-template-columns: 1.6rem minmax(0, 1fr) auto minmax(0, 1fr); gap: .6rem; padding: .55rem .2rem .55rem .9rem; }
+.stream-row .badge { border-color: var(--line); color: var(--ink-mute); }
+.stream-empty { padding: 1.2rem; color: var(--ink-soft); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; margin-top: 1rem; }
+.stream-empty[hidden] { display: none; }
 
-/* Spec 05, "Wer liegt vorne?": the leaderboard fragment at the end of the landing page */
-.landing-leaderboard { max-width: 420px; margin: 3rem 0 1rem; }
-.landing-leaderboard h2 { font-size: 1.2rem; margin: 0 0 .8rem; }
-.leaderboard { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; font-size: .95rem; }
+/* the KI cell sits beside the link: guide value with the brass line, then tendency or verdict */
+.stream-ki { display: flex; flex-direction: column; align-items: flex-start; gap: .1rem; font-size: .82rem; line-height: 1.25; min-height: 1.3em; }
+.stream-ki-value { font-weight: 500; color: var(--ink-soft); font-size: .78rem; }
+.stream-ki-score { font: 700 1rem var(--display); color: var(--ink); border-bottom: 2px solid var(--accent); font-variant-numeric: tabular-nums; }
+.stream-ki-tendency, .stream-ki-none { color: var(--ink-soft); }
+.stream-ki-verdict { color: var(--ink-soft); display: inline-flex; align-items: center; gap: .35rem; }
+.stream-ki-verdict::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; border: 1.5px solid var(--ink-mute); flex: none; }
+.stream-ki-verdict.is-hit { color: var(--ink); font-weight: 600; }
+.stream-ki-verdict.is-hit::before { background: var(--win); border-color: var(--win); }
+.stream-ki-provisional { font-weight: 400; color: var(--ink-soft); }
+
+/* rail: table with tabs, KI-Bilanz */
+.landing-rail { position: sticky; top: 7.6rem; display: grid; gap: 1.2rem; }
+.rail-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; }
+.rail-card h2 { font-size: 1.05rem; margin: 0 0 .6rem; }
+.rail-tabs { display: flex; gap: .3rem; margin-bottom: .6rem; }
+.rail-tabs label { font: 500 .85rem var(--text); border: 1px solid var(--line); border-radius: 999px; padding: .25rem .7rem; cursor: pointer; color: var(--ink-soft); }
+.rail-panel { display: none; }
+#table-bl1:checked ~ .table-bl1, #table-bl2:checked ~ .table-bl2 { display: block; }
+#table-bl1:checked ~ .rail-tabs label[for="table-bl1"],
+#table-bl2:checked ~ .rail-tabs label[for="table-bl2"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.table-input:focus-visible ~ .rail-tabs { outline: 3px solid var(--win); outline-offset: 2px; border-radius: 999px; }
+.stream-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.stream-table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .25rem .3rem; border-bottom: 1px solid var(--line); }
+.stream-table td { text-align: right; padding: .3rem .3rem; border-bottom: 1px solid var(--line); }
+.stream-table tbody tr:last-child td { border-bottom: 0; }
+.stream-table th.team, .stream-table td.team { text-align: left; }
+.stream-table td.team a { display: flex; align-items: center; gap: .4rem; white-space: nowrap; }
+.stream-table td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .5rem; }
+.stream-table .points { font-family: var(--display); font-weight: 700; }
+.rail-card .note { font-size: .8rem; color: var(--ink-mute); margin: .5rem 0 0; }
+.rail-card .note a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+
+/* Spec 05, "Wer liegt vorne?": the leaderboard fragment, now the rail's KI-Bilanz */
+.leaderboard { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .55rem .9rem; font-size: .92rem; }
 .leaderboard li + li { border-top: 1px solid var(--line); }
 .leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
 .leaderboard-rate { font-family: var(--display); font-weight: 700; }
-.leaderboard-caption { margin: .6rem 0 0; font-size: .85rem; }
+.leaderboard-caption { margin: .6rem 0 0; font-size: .82rem; }
 
-/* one league, full column width, stacked instead of side by side */
-/* two league cards side by side only where each still fits a pairing without truncating the
-   club names (~28rem); below that they stack at full width */
-.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: 1.5rem; }
-.landing-league {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-  padding: 1.4rem clamp(1rem, 3vw, 1.5rem) 1.5rem;
+@media (max-width: 1000px) {
+  .landing-layout { grid-template-columns: minmax(0, 1fr); }
+  .landing-rail { position: static; }
+  .view-switch { display: inline-flex; margin-top: .7rem; }
+  .view-input:nth-of-type(1):checked ~ .view-switch label:nth-of-type(1),
+  .view-input:nth-of-type(2):checked ~ .view-switch label:nth-of-type(2),
+  .view-input:nth-of-type(3):checked ~ .view-switch label:nth-of-type(3) { background: var(--ink); color: #fff; }
+  .view-input:focus-visible ~ .view-switch { outline: 3px solid var(--win); outline-offset: 2px; }
+  #view-spiele:checked ~ .landing-layout .landing-rail { display: none; }
+  #view-tabelle:checked ~ .landing-layout .stream, #view-bilanz:checked ~ .landing-layout .stream { display: none; }
+  #view-tabelle:checked ~ .stream-filters, #view-bilanz:checked ~ .stream-filters { display: none; }
+  #view-tabelle:checked ~ .landing-layout .rail-bilanz { display: none; }
+  #view-bilanz:checked ~ .landing-layout .rail-table { display: none; }
 }
-.landing-league-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
-.landing-league-head h2 { display: flex; align-items: center; gap: .55rem; font-size: 1.35rem; font-weight: 700; margin: 0; }
-.landing-league-link { font-size: .88rem; font-weight: 500; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
-.landing-league-link:hover { color: var(--ink); border-color: var(--ink); }
-
-/* CSS-only tabs: radios hidden but focusable, labels act as tab buttons, `~` shows the matching panel */
-.landing-tabs { border: 0; margin: 1.1rem 0 0; padding: 0; }
-.landing-tab-input {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
-  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+@media (max-width: 720px) {
+  .stream-filters { top: 5.6rem; }
+  .stream-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
+  .stream-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .45rem; padding: .55rem .7rem .2rem; }
+  .stream-row .badge, .stream-row .crest { display: none; }
+  .stream-ki { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .1rem .7rem; padding: 0 .7rem .55rem; }
+  .stream-ki:empty { display: none; }
 }
-.landing-tab-input:focus-visible + .landing-tab-label { outline: 3px solid var(--win); outline-offset: 2px; }
-.landing-tab-label {
-  display: inline-block; cursor: pointer; padding: .35rem .85rem; margin: 0 .4rem .4rem 0;
-  border: 1px solid var(--line); border-radius: 999px; background: var(--ground);
-  font-size: .82rem; font-weight: 500; color: var(--ink-soft);
-}
-.landing-tab-label:hover { border-color: var(--ink); color: var(--ink); }
-.landing-tab-input:checked + .landing-tab-label { background: var(--ink); color: #fff; border-color: var(--ink); }
-.landing-panel { display: none; margin-top: .9rem; }
-.landing-tab-input.matches:checked ~ .landing-panel.matches { display: block; }
-.landing-tab-input.table:checked ~ .landing-panel.table { display: block; }
-
-.landing-day { font-size: .85rem; font-weight: 500; color: var(--ink-soft); margin: .9rem 0 .35rem; }
-.landing-day:first-child { margin-top: 0; }
-
-.landing-panel.table table { width: 100%; border-collapse: collapse; font-size: .88rem; }
-.landing-panel.table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .35rem; border-bottom: 1px solid var(--line); }
-.landing-panel.table td { text-align: right; padding: .4rem .35rem; border-bottom: 1px solid var(--line); }
-.landing-panel.table tbody tr:last-child td { border-bottom: 0; }
-.landing-panel.table th.team, .landing-panel.table td.team { text-align: left; }
-.landing-panel.table td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .5rem; }
-.landing-panel.table .points { font-family: var(--display); font-weight: 700; }
-
-/* two cards side by side leave less room per name than the full matchday page ever does —
-   short team names here regardless of viewport width, not just as a narrow-screen fallback */
-/* landing cards: the club names get the room — narrower time column, tighter gaps, the
-   marker column collapses when empty */
-.fixtures.compact .fixture { grid-template-columns: 2.6rem minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: .5rem; padding: .6rem .7rem; }
-.fixtures.compact .score { min-width: 3rem; }
-@media (max-width: 560px) {
-  /* phones: same idea, tighter still — never smaller type, only less chrome */
-  .fixtures.compact .fixture { grid-template-columns: 2.3rem minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: .35rem; padding: .55rem .5rem; }
-  .fixtures.compact .score { min-width: 2.6rem; padding-inline: .3rem; }
-}
-.fixtures.compact .team-name.full { display: none; }
-.fixtures.compact .team-name.short { display: block; }
 
 /* --- forecast pages --------------------------------------------------------------- */
 .forecast-page { grid-column: 1 / -1; max-width: 960px; }
@@ -600,10 +585,10 @@ h2 { font-size: 1.1rem; }
 .fixture .home { justify-content: flex-end; }
 
 /* table zones: thin marker at the position, full = direct, dimmed = play-off */
-.standings tr.zone-top td.pos, .landing-panel.table tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
-.standings tr.zone-top-playoff td.pos, .landing-panel.table tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
-.standings tr.zone-bottom td.pos, .landing-panel.table tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
-.standings tr.zone-bottom-playoff td.pos, .landing-panel.table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
+.standings tr.zone-top td.pos, .stream-table tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
+.standings tr.zone-top-playoff td.pos, .stream-table tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
+.standings tr.zone-bottom td.pos, .stream-table tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
+.standings tr.zone-bottom-playoff td.pos, .stream-table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
 
 /* retrospective on the forecast page */
 .retrospective { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; background: var(--ground); font-size: .92rem; }
