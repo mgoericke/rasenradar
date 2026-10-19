@@ -19,7 +19,7 @@ public interface FormAssessor {
             Mehrere Spiele mit demselben Muster (z. B. drei Siege in Folge) sind ein echter Lauf und zählen entsprechend
             schwer. Ein einzelnes Ergebnis ist dagegen kein Lauf - werte es entsprechend zurückhaltender, besonders wenn
             das Faktenblatt eine dünne Datenbasis vermerkt; dann geben Tabellenlage und Bilanz mehr her als die Form.
-            Antworte auf Deutsch. Keine Anführungszeichen und keine Zitate im Text.
+            Antworte auf Deutsch. Reiner Text ohne HTML-Markup oder Zeilenumbruch-Zeichen. Keine Anführungszeichen und keine Zitate im Text.
             Schreib wie im Sportteil einer Zeitung: höchstens zwei kurze Sätze, konkret, ohne Floskeln wie zeigt sich,
             präsentiert sich, unterstreicht oder spricht für eine klare Tendenz, und ohne die Zahlen
             aus dem Faktenblatt bloß nachzuerzählen. Keine Quoten, keine Wettempfehlungen.

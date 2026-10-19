@@ -56,7 +56,7 @@
       {#if page.headToHead.isEmpty}
       <p class="muted">Keine früheren Begegnungen im Datenbestand.</p>
       {#else}
-      <p class="h2h-balance">{page.headToHeadBalance.wins} Siege, {page.headToHeadBalance.draws} Unentschieden, {page.headToHeadBalance.losses} Niederlagen, Tore {page.headToHeadBalance.goals}</p>
+      <p class="h2h-balance">{page.headToHeadBalance.wins} {#if page.headToHeadBalance.wins == 1}Sieg{#else}Siege{/if}, {page.headToHeadBalance.draws} Unentschieden, {page.headToHeadBalance.losses} {#if page.headToHeadBalance.losses == 1}Niederlage{#else}Niederlagen{/if}, Tore {page.headToHeadBalance.goals}</p>
       <ol class="meetings">
         {#for r in page.headToHead}
         <li><a href="{r.link}"><span class="date">{r.date}</span> <span class="venue">{#if r.home}Heim{#else}Auswärts{/if}</span> <span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span></a></li>

@@ -81,7 +81,7 @@ public class ForecastPages {
     record AssessmentView(String title, String lean, String leanClass, Integer confidencePercent, String summary, boolean failed) {
         static AssessmentView of(Assessment a) {
             return new AssessmentView(ForecastPages.title(a.kind), ForecastPages.lean(a.lean), a.lean == null ? "none" : a.lean.name().toLowerCase(),
-                    a.confidence == null ? null : (int) Math.round(a.confidence * 100), a.summary, a.failed);
+                    a.confidence == null ? null : (int) Math.round(a.confidence * 100), AiText.forDisplay(a.summary), a.failed);
         }
     }
 
@@ -94,13 +94,13 @@ public class ForecastPages {
             int home = (int) Math.round(f.homeWin * 100), draw = (int) Math.round(f.draw * 100);
             return new ForecastView(f.id, DATE_TIME.format(f.createdAt.atZone(ZONE)), ForecastPages.lean(f.tendency()), f.tendency().name().toLowerCase(),
                     home, draw, 100 - home - draw, f.expectedHomeGoals + ":" + f.expectedAwayGoals, (int) Math.round(f.confidence * 100),
-                    f.reasoning, f.verdict == Verdict.ACCEPTED ? "angenommen" : "Einwand bleibt", f.verdict == Verdict.ACCEPTED ? "accepted" : "objection",
-                    f.verdictReason, f.revised, f.objectionRemains,
+                    AiText.forDisplay(f.reasoning), f.verdict == Verdict.ACCEPTED ? "angenommen" : "Einwand bleibt", f.verdict == Verdict.ACCEPTED ? "accepted" : "objection",
+                    AiText.forDisplay(f.verdictReason), f.revised, f.objectionRemains,
                     f.assessments.stream().sorted(java.util.Comparator.comparing(a -> a.kind.ordinal())).map(AssessmentView::of).toList(),
                     "Heimvorteil " + Math.round(f.homeAdvantage * 100) + " Prozentpunkte, Form über " + f.formMatches + " Spiele, Aufsteiger-Malus "
                             + Math.round(f.promotedTeamMalus * 100) + " Prozentpunkte",
                     f.modelName,
-                    f.retrospective == null ? List.of() : List.of(f.retrospective.strip().split("\n")),
+                    f.retrospective == null ? List.of() : java.util.Arrays.stream(f.retrospective.strip().split("\n")).map(AiText::listItem).toList(),
                     f.backtest, f.contrarian, null);
         }
 

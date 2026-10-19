@@ -45,7 +45,9 @@ Sicherheit und sichtbarem Zustandekommen.
 ## Ergebnis einer Prognose
 
 - Tendenz mit Wahrscheinlichkeit für Heimsieg, Unentschieden, Auswärtssieg
-- Erwarteter Torverlauf als Richtwert
+- Erwarteter Torverlauf als Richtwert: das wahrscheinlichste Ergebnis *innerhalb*
+  der Tendenz — eine Prognose mit Tendenz Heimsieg nennt nie ein Unentschieden als
+  Richtwert, auch wenn ein einzelnes Remis-Ergebnis für sich wahrscheinlicher wäre.
 - Sicherheitsgrad
 - Kurzbegründung in verständlicher Sprache
 - Die drei Einzelbewertungen, einzeln einsehbar

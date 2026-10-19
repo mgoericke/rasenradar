@@ -18,15 +18,35 @@ class PoissonScoreModelTest {
     private final PoissonScoreModel model = new PoissonScoreModel();
 
     @Test
-    void withoutAnyMatchPlayedItFallsBackToTheLeagueBaseRatesAndAOneOneScoreline() {
+    void withoutAnyMatchPlayedItFallsBackToTheLeagueBaseRatesAndAHomeWinScoreline() {
         ScoreDistribution f = model.forecast(NONE, NONE);
 
         assertEquals(1.0, f.homeWin() + f.draw() + f.awayWin(), 1e-9);
         assertTrue(f.homeWin() > 0.40 && f.homeWin() < 0.50, "home " + f.homeWin());
         assertTrue(f.draw() > 0.22 && f.draw() < 0.30, "draw " + f.draw());
+        // home win is the likeliest tendency, so the guide scoreline is a home win — not the single
+        // most likely 1:1 (spec 02, "Richtwert")
+        assertTrue(f.homeGoals() > f.awayGoals(), "guide " + f.homeGoals() + ":" + f.awayGoals() + " must be a home win");
+        assertTrue(f.scoreProbability() > 0.06 && f.scoreProbability() < 0.13, "score probability " + f.scoreProbability());
+    }
+
+    @Test
+    void theGuideScorelineAlwaysAgreesWithTheTendency() {
+        // 1.4 : 1.1 expected goals — 1:1 is the single most likely scoreline, yet home wins add up to 44 %
+        ScoreDistribution f = model.fromExpectedGoals(1.4, 1.1);
+
+        assertTrue(f.homeWin() > f.draw() && f.homeWin() > f.awayWin(), "home win is the tendency");
+        assertTrue(f.homeGoals() > f.awayGoals(), "guide " + f.homeGoals() + ":" + f.awayGoals() + " must be a home win");
         assertEquals(1, f.homeGoals());
-        assertEquals(1, f.awayGoals());
-        assertTrue(f.scoreProbability() > 0.10 && f.scoreProbability() < 0.13, "score probability " + f.scoreProbability());
+        assertEquals(0, f.awayGoals());
+    }
+
+    @Test
+    void aDrawTendencyKeepsADrawScoreline() {
+        ScoreDistribution f = model.fromExpectedGoals(0.6, 0.6);
+
+        assertTrue(f.draw() > f.homeWin() && f.draw() > f.awayWin(), "draw is the tendency");
+        assertEquals(f.homeGoals(), f.awayGoals());
     }
 
     @Test

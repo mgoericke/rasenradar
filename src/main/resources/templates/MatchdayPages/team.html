@@ -14,14 +14,14 @@
       <p class="club-standing {page.zone}">
         {#if page.hasTable}
         {#if page.position}<span class="place">Platz {page.position}</span> mit {page.total.points} Punkten aus {page.total.played} Spielen
-        · {page.total.wins} Siege, {page.total.draws} Unentschieden, {page.total.losses} Niederlagen · Tore {page.total.goals}
+        · {page.total.wins} {#if page.total.wins == 1}Sieg{#else}Siege{/if}, {page.total.draws} Unentschieden, {page.total.losses} {#if page.total.losses == 1}Niederlage{#else}Niederlagen{/if} · Tore {page.total.goals}
         {#else}Noch ohne Spiel in dieser Saison.{/if}
         {#if page.standingsProvisional}<span class="muted">(enthält vorläufige Ergebnisse)</span>{/if}
         {#else}
         {! Spec 06: im K.-o.-Wettbewerb gibt es keine Tabelle — stattdessen Spielklasse und Ausgang !}
         {#if page.tier}<span class="tier">{page.tier}</span>{/if}
         {#if page.cupRunOutcome}<span class="place">{page.cupRunOutcome}</span>{/if}
-        {#if page.total.played}· {page.total.wins} Siege, {page.total.draws} Unentschieden, {page.total.losses} Niederlagen · Tore {page.total.goals}{/if}
+        {#if page.total.played}· {page.total.wins} {#if page.total.wins == 1}Sieg{#else}Siege{/if}, {page.total.draws} Unentschieden, {page.total.losses} {#if page.total.losses == 1}Niederlage{#else}Niederlagen{/if} · Tore {page.total.goals}{/if}
         {/if}
       </p>
       {#if page.otherSeasons}
