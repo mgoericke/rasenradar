@@ -33,17 +33,27 @@ public class PoissonScoreModel {
 
     /** Same grid, from expected goals already adjusted by the caller (e.g. the forecast agent's read). */
     public ScoreDistribution fromExpectedGoals(double expectedHome, double expectedAway) {
+        double[][] grid = new double[MAX_GOALS + 1][MAX_GOALS + 1];
         double homeWin = 0, draw = 0, awayWin = 0;
+        for (int h = 0; h <= MAX_GOALS; h++) {
+            for (int a = 0; a <= MAX_GOALS; a++) {
+                double p = poisson(expectedHome, h) * poisson(expectedAway, a);
+                grid[h][a] = p;
+                if (h > a) homeWin += p;
+                else if (h == a) draw += p;
+                else awayWin += p;
+            }
+        }
+        // spec 02: the guide scoreline is the most likely one *within* the tendency — a single draw
+        // scoreline (1:1) can outweigh every single home-win scoreline while home wins together
+        // are still the likeliest outcome; showing 1:1 next to a home-win tendency reads as a contradiction
+        int sign = homeWin >= draw && homeWin >= awayWin ? 1 : awayWin >= draw ? -1 : 0;
         int bestHome = 0, bestAway = 0;
         double bestP = -1;
         for (int h = 0; h <= MAX_GOALS; h++) {
             for (int a = 0; a <= MAX_GOALS; a++) {
-                double p = poisson(expectedHome, h) * poisson(expectedAway, a);
-                if (h > a) homeWin += p;
-                else if (h == a) draw += p;
-                else awayWin += p;
-                if (p > bestP) {
-                    bestP = p;
+                if (Integer.signum(h - a) == sign && grid[h][a] > bestP) {
+                    bestP = grid[h][a];
                     bestHome = h;
                     bestAway = a;
                 }
