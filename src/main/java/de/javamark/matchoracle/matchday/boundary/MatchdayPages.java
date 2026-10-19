@@ -5,10 +5,13 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveScoresFragment;
-import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagueSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
-import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Spotlight;
-import de.javamark.matchoracle.matchday.control.SpotlightSelector;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeague;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
+import de.javamark.matchoracle.matchday.control.MatchdayStream;
+import de.javamark.matchoracle.matchday.control.MatchdayStream.StreamDay;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
@@ -118,65 +121,52 @@ public class MatchdayPages {
     @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
     Duration liveWindow;
 
-    /** Landing page: current matchday of both Bundesligas in short form, so a first visit shows both leagues. */
+    /** Landing page, spec 01 "Spieltags-Strom": both Bundesligas as one stream by day and kickoff block. */
     @GET
     public TemplateInstance home() {
         Instant now = Instant.now();
-        List<LandingLeagueSection> sections = new ArrayList<>();
-        List<Match> candidates = new ArrayList<>();
+        List<LandingLeague> leagues = new ArrayList<>();
+        List<Match> shown = new ArrayList<>();
+        List<Match> next = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
             Matchday.findDisplayed(l, now).ifPresent(matchday -> {
-                String shortcut = matchday.league.sourceShortcut();
                 List<Match> matches = Match.findByMatchday(matchday);
-                sections.add(landingSection(matchday, matches, shortcut, now));
-                candidates.addAll(spotlightCandidates(matchday));
+                shown.addAll(matches);
+                leagues.add(landingLeague(matchday));
+                if (MatchdayStream.showsNext(matches)) {
+                    Matchday.find(matchday.league, matchday.season, matchday.number + 1)
+                            .ifPresent(md -> next.addAll(Match.findByMatchday(md)));
+                }
             });
         }
-        Spotlight spotlight = SpotlightSelector.select(candidates, now, liveWindow)
-                .map(s -> spotlight(s, now)).orElse(null);
-        return Templates.home(new LandingPage(Nav.page("home"), spotlight, sections, MatchdayPageModels.LEADERBOARD_LINK));
+        List<StreamDay> days = MatchdayStream.of(shown);
+        List<StreamDayView> dayViews = streamViews(days, now);
+        List<StreamDayView> nextViews = streamViews(MatchdayStream.of(next), now);
+        String range = days.isEmpty() ? null : MatchdayPageModels.dateRange(days.getFirst().date(), days.getLast().date());
+        int live = (int) shown.stream().filter(m -> m.isLive(now, liveWindow)).count();
+        return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
+                MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
+                MatchdayPageModels.LEADERBOARD_LINK));
     }
 
-    /**
-     * The displayed matchday plus its neighbours: a match can still be running in the previous
-     * matchday, and the next block can lie in the following one (Sunday evening).
-     */
-    private static List<Match> spotlightCandidates(Matchday displayed) {
-        List<Match> matches = new ArrayList<>();
-        for (int number = displayed.number - 1; number <= displayed.number + 1; number++) {
-            Matchday.find(displayed.league, displayed.season, number).ifPresent(md -> matches.addAll(Match.findByMatchday(md)));
-        }
-        return matches;
-    }
-
-    private Spotlight spotlight(SpotlightSelector.Selection s, Instant now) {
-        List<MatchRow> rows = s.matches().stream()
-                .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.matchday.league.ordinal()))
-                .map(m -> MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow))
+    private List<StreamDayView> streamViews(List<StreamDay> days, Instant now) {
+        return days.stream().map(d -> new StreamDayView(
+                MatchdayPageModels.dayLabel(d.slots().getFirst().kickoff()),
+                d.slots().stream().map(slot -> new StreamSlot(MatchdayPageModels.time(slot.kickoff()),
+                        String.valueOf(slot.kickoff().getEpochSecond()),
+                        slot.matches().stream().map(m -> new StreamRow(m.matchday.league.sourceShortcut(),
+                                MatchdayPageModels.badge(m.matchday.league),
+                                MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow))).toList())).toList()))
                 .toList();
-        return Spotlight.of(s.phase(), s.kickoff(), rows);
     }
 
-    private static final int LANDING_TABLE_ROWS = 6;
-
-    private LandingLeagueSection landingSection(Matchday matchday, List<Match> matches, String shortcut, Instant now) {
-        matches = new ArrayList<>(matches);
-        matches.sort((a, b) -> a.kickoff.compareTo(b.kickoff));
-
-        Map<String, List<MatchRow>> byDay = new LinkedHashMap<>();
-        for (Match m : matches) {
-            byDay.computeIfAbsent(MatchdayPageModels.dayLabel(m.kickoff), k -> new ArrayList<>()).add(MatchRow.of(m, shortcut, now, liveWindow));
-        }
-        List<DayGroup> days = byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
-
+    private LandingLeague landingLeague(Matchday matchday) {
         Standings standings = standingsCalculator.standingsBefore(matchday.league, matchday.season, matchday.number + 1);
-        List<StandingRow> tableTop = standings.positions().stream()
-                .limit(LANDING_TABLE_ROWS).map(p -> StandingRow.of(p, matchday.league)).toList();
-
-        String base = "/" + shortcut + "/" + matchday.season + "/" + matchday.number;
-        return new LandingLeagueSection(MatchdayPageModels.badge(matchday.league), MatchdayPageModels.leagueName(matchday.league),
-                "/" + shortcut, base + "/forecasts", base + "/forecasts/markers", matchday.number, days,
-                tableTop, standings.includesProvisional());
+        String shortcut = matchday.league.sourceShortcut();
+        return new LandingLeague(shortcut, MatchdayPageModels.badge(matchday.league), MatchdayPageModels.leagueName(matchday.league),
+                matchday.number, "/" + shortcut,
+                standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(),
+                standings.includesProvisional());
     }
 
     /**

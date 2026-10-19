@@ -1,0 +1,28 @@
+{! One day of the landing page stream: its kickoff blocks, each match with a KI cell beside the link. !}
+<div class="stream-day">
+  <h3 class="stream-day-label">{d.label}</h3>
+  {#for s in d.slots}
+  <section class="stream-slot" aria-label="Anstoß {s.time} Uhr">
+    <div class="stream-slot-head"><span>{s.time} Uhr</span><span id="slot-ki-{s.key}" class="slot-ki"></span></div>
+    <ol class="stream-rows">
+      {#for r in s.rows}
+      <li class="stream-row lg-{r.league}{#if r.match.played} is-played{#else if r.match.live} is-live{#else} is-open{/if}">
+        <a class="fixture" href="{r.match.link}">
+          <span class="badge" title="{#if r.league == 'bl1'}1. Bundesliga{#else}2. Bundesliga{/if}">{r.badge}</span>
+          <span class="home">
+            <span class="team-name">{r.match.homeShort}</span>
+            {#if r.match.homeIcon}<img class="crest" src="{r.match.homeIcon}" alt="" loading="lazy">{/if}
+          </span>
+          {#score m=r.match /}
+          <span class="away">
+            {#if r.match.awayIcon}<img class="crest" src="{r.match.awayIcon}" alt="" loading="lazy">{/if}
+            <span class="team-name">{r.match.awayShort}</span>
+          </span>
+        </a>
+        <span id="ki-{r.match.id}" class="stream-ki is-pending"></span>
+      </li>
+      {/for}
+    </ol>
+  </section>
+  {/for}
+</div>

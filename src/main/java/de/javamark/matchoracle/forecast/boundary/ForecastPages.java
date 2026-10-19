@@ -58,7 +58,7 @@ public class ForecastPages {
         static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
-        static native TemplateInstance spotlightForecasts(List<SpotlightForecastView> rows);
+        static native TemplateInstance streamForecasts(List<StreamCell> cells, List<SlotSummary> slots);
     }
 
     @Inject
@@ -212,18 +212,41 @@ public class ForecastPages {
      * The match page belongs to the matchday feature and composes this on the HTML level, so it stays unaware of forecasts.
      */
     /**
-     * Spec 01, "Blickfang der Startseite": the KI-Vorschau cell of one spotlight row — the guide value
-     * of the last forecast before kickoff, or null without one.
+     * Spec 01, "Spieltags-Strom": the KI cell of one stream row — the guide value of the last forecast
+     * before kickoff, its tendency before the final whistle, afterwards whether that tendency was right.
+     * Display only; the Rückschau has its own evaluation (spec 03).
      */
-    record SpotlightForecastView(long matchId, String expectedScore, String tendency, int probabilityPercent) {
-        static SpotlightForecastView of(long matchId, Optional<Forecast> forecast) {
-            return forecast.map(MarkerView::of)
-                    .map(m -> new SpotlightForecastView(matchId, m.expectedScore(), m.tendency(), m.probabilityPercent()))
-                    .orElse(new SpotlightForecastView(matchId, null, null, 0));
+    record StreamCell(long matchId, String expectedScore, String tendency, int probabilityPercent,
+                      Boolean hit, boolean exact, boolean provisional) {
+        static StreamCell of(long matchId, Optional<Forecast> forecast, MatchdayFacade.MatchScore score) {
+            if (forecast.isEmpty()) {
+                return new StreamCell(matchId, null, null, 0, null, false, false);
+            }
+            Forecast f = forecast.get();
+            MarkerView m = MarkerView.of(f);
+            Boolean hit = score == null ? null : f.tendency() == Outcome.of(score.homeGoals(), score.awayGoals());
+            boolean exact = score != null && f.expectedHomeGoals == score.homeGoals() && f.expectedAwayGoals == score.awayGoals();
+            return new StreamCell(matchId, m.expectedScore(), m.tendency(), m.probabilityPercent(), hit, exact,
+                    score != null && score.provisional());
         }
 
         public boolean missing() {
             return expectedScore == null;
+        }
+    }
+
+    /** Spec 01: "KI 2 von 3 getroffen" for one kickoff block — only played matches that had a forecast count. */
+    record SlotSummary(String key, int hits, int judged, boolean provisional) {
+        static List<SlotSummary> of(List<Forecast> forecasts, List<StreamCell> cells) {
+            Map<Long, StreamCell> byMatch = cells.stream().collect(Collectors.toMap(StreamCell::matchId, Function.identity()));
+            return forecasts.stream().collect(Collectors.groupingBy(f -> f.kickoff, java.util.TreeMap::new, Collectors.toList()))
+                    .entrySet().stream().map(e -> {
+                        List<StreamCell> judged = e.getValue().stream().map(f -> byMatch.get(f.matchId))
+                                .filter(c -> c != null && c.hit() != null).toList();
+                        return new SlotSummary(String.valueOf(e.getKey().getEpochSecond()),
+                                (int) judged.stream().filter(StreamCell::hit).count(), judged.size(),
+                                judged.stream().anyMatch(StreamCell::provisional));
+                    }).toList();
         }
     }
 
@@ -237,22 +260,28 @@ public class ForecastPages {
     }
 
     /**
-     * Fragment for the landing page's spotlight (loaded by htmx): one out-of-band KI-Vorschau cell per row.
-     * Opened directly, the bare cells would arrive without layout — anything but htmx goes to the landing page.
+     * Fragment for the landing page's stream (loaded by htmx): one out-of-band KI cell per match and one
+     * summary per kickoff block. Opened directly, the bare cells would arrive without layout — anything
+     * but htmx goes to the landing page.
      */
     @GET
-    @Path("/blickfang/ki-vorschau")
-    public Response spotlightFragment(@QueryParam("match") List<Long> matchIds, @HeaderParam("HX-Request") String htmxRequest) {
+    @Path("/strom/ki-vorschau")
+    public Response streamFragment(@QueryParam("match") List<Long> matchIds, @HeaderParam("HX-Request") String htmxRequest) {
         if (htmxRequest == null) {
             return Response.seeOther(URI.create("/")).build();
         }
-        return Response.ok(Templates.spotlightForecasts(matchIds.stream().limit(MAX_SPOTLIGHT_ROWS)
-                .map(id -> SpotlightForecastView.of(id, Forecast.latestBeforeKickoff(Forecast.findByMatch(id))))
-                .toList())).build();
+        List<Long> ids = matchIds.stream().distinct().limit(MAX_STREAM_ROWS).toList();
+        Map<Long, MatchdayFacade.MatchScore> scores = matchday.scoresOf(ids);
+        List<Forecast> forecasts = ids.stream().map(id -> Forecast.latestBeforeKickoff(Forecast.findByMatch(id)))
+                .flatMap(Optional::stream).toList();
+        Map<Long, Forecast> byMatch = forecasts.stream().collect(Collectors.toMap(f -> f.matchId, Function.identity()));
+        List<StreamCell> cells = ids.stream()
+                .map(id -> StreamCell.of(id, Optional.ofNullable(byMatch.get(id)), scores.get(id))).toList();
+        return Response.ok(Templates.streamForecasts(cells, SlotSummary.of(forecasts, cells))).build();
     }
 
-    /** Both Bundesligas together never have more matches in one block; caps what a crafted URL can ask for. */
-    private static final int MAX_SPOTLIGHT_ROWS = 18;
+    /** Two matchdays of both Bundesligas; caps what a crafted URL can ask for. */
+    private static final int MAX_STREAM_ROWS = 40;
 
     /** Fragment for the matchday page (loaded by htmx): out-of-band markers for every match that already has a forecast. */
     @GET
