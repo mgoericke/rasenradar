@@ -123,6 +123,13 @@ Regeln:
 - **Radio-Umschalter ohne Skript** (Ansicht auf dem Telefon, Tabellen-Tabs): versteckte, aber
   fokussierbare Radio-Buttons mit Label, sichtbarer Zustand über `:checked` und den
   `~`-Geschwister-Selektor — native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters.
+- **Spielseite: Urteil in der Anzeigetafel** (`.board-ai`, `.board-verdict`): unter dem Ergebnis
+  eine KI-Zeile auf der Bühne — Richtwert und Tendenz links, Wahrscheinlichkeitsbalken mit
+  Beschriftung in der Mitte, nach Abpfiff rechts das Urteil als Messing-Pille (gefüllt =
+  getroffen, Umriss = daneben). Darunter links die Begründung offen (drei Bewerter als Karten,
+  Prognostiker und Prüfer in einer Karte), dann Form und Duelle; rechts die Tabelle vor dem
+  Spieltag (`.match-rail`), die beiden Mannschaften der Begegnung auf `--zone` hervorgehoben.
+  K.-o.-Spiele haben keine Tabelle und damit keine rechte Spalte.
 
 ## Sprache im UI
 

@@ -323,6 +323,7 @@ public class MatchdayPages {
                 h2h.matches().stream().map(v -> ResultRow.of(v, shortcut)).toList(),
                 BalanceRow.of("Bilanz", h2h.balance()), h2h.includesProvisional(),
                 positionChart(matchday, match.homeTeam, match.awayTeam),
+                standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), standings.includesProvisional(),
                 DataInfo.of(matchday, Instant.now()));
     }
 

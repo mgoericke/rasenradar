@@ -12,6 +12,7 @@ class AiTextTest {
     void breakMarkupDoesNotReachTheReader() {
         assertEquals("Dortmund ist makellos in Form.", AiText.forDisplay("Dortmund ist makellos in Form.</br>"));
         assertEquals("Erster Satz. Zweiter Satz.", AiText.forDisplay("Erster Satz.<br/>Zweiter Satz."));
+        assertEquals("Die Tendenz geht zum Heimspiel.", AiText.forDisplay("Die Tendenz geht zum Heimspiel. </summary>"));
     }
 
     @Test

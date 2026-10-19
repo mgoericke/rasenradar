@@ -1,10 +1,39 @@
+{! The KI part of the match page's scoreboard: guide score, tendency and, once played, the verdict.
+   The reasoning (three assessors, forecaster, reviewer) goes out of band into the page body. !}
 {#if fragment.forecast}
-{#let f=fragment.forecast}
-<span class="mini-bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
-  <span class="home" style="flex-basis: {f.homeWin}%"></span><span class="draw" style="flex-basis: {f.draw}%"></span><span class="away" style="flex-basis: {f.awayWin}%"></span>
-</span>
-<span class="summary-figures">Ergebnis <strong>{f.expectedScore}</strong> · <span class="tendency-small {f.tendencyClass}">Tendenz {f.tendency}</span> · Sicherheit <strong>{f.confidencePercent} %</strong></span>
-<a class="link-button ai" href="{fragment.forecastLink}">KI-Vorschau ansehen</a>
+{#let f=fragment.forecast v=fragment.verdict}
+<div class="board-ai">
+  <p class="board-ai-label">KI vor dem Anstoß · {f.createdAt}<strong><span class="sr-only">Richtwert </span>{f.expectedScore} · {f.tendency}</strong></p>
+  <div class="board-ai-odds">
+    <span class="mini-bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
+      <span class="home" style="flex-basis: {f.homeWin}%"></span><span class="draw" style="flex-basis: {f.draw}%"></span><span class="away" style="flex-basis: {f.awayWin}%"></span>
+    </span>
+    <span class="board-ai-legend" aria-hidden="true"><span>Heim {f.homeWin} %</span><span>Remis {f.draw} %</span><span>Auswärts {f.awayWin} %</span></span>
+  </div>
+  {#if v.hit != null}
+  <p class="board-verdict{#if v.hit} is-hit{/if}">{#if v.exact}Exakt getroffen{#else if v.hit}Tendenz getroffen{#else}Daneben{/if}{#if v.provisional} · vorläufig{/if}</p>
+  {/if}
+</div>
+<a class="link-button ai" href="{fragment.forecastLink}">Ganze KI-Vorschau mit Rückschau</a>
+
+<section id="ki-reasoning" hx-swap-oob="true" class="ki-reasoning" aria-labelledby="ki-reasoning-title">
+  <h2 id="ki-reasoning-title">So kam die KI zu ihrer Einschätzung</h2>
+  <p class="section-sub">Drei Bewerter schauen unabhängig auf die Begegnung, ein Prognostiker fasst zusammen, ein Prüfer kann einmal widersprechen.</p>
+  <div class="assessments">
+    {#for a in f.assessments}
+    <section class="assessment {#if a.failed}is-failed{/if}">
+      <h3>{a.title}</h3>
+      <p class="assessment-lean"><span class="lean {a.leanClass}">{a.lean}</span>{#if a.confidencePercent} <span class="muted">Sicherheit {a.confidencePercent} %</span>{/if}</p>
+      <p>{a.summary}</p>
+    </section>
+    {/for}
+  </div>
+  <div class="ki-forecaster">
+    <h3>Prognostiker</h3>
+    <p>{f.reasoning}</p>
+    <p class="ki-reviewer review-{f.verdictClass}"><strong>Prüfer: {f.verdict}{#if f.revised}, nach einer Überarbeitung{/if}.</strong> {f.verdictReason}</p>
+  </div>
+</section>
 {/let}
 {#else if fragment.running}
 <span class="muted">KI-Vorschau wird gerade erstellt …</span>
