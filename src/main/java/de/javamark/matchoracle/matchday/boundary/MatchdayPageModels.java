@@ -417,9 +417,14 @@ public final class MatchdayPageModels {
     record MatchPage(Nav nav, String season, int number, String matchdayLink, String forecastLink, String day, MatchRow match,
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
                      List<ResultRow> headToHead, BalanceRow headToHeadBalance, boolean headToHeadProvisional,
-                     String chartJson, DataInfo data) {
+                     String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data) {
         public List<TeamSituation> teams() {
             return List.of(homeTeam, awayTeam);
+        }
+
+        /** The rail's table marks the two clubs of this match. */
+        public boolean playsHere(StandingRow row) {
+            return row.teamLink().equals(homeTeam.link()) || row.teamLink().equals(awayTeam.link());
         }
 
         /** The match page also refreshes the half-time line and the goals while the match runs. */

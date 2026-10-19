@@ -140,8 +140,12 @@ public class ForecastPages {
     record HowItWorksPage(Nav nav) {
     }
 
-    /** Embedded on the match page: the latest forecast in one line, or the way to create one. */
-    record SummaryFragment(String forecastLink, boolean played, boolean running, ForecastView forecast) {
+    /**
+     * Embedded in the match page's scoreboard: the latest forecast with its verdict once the match is
+     * played, or the way to create one. The assessors' reasoning travels along out of band into the
+     * page body, so the match page only knows this fragment's URL.
+     */
+    record SummaryFragment(String forecastLink, boolean played, boolean running, ForecastView forecast, StreamCell verdict) {
     }
 
     /**
@@ -255,8 +259,10 @@ public class ForecastPages {
     public TemplateInstance summaryFragment(@PathParam("league") String league, @PathParam("id") long matchId,
                                             @QueryParam("played") @DefaultValue("false") boolean played) {
         String link = "/" + league(league) + "/matches/" + matchId + "/forecast";
-        ForecastView latest = Forecast.findLatestByMatch(matchId).map(ForecastView::of).orElse(null);
-        return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest));
+        Optional<Forecast> forecast = Forecast.findLatestByMatch(matchId);
+        ForecastView latest = forecast.map(ForecastView::of).orElse(null);
+        StreamCell verdict = StreamCell.of(matchId, forecast, matchday.scoresOf(List.of(matchId)).get(matchId));
+        return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest, verdict));
     }
 
     /**

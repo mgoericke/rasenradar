@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 final class AiText {
 
     private static final Pattern BREAK = Pattern.compile("(?i)\\s*</?br\\s*/?>\\s*");
+    /** Any other tag the model leaks, e.g. a stray {@code </summary>} — Qute escapes it, so it would show as text. */
+    private static final Pattern TAG = Pattern.compile("</?[a-zA-Z][a-zA-Z0-9]*\\s*/?>");
     private static final Pattern BULLET = Pattern.compile("^\\s*[-*•]\\s+");
 
     private AiText() {
@@ -20,6 +22,7 @@ final class AiText {
             return null;
         }
         String t = BREAK.matcher(text).replaceAll(" ");
+        t = TAG.matcher(t).replaceAll("");
         t = t.replaceAll("\\bHOME_WIN\\b", "Heimsieg")
                 .replaceAll("\\bAWAY_WIN\\b", "Auswärtssieg")
                 .replaceAll("\\bDRAW\\b", "Unentschieden")

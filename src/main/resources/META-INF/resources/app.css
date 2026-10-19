@@ -169,7 +169,7 @@ h2 { font-size: 1.1rem; }
 .note { color: var(--ink-mute); font-size: .85rem; margin: .75rem 0 0; }
 
 /* match page */
-.match { grid-column: 1 / -1; max-width: 960px; }
+.match { grid-column: 1 / -1; }
 .breadcrumb { color: var(--ink-soft); margin: 0 0 1rem; }
 .breadcrumb a { border-bottom: 1px solid var(--line); }
 /* the scoreboard is the dark stage of the match page: floodlight, white crests, brass way to the forecast */
@@ -190,6 +190,18 @@ h2 { font-size: 1.1rem; }
   .scoreboard .score { justify-self: center; }
 }
 .scoreboard .forecast-summary { border-top: 1px solid var(--stage-line); margin-top: 1.2rem; padding-top: 1rem; }
+/* the KI line of the scoreboard: guide score left, odds bar in the middle, verdict right */
+.board-ai { flex: 1 1 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem 1.4rem; align-items: center; text-align: left; }
+.board-ai-label { margin: 0; font-size: .85rem; color: var(--stage-soft); }
+.board-ai-label strong { display: block; font: 700 1.45rem var(--display); color: #fff; letter-spacing: -0.02em; }
+.scoreboard .board-ai .mini-bars { display: flex; width: auto; height: .6rem; border-radius: 999px; }
+.board-ai-legend { display: flex; justify-content: space-between; gap: .6rem; margin-top: .35rem; font-size: .8rem; color: var(--stage-soft); }
+.board-verdict { margin: 0; font-weight: 600; white-space: nowrap; border: 1.5px solid var(--accent); color: var(--accent); border-radius: 999px; padding: .3rem .85rem; }
+.board-verdict.is-hit { background: var(--accent); color: var(--stage); }
+@media (max-width: 720px) {
+  .board-ai { grid-template-columns: minmax(0, 1fr); text-align: center; }
+  .board-verdict { justify-self: center; }
+}
 .scoreboard .forecast-summary .summary-figures { color: var(--stage-soft); }
 .scoreboard .forecast-summary .summary-figures strong { color: #fff; }
 .scoreboard .mini-bars .home { background: #fff; }
@@ -214,6 +226,23 @@ h2 { font-size: 1.1rem; }
 .goals .minute { color: var(--ink-mute); font-size: .85rem; }
 .goals .scorer em { font-style: normal; color: var(--ink-mute); }
 
+/* below the scoreboard: KI reasoning, form and duels on the left, the table on the right */
+.match-layout { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 2.2rem; align-items: start; margin-top: 2rem; }
+.match-rail { position: sticky; top: 7.6rem; }
+@media (max-width: 1000px) {
+  .match-layout { grid-template-columns: minmax(0, 1fr); }
+  .match-rail { position: static; }
+}
+.stream-table tr.is-match-team td { background: var(--zone); font-weight: 600; }
+.ki-reasoning h2 { font-size: 1.25rem; margin-bottom: .3rem; }
+.ki-reasoning .section-sub { color: var(--ink-soft); font-size: .92rem; margin: 0 0 1rem; max-width: 62ch; }
+.ki-reasoning .assessment { background: var(--surface); border: 1px solid var(--line); }
+.ki-forecaster { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; margin-top: 1rem; }
+.ki-forecaster h3 { font-size: 1rem; margin-bottom: .4rem; }
+.ki-forecaster p { margin: 0; max-width: 66ch; }
+.ki-reviewer { margin-top: .9rem !important; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .92rem; color: var(--ink-soft); }
+.ki-reviewer strong { color: var(--ink); }
+.ki-reasoning[hidden] + .situations { margin-top: 0; }
 .situations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
 @media (max-width: 700px) { .situations { grid-template-columns: 1fr; } }
 .situation { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
@@ -469,7 +498,7 @@ h2 { font-size: 1.1rem; }
 @media (max-width: 800px) { .assessments { grid-template-columns: 1fr; } }
 .assessment { background: var(--ground); border-radius: 10px; padding: 1rem 1.1rem; font-size: .92rem; }
 .assessment.is-failed { border: 1px dashed var(--loss); }
-.assessment h2 { font-size: 1rem; margin-bottom: .3rem; }
+.assessment h2, .assessment h3 { font-size: 1rem; margin-bottom: .3rem; }
 .assessment-lean { margin: 0 0 .5rem; }
 .lean { font-weight: 600; }
 .lean.home_win { color: var(--ink); }
