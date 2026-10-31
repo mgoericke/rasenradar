@@ -13,6 +13,7 @@ import de.javamark.matchoracle.matchday.entity.PlacementGoal;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Scorer;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
+import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
 import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import de.javamark.matchoracle.matchday.entity.TeamResult;
@@ -393,6 +394,30 @@ public final class MatchdayPageModels {
                          List<StandingRow> table, boolean tableProvisional) {
     }
 
+    /**
+     * Story r044: a played match for the card "Seit dem letzten Besuch". The browser compares
+     * {@code endsAt} (kickoff plus the usual length of a match, epoch seconds) with the visit it
+     * remembers — the visit itself never reaches the server.
+     */
+    record SinceRow(String badge, MatchRow match, long endsAt) {
+    }
+
+    /** Story r044: about when a match is over — 90 minutes, half time and stoppage time. */
+    static final Duration MATCH_LENGTH = Duration.ofMinutes(115);
+
+    /** Story r044: how far back the card can reach; an older visit sees the last two weeks. */
+    static final Duration SINCE_REACH = Duration.ofDays(14);
+
+    /** Story r044: the table of final results as "teamId:place:name;…" for the browser's comparison. */
+    static String finalPlaces(Standings standings) {
+        return standings.positions().stream()
+                .map(p -> {
+                    String name = p.team().shortName == null || p.team().shortName.isBlank() ? p.team().name : p.team().shortName;
+                    return p.team().id + ":" + p.position() + ":" + name.replace(";", ",").replace(":", " ");
+                })
+                .collect(java.util.stream.Collectors.joining(";"));
+    }
+
     /** A match in the stream, with the league it belongs to — the stream mixes both. */
     record StreamRow(String league, String badge, MatchRow match) {
     }
@@ -411,7 +436,8 @@ public final class MatchdayPageModels {
      * KI cells — matchday only knows their address, as with the leaderboard.
      */
     record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
-                       List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink) {
+                       List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink,
+                       List<SinceRow> recent, String finalPlaces) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())

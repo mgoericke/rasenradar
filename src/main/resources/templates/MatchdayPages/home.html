@@ -15,6 +15,34 @@
     <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.name}</b> {l.matchdayNumber}. Spieltag</a>{#if l_hasNext} · {/if}{/for}</p>
   </header>
 
+  {! story r044: the browser remembers the last visit and the final table of then (rr-visit) and
+     shows here what has been played since — before the first paint, so nothing below jumps.
+     Neither the visit nor the club ever reaches the server. !}
+  {#if page.recent}
+  <section class="since" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
+    <div class="since-head">
+      <h2 id="since-title">Seit dem letzten Besuch</h2>
+      <button type="button" class="link-button" data-since-close>Ausblenden</button>
+    </div>
+    <p class="since-move" hidden></p>
+    <ol class="since-results">
+      {#for r in page.recent}
+      <li data-end="{r.endsAt}" hidden>
+        <a href="{r.match.link}" data-clubs="{r.match.homeId} {r.match.awayId}">
+          <span class="badge">{r.badge}</span>
+          <span class="home">{r.match.homeShort} {#crest src=r.match.homeIcon lazy=true /}</span>
+          {#score m=r.match /}
+          <span class="away">{#crest src=r.match.awayIcon lazy=true /} {r.match.awayShort}</span>
+          {#if r.match.provisional}<span class="muted">vorläufig</span>{/if}
+        </a>
+      </li>
+      {/for}
+    </ol>
+    <p class="since-more muted" hidden></p>
+  </section>
+  <script src="/since.js?v={assetVersion}"></script>
+  {/if}
+
   <div class="stream-filters" role="toolbar" aria-label="Spiele filtern" hidden>
     <span class="seg" role="group" aria-label="Status">
       <button type="button" data-status="alle" aria-pressed="true">Alle</button>
