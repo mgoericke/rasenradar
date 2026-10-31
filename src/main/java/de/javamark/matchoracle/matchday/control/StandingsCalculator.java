@@ -72,6 +72,34 @@ public class StandingsCalculator {
         return new Standings(league, season, beforeMatchday, ranked(balances), provisional);
     }
 
+    /** Story r041: which matches a split table counts for each team. */
+    public enum Split { HOME, AWAY, LAST_FIVE }
+
+    /** Story r041: how many of its most recent matches "Letzte 5" counts per team. */
+    static final int LAST = 5;
+
+    /**
+     * Story r041: the table counted from home matches only, away matches only, or each team's last
+     * five — final results only, ranked like the full table (points, goal difference, goals).
+     * {@code played} must be in kickoff order.
+     */
+    public Standings splitStandings(League league, int season, int beforeMatchday, List<Match> played, Split split) {
+        Map<Team, List<TeamMatchView>> views = new LinkedHashMap<>();
+        for (Match match : played) {
+            if (match.resultStatus != ResultStatus.FINAL) continue;
+            if (split != Split.AWAY) views.computeIfAbsent(match.homeTeam, t -> new ArrayList<>()).add(match.viewedBy(match.homeTeam));
+            if (split != Split.HOME) views.computeIfAbsent(match.awayTeam, t -> new ArrayList<>()).add(match.viewedBy(match.awayTeam));
+        }
+        Map<Team, Balance> balances = new LinkedHashMap<>();
+        views.forEach((team, list) -> {
+            List<TeamMatchView> counted = split == Split.LAST_FIVE ? list.subList(Math.max(0, list.size() - LAST), list.size()) : list;
+            Balance b = Balance.EMPTY;
+            for (TeamMatchView v : counted) b = b.plus(v);
+            balances.put(team, b);
+        });
+        return new Standings(league, season, beforeMatchday, ranked(balances), false);
+    }
+
     private static List<StandingPosition> ranked(Map<Team, Balance> balances) {
         List<StandingPosition> positions = new ArrayList<>();
         int position = 1;

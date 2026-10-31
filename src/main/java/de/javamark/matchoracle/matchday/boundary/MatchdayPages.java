@@ -65,6 +65,7 @@ import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveTable;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SplitTable;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveRow;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
 import de.javamark.matchoracle.matchday.entity.TeamResult;
@@ -378,7 +379,30 @@ public class MatchdayPages {
                         matches.getFirst().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate(),
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
-                stakes(matchday, matches, now), liveTable(matchday, standings, matches, now));
+                stakes(matchday, matches, now), liveTable(matchday, standings, matches, now),
+                splitTables(matchday, playedSoFar));
+    }
+
+    /** Story r041: Heim, Auswärts and Letzte 5 beside the full table — final results only, no zones. */
+    private List<SplitTable> splitTables(Matchday matchday, List<Match> playedSoFar) {
+        if (!matchday.league.hasTable() || playedSoFar.isEmpty()) {
+            return List.of();
+        }
+        List<Match> ordered = playedSoFar.stream().sorted(java.util.Comparator.comparing((Match m) -> m.kickoff)).toList();
+        List<SplitTable> tables = new ArrayList<>();
+        for (var split : StandingsCalculator.Split.values()) {
+            Standings s = standingsCalculator.splitStandings(matchday.league, matchday.season, matchday.number + 1, ordered, split);
+            String key = switch (split) { case HOME -> "heim"; case AWAY -> "auswaerts"; case LAST_FIVE -> "letzte-5"; };
+            String label = switch (split) { case HOME -> "Heim"; case AWAY -> "Auswärts"; case LAST_FIVE -> "Letzte 5"; };
+            String note = switch (split) {
+                case HOME -> "Gezählt sind nur die Heimspiele jeder Mannschaft.";
+                case AWAY -> "Gezählt sind nur die Auswärtsspiele jeder Mannschaft.";
+                case LAST_FIVE -> "Gezählt sind die letzten fünf Spiele jeder Mannschaft, bei weniger Spielen entsprechend weniger.";
+            } + " Vorläufige Ergebnisse zählen nicht mit.";
+            tables.add(new SplitTable(key, label, note,
+                    s.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList()));
+        }
+        return List.copyOf(tables);
     }
 
     /**

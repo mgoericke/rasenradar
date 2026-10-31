@@ -68,7 +68,33 @@
   {/if}
   <div class="table-total">
   <h2>Tabelle <span class="muted">nach dem {page.number}. Spieltag</span></h2>
-  <table>
+  {#if page.splits}
+  {! story r041: Gesamt, Heim, Auswärts, Letzte 5 — radios in CSS, so "Gesamt" shows without script too !}
+  <input class="table-split-input sr-only" type="radio" name="table-split" id="table-split-gesamt" checked>
+  {#for t in page.splits}<input class="table-split-input sr-only" type="radio" name="table-split" id="table-split-{t.key}">{/for}
+  <div class="seg table-split-switch" role="group" aria-label="Gezählte Spiele">
+    <label for="table-split-gesamt">Gesamt</label>{#for t in page.splits}<label for="table-split-{t.key}">{t.label}</label>{/for}
+  </div>
+  {#for t in page.splits}
+  <div class="table-split table-split-{t.key}">
+    <table>
+      <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th class="wdl">S</th><th class="wdl">U</th><th class="wdl">N</th><th class="goals-for">Tore</th><th>Diff.</th><th>Pkt.</th></tr></thead>
+      <tbody>
+        {#for r in t.rows}
+        <tr data-clubs="{r.teamId}">
+          <td class="pos">{r.position}</td>
+          <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} <span class="name-long">{r.team}</span><span class="name-short">{r.teamShort}</span></a></td>
+          <td>{r.played}</td><td class="wdl">{r.wins}</td><td class="wdl">{r.draws}</td><td class="wdl">{r.losses}</td>
+          <td class="goals-for">{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+        </tr>
+        {/for}
+      </tbody>
+    </table>
+    <p class="note">{t.note}</p>
+  </div>
+  {/for}
+  {/if}
+  <table class="table-split-total">
     <thead>
       <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th class="wdl">S</th><th class="wdl">U</th><th class="wdl">N</th><th class="goals-for">Tore</th><th>Diff.</th><th>Pkt.</th><th class="form-cell">Form</th></tr>
     </thead>
