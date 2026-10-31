@@ -705,7 +705,7 @@ public final class MatchdayPageModels {
      */
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
-                      List<SpecialGoalCard> specialGoals) {
+                      List<SpecialGoalCard> specialGoals, ComebackView comebacks) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -867,6 +867,34 @@ public final class MatchdayPageModels {
             Team t = cc.team();
             return new SpecialGoalClub(t.id == null ? 0 : t.id, cc.rank(), shortOrName(t), MatchdayPageModels.crestLink(t),
                     MatchdayPageModels.teamLink(t, shortcut), cc.count());
+        }
+    }
+
+    /** Story r091: one row per club, the lead sentence on the biggest comeback and the basis. */
+    record ComebackView(int matches, int excluded, boolean any, String lead, String leadLink, List<ComebackRow> rows) {
+        static ComebackView of(de.javamark.matchoracle.matchday.control.ComebackCalculator.Comebacks c, String shortcut) {
+            int scale = Math.max(1, c.clubs().stream().mapToInt(r -> Math.max(r.won(), r.dropped())).max().orElse(1));
+            var rows = c.clubs().stream().map(r -> new ComebackRow(shortOrName(r.team()), MatchdayPageModels.crestLink(r.team()),
+                    MatchdayPageModels.teamLink(r.team(), shortcut), r.won(), r.dropped(),
+                    (int) Math.round(100.0 * r.won() / scale), (int) Math.round(100.0 * r.dropped() / scale))).toList();
+            String lead = null, link = null;
+            var b = c.biggest();
+            if (b != null) {
+                Match m = b.match();
+                lead = "Größte Aufholjagd: " + shortOrName(b.team()) + " lag " + b.deficit() + (b.deficit() == 1 ? " Tor" : " Tore")
+                        + " zurück und holte noch " + (b.won() ? "den Sieg" : "ein Unentschieden") + " – "
+                        + shortOrName(m.homeTeam) + " – " + shortOrName(m.awayTeam) + " " + m.fullTimeScore.home + ":" + m.fullTimeScore.away;
+                link = "/" + shortcut + "/matches/" + m.id;
+            }
+            boolean any = c.clubs().stream().anyMatch(r -> r.won() > 0);
+            return new ComebackView(c.matches(), c.excluded(), any, lead, link, rows);
+        }
+    }
+
+    record ComebackRow(String team, String icon, String teamLink, int won, int dropped, int wonWidth, int droppedWidth) {
+        /** "6 geholt, 0 verspielt" — what a screen reader hears per club. */
+        public String sentence() {
+            return won + " geholt, " + dropped + " verspielt";
         }
     }
 

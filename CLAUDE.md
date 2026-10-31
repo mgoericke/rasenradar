@@ -120,6 +120,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Saisonseite einer Bundesliga („Saison in Zahlen“: Auswertungen der ganzen Saison) | `SeasonPage` (in `matchday`, nicht `season`) |
 | Häufigste Ergebnisse (Raster der Endstände 0–4+) | `ScoreFrequency` / `ScoreFrequencyCalculator` |
 | Tore der besonderen Art (ab der 90., erste fünf Minuten, Elfmeter, Eigentore) | `SpecialGoals` / `SpecialGoalsCalculator` |
+| Aufholjagd (Punkte nach Rückstand geholt, nach Führung verspielt) | `Comeback` / `ComebackCalculator` |
 | Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 

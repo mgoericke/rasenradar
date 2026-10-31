@@ -482,7 +482,8 @@ public class MatchdayPages {
                 streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
                 MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut),
                 de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
-                        .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList()));
+                        .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
+                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut)));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {
