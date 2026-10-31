@@ -24,12 +24,12 @@
     <h2 class="day">Beobachtet</h2>
     <ol class="fixtures"></ol>
   </div>
-  <div data-watch-root data-watch-over="{page.over}">
+  <div data-watch-root data-watch-over="{page.over}"{#if page.current} data-places="{page.placesByTeam}"{/if}>
   {#for day in page.days}
   <h2 class="day">{day.label}</h2>
   <ol class="fixtures">
     {#for m in day.matches}
-    <li data-watch="{m.id}">
+    <li data-watch="{m.id}"{#if page.current && !m.played && !m.live} data-good-for="{m.homeId} {m.awayId}" data-home-name="{m.homeShort}" data-away-name="{m.awayShort}"{/if}>
       <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
         <span class="time"><span class="watch-day">{m.weekday} </span>{m.time}</span>
         <span class="home">
@@ -43,6 +43,7 @@
         </span>
         <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if m.provisional}<span class="print-note"> vorläufig</span>{/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
+      {#if page.current && !m.played && !m.live}<p class="good-for" hidden></p>{/if}
       {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
     </li>
     {/for}
