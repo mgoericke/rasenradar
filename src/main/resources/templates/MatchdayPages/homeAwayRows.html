@@ -1,0 +1,10 @@
+{! story r098: points per game at home (bar to the left) and away (bar to the right), numbers as text !}
+<ol class="home-away">
+  {#for r in rows}
+  <li>
+    <a class="team" href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}</a>
+    <span class="home-away-bar" aria-hidden="true"><span class="home"><span style="width: {r.homeWidth}%"></span></span><span class="away"><span style="width: {r.awayWidth}%"></span></span></span>
+    <span class="figures">{r.home} zu Hause · {r.away} auswärts</span>
+  </li>
+  {/for}
+</ol>

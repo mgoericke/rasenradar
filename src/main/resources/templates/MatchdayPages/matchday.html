@@ -11,6 +11,7 @@
       <a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a>
       {/if}
       <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
+      {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2'}<a class="link-button" href="/{page.nav.leagueShortcut}/saison">Saison in Zahlen</a>{/if}
       {#if page.days}<button type="button" class="link-button print-button" data-print>Bogen drucken</button>{/if}
     </p>
     <nav class="pager" aria-label="Spieltag wechseln">

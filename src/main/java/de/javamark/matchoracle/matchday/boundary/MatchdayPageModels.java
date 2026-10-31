@@ -699,6 +699,47 @@ public final class MatchdayPageModels {
     record LeagueScorersPage(Nav nav, String season, List<LeagueScorerRow> scorers, List<NavLeague> leagues) {
     }
 
+    /**
+     * The season page of a Bundesliga: figures of the whole season so far, from final results only.
+     * {@code basedOn} counts the final matches, {@code leagues} is the switch between the two Bundesligas.
+     */
+    record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage) {
+    }
+
+    /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
+    record HomeAdvantageView(int homeWinPercent, int drawPercent, int awayWinPercent, String lead,
+                             List<HomeAwayRow> strongestAtHome, List<HomeAwayRow> preferAway) {
+        static HomeAdvantageView of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.HomeAdvantage h, String shortcut) {
+            Double ratio = h.homeToAwayRatio();
+            String lead = ratio == null ? null
+                    : "Wer zu Hause spielt, gewinnt " + decimal(ratio) + "-mal so oft wie der Gast.";
+            return new HomeAdvantageView(h.homeWinPercent(), h.drawPercent(), h.awayWinPercent(), lead,
+                    h.strongestAtHome().stream().map(c -> HomeAwayRow.of(c, shortcut)).toList(),
+                    h.preferAway().stream().map(c -> HomeAwayRow.of(c, shortcut)).toList());
+        }
+    }
+
+    /** One club in a Heimvorteil list: points per game at home and away, bar widths in percent of 3 points. */
+    record HomeAwayRow(String team, String teamLink, String icon, String home, String away, int homeWidth, int awayWidth,
+                       int homeGames, int awayGames) {
+        static HomeAwayRow of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.ClubSplit c, String shortcut) {
+            Team t = c.team();
+            // one decimal reads best; when both round to the same figure, a second one shows the gap the order rests on
+            boolean same = decimal(c.homePerGame()).equals(decimal(c.awayPerGame()));
+            String home = same ? String.format(Locale.GERMAN, "%.2f", c.homePerGame()) : decimal(c.homePerGame());
+            String away = same ? String.format(Locale.GERMAN, "%.2f", c.awayPerGame()) : decimal(c.awayPerGame());
+            return new HomeAwayRow(t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName,
+                    MatchdayPageModels.teamLink(t, shortcut), MatchdayPageModels.crestLink(t), home, away,
+                    (int) Math.round(c.homePerGame() / 3 * 100), (int) Math.round(c.awayPerGame() / 3 * 100),
+                    c.homeGames(), c.awayGames());
+        }
+    }
+
+    /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
+    static String decimal(double value) {
+        return String.format(Locale.GERMAN, "%.1f", value);
+    }
+
     /** Story r014: how many places the league scorer list shows; everyone tied on the last place comes along. */
     static final int TOP_SCORER_PLACES = 10;
 
