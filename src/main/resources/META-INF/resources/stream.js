@@ -1,5 +1,6 @@
 // Spec 01, "Spieltags-Strom der Startseite": filter the stream by status (live, finished, upcoming)
-// and by league. Empty kickoff blocks and days disappear with their matches. Without this script
+// and by league. Empty kickoff blocks, days and stream parts ("Spieltag", "Nächster Spieltag")
+// disappear with their matches. Without this script
 // the filter bar stays hidden and every match shows — nothing depends on it.
 // The landing page arrives by hx-boost as often as by a full load, so this runs on every swap
 // but binds its click handler only once.
@@ -40,6 +41,10 @@
       empty.hidden = any;
       empty.classList.toggle('is-filtered', !any);
     }
+    // a part without a match left goes too — unless it carries the "nothing found" line
+    root.querySelectorAll('.stream-part:not([data-watch-block])').forEach(function (part) {
+      part.hidden = !part.querySelector('.stream-day:not([hidden])') && (any || !part.querySelector('.stream-empty'));
+    });
     root.querySelectorAll('[data-status]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.status === state.status)); });
     root.querySelectorAll('[data-league]').forEach(function (b) { b.setAttribute('aria-pressed', String(!state.hidden[b.dataset.league])); });
   }

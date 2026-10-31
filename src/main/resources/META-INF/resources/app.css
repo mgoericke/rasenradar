@@ -373,6 +373,7 @@ h2 { font-size: 1.35rem; }
 .top-stage .crest.large { width: 2.6rem; height: 2.6rem; }
 .top-stage-label, .top-stage-when { display: block; color: var(--turf-soft); }
 .top-stage-label b { color: var(--turf-ink); margin-right: .3rem; }
+.top-stage-reason { white-space: nowrap; }
 .top-stage-when { margin-top: .6rem; }
 @media (max-width: 560px) {
   .top-stage { padding: 1.2rem 1rem 1rem; }
@@ -588,7 +589,8 @@ h2 { font-size: 1.35rem; }
 .landing-layout { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 2.2rem; align-items: start; margin-top: 1.2rem; }
 
 /* the stream */
-.stream-part + .stream-part { margin-top: 2.6rem; }
+/* the space goes before a part only when one is shown above it — "Beobachtet" is often hidden */
+.stream-part:not([hidden]) ~ .stream-part { margin-top: 2.6rem; }
 .stream-title { font-size: 1.6rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .7rem; }
 .stream-title small { font: 400 .88rem var(--text); color: var(--ink-soft); }
 .stream-day-label { display: flex; align-items: center; gap: .8rem; font: 700 1.25rem var(--display); color: var(--ink); margin: 1.4rem 0 .5rem; }
