@@ -706,7 +706,7 @@ public final class MatchdayPageModels {
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
-                      ReachView reach) {
+                      ReachView reach, RunInView runIn) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -988,6 +988,43 @@ public final class MatchdayPageModels {
 
     record ReachRow(int position, String team, String icon, String teamLink, int points, int maximum, Integer pace,
                     boolean titleOutOfReach, int pointsAt, int maximumAt, Integer paceAt) {
+    }
+
+    /** Story r045: the run-in grid — clubs in table order, the next matchdays across. */
+    record RunInView(List<Integer> matchdays, List<RunInRow> rows) {
+        static RunInView of(de.javamark.matchoracle.matchday.control.RunInCalculator.RunIn r, String shortcut) {
+            int clubs = r.clubs().size();
+            long ranked = r.clubs().stream().filter(c -> c.rank() != null).count();
+            List<RunInRow> rows = r.clubs().stream().map(c -> new RunInRow(c.position(), shortOrName(c.team()),
+                    MatchdayPageModels.crestLink(c.team()), MatchdayPageModels.teamLink(c.team(), shortcut),
+                    c.cells().stream().map(cell -> RunInCell.of(cell, clubs, shortcut)).toList(),
+                    c.averagePosition() == null ? "–" : "Ø " + decimal(c.averagePosition()),
+                    c.rank() == null ? "keine Spiele mehr" : c.rank() + ". schwerstes von " + ranked)).toList();
+            return new RunInView(r.matchdays(), rows);
+        }
+    }
+
+    record RunInRow(int position, String team, String icon, String teamLink, List<RunInCell> cells, String average, String rank) {
+    }
+
+    /** {@code state}: open, played or free; {@code shade} in percent of ink — the stronger the opponent, the darker. */
+    record RunInCell(String state, String opponent, String icon, String venue, int opponentPosition, int shade, boolean light,
+                     String link, String label) {
+        static RunInCell of(de.javamark.matchoracle.matchday.control.RunInCalculator.Cell c, int clubs, String shortcut) {
+            return switch (c.state()) {
+                case PLAYED -> new RunInCell("played", null, null, null, 0, 0, false, null, c.matchday() + ". Spieltag: gespielt");
+                case FREE -> new RunInCell("free", null, null, null, 0, 0, false, null, c.matchday() + ". Spieltag: spielfrei");
+                case OPEN -> {
+                    var f = c.fixture();
+                    int shade = clubs <= 1 ? 10 : 10 + (int) Math.round(65.0 * (clubs - f.opponentPosition()) / (clubs - 1));
+                    String venue = f.home() ? "H" : "A";
+                    yield new RunInCell("open", shortOrName(f.opponent()), MatchdayPageModels.crestLink(f.opponent()), venue,
+                            f.opponentPosition(), shade, shade > 50, "/" + shortcut + "/matches/" + f.match().id,
+                            c.matchday() + ". Spieltag: " + (f.home() ? "zu Hause gegen " : "bei ") + shortOrName(f.opponent())
+                                    + ", Platz " + f.opponentPosition());
+                }
+            };
+        }
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */

@@ -356,6 +356,21 @@ h2 { font-size: 1.35rem; }
 .reach-pace { position: absolute; top: -.2rem; bottom: -.2rem; width: 3px; margin-left: -1px; background: var(--ink-soft); }
 .reach-line { position: absolute; top: -.4rem; bottom: -.4rem; width: 1px; background: var(--line); }
 @media (max-width: 560px) { .reach li { grid-template-columns: minmax(0, 1fr); } }
+/* story r045: the run-in grid — a neutral ink ramp by the opponent's place, the place always printed */
+.run-in { border-collapse: separate; border-spacing: 2px; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.run-in thead th { color: var(--ink-mute); font-weight: 600; white-space: nowrap; padding: 0 .3rem .2rem; text-align: center; }
+.run-in th[scope="row"] { position: sticky; left: 0; z-index: 1; background: var(--chalk); text-align: left; white-space: nowrap; padding-right: .5rem; font-weight: 600; }
+.run-in .pos { color: var(--ink-mute); font-weight: 400; }
+.run-in td { min-width: 5.6rem; height: 2.6rem; padding: 0; border-radius: 6px; text-align: center; }
+.run-in td.played, .run-in td.free { background: var(--mow-a); font-size: .8rem; }
+.run-in-cell { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: .3rem; align-items: center; height: 100%; padding: .2rem .4rem; border-radius: 6px; text-align: left; color: var(--ink); background: color-mix(in srgb, var(--ink) var(--shade), var(--paper)); }
+.run-in-cell .crest { grid-row: 1 / span 2; }
+.run-in-cell .opp { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.run-in-cell .meta { font-size: .75rem; }
+.run-in-cell.is-light { color: var(--paper); }
+.run-in-sum { min-width: 9.5rem; text-align: left !important; padding-left: .5rem !important; }
+.run-in-sum strong, .run-in-sum span { display: block; }
+.run-in-sum span { font-size: .75rem; }
 /* story r068: Läuft / Hängt — the result letters carry win and loss, the rows stay neutral */
 .streak-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.5rem; }
 .streaks { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }

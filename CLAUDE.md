@@ -123,6 +123,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Aufholjagd (Punkte nach Rückstand geholt, nach Führung verspielt) | `Comeback` / `ComebackCalculator` |
 | Kreuztabelle (alle Paarungen der Saison, Heim in Zeilen, Gast in Spalten) | `CrossTable` |
 | Wer kann noch? (Punkte heute, höchstens möglich, bei gleichem Tempo) | `Reach` / `ReachCalculator` |
+| Restprogramm (die nächsten Spieltage je Verein, Gegner nach heutigem Platz) | `RunIn` / `RunInCalculator` |
 | Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 

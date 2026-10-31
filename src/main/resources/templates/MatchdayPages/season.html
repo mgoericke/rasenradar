@@ -1,6 +1,6 @@
 {#include base nav=page.nav}
 {#title}Saison {page.season} – {page.nav.leagueName}{/title}
-{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Wer kann noch, Serien, Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
+{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Wer kann noch, Restprogramm, Serien, Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
 {#body}
 {! The season page of a Bundesliga: one section per figure of the whole season so far. Final results
    only; every section says on how many matches it rests. !}
@@ -35,6 +35,35 @@
       {/for}
     </ol>
     <p class="note">Höchstens: heutige Punkte plus drei für jedes noch nicht endgültige Spiel. Bei gleichem Tempo: Punkte je Spiel mal alle Saisonspiele. Die senkrechten Linien sind die heutigen Punkte auf den genannten Plätzen.</p>
+    {/if}
+    {/let}
+  </section>
+
+  {! story r045: who has the easier run-in — opponents by their place today, darker = stronger; scrolls in its own box !}
+  <section class="season-block" id="restprogramm" aria-labelledby="restprogramm-title">
+    <h2 id="restprogramm-title">Restprogramm</h2>
+    {#let p=page.runIn}
+    {#if !p.matchdays}
+    <p class="muted">Keine Spiele mehr in dieser Saison.</p>
+    {#else}
+    <p class="season-lead">Wer hat es leichter? Je kräftiger die Zelle, desto weiter oben steht der Gegner heute. Ø ist der mittlere Tabellenplatz aller restlichen Gegner.</p>
+    <div class="cross-scroll" tabindex="0" role="region" aria-labelledby="restprogramm-title">
+      <table class="run-in">
+        <thead><tr><th scope="col">Verein</th>{#for n in p.matchdays}<th scope="col">{n}. Sp.</th>{/for}<th scope="col">Restprogramm</th></tr></thead>
+        <tbody>
+          {#for r in p.rows}
+          <tr>
+            <th scope="row"><a href="{r.teamLink}"><span class="pos">{r.position}.</span> {r.team}</a></th>
+            {#for c in r.cells}
+            <td class="{c.state}">{#if c.state == 'open'}<a class="run-in-cell{#if c.light} is-light{/if}" style="--shade: {c.shade}%" href="{c.link}" aria-label="{c.label}">{#crest src=c.icon size="small" lazy=true /}<span class="opp">{c.opponent}</span><span class="meta">{c.venue} · {c.opponentPosition}.</span></a>{#else if c.state == 'played'}<span class="muted">gespielt</span>{#else}<span class="muted">spielfrei</span>{/if}</td>
+            {/for}
+            <td class="run-in-sum"><strong>{r.average}</strong><span class="muted">{r.rank}</span></td>
+          </tr>
+          {/for}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">H = Heimspiel, A = Auswärtsspiel, die Zahl ist der heutige Tabellenplatz des Gegners. Nur endgültige Ergebnisse; keine Vorhersage.</p>
     {/if}
     {/let}
   </section>
@@ -91,7 +120,7 @@
         {/for}
       </tbody>
     </table>
-    <p class="note">Zeilen: Tore der Heimmannschaft, Spalten: Tore des Gasts. Dunkel = häufiger; Heimsieg in Tinte, Auswärtssieg heller, Remis grau. Eine Zelle antippen zeigt die Spiele.</p>
+    <p class="note">Zeilen: Tore der Heimmannschaft, Spalten: Tore des Gasts. Kräftiger = häufiger; Heimsieg in Tinte, Auswärtssieg heller, Remis grau. Eine Zelle antippen zeigt die Spiele.</p>
     {/let}
     {/if}
   </section>
