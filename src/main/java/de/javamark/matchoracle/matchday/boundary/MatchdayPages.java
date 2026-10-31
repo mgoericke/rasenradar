@@ -547,7 +547,7 @@ public class MatchdayPages {
                 : positionChart(league, season, lastPlayedMatchday, List.of(team));
 
         Matchday reference = (played.isEmpty() ? schedule.get(0) : played.get(played.size() - 1)).matchday;
-        return new TeamPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, currentSeason, team.name, team.iconUrl,
+        return new TeamPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, currentSeason, team.name, MatchdayPageModels.crestLink(team),
                 standing.map(p -> p.position()).orElse(null),
                 standing.map(p -> MatchdayPageModels.zone(league, p.position())).orElse(""),
                 BalanceRow.of("Gesamt", standing.map(p -> p.balance()).orElse(Balance.EMPTY)), standings.includesProvisional(),

@@ -388,6 +388,29 @@ Saisonaussicht über Zeit entwickelt hat oder wie gut sie am Saisonende lag; das
 Abwägung gegen den zusätzlichen Nutzen einer Historie. Noch nicht umgesetzt — dieser ADR hält den
 Ausgang des Spec-Interviews fest, bevor gebaut wird.
 
+## Vereinswappen selbst ausliefern statt verlinken
+
+**Kontext:** OpenLigaDB nennt für jedes Wappen eine Adresse bei einem fremden Host (Wikimedia,
+imgur, dfb.de, uefa.com u. a.; einige wenige als `data:`-URI). Die Seiten haben diese Adressen
+direkt eingebunden. Damit hat jeder Besuch die IP-Adresse an diese Hosts übertragen, Wikimedia
+setzt dabei ein Cookie (`WMF-Uniq`), und für ein 24-px-Wappen kamen oft 500-px-PNGs. Die Schriften
+wurden aus demselben Grund schon selbst gehostet (Rasenschnitt-Design, PR 57).
+
+**Entscheidung:** Ein Scheduler (`CrestScheduler`, Takt `matchoracle.matchday.crest-tick`) lädt
+jedes fehlende Wappen einmal herunter (`CrestFetcher`, User-Agent mit Kontakt, wie Wikimedia es
+verlangt). `CrestImage` verkleinert Rasterbilder auf höchstens 192 px und speichert sie als PNG;
+SVG bleibt unverändert, alles andere wird verworfen. Die Bilder liegen in der Tabelle `team_crest`,
+der Dateiname (Inhalts-Hash plus Endung) in `team.crest_file`. `CrestResource` liefert sie unter
+`/crests/{teamId}/{file}` mit einem Jahr Cache aus, immer mit `nosniff` und einer
+Sandbox-Content-Security-Policy, damit ein SVG auch direkt geöffnet kein Skript ausführt.
+Fehlt ein Wappen noch, zeigt die Seite keines — es gibt keinen Rückfall auf die fremde Adresse.
+Ein fehlgeschlagener Versuch wird nach einem Tag wiederholt und lässt ein älteres Wappen stehen.
+
+**Konsequenzen:** Kein Besucher-Browser spricht mehr mit den Wappen-Hosts; die Datenschutzerklärung
+(Abschnitt 4) sagt das. Der Server hält Kopien der Vereinswappen. Direkt nach dem ersten Deploy
+fehlen die Wappen, bis der erste Lauf (30 s nach dem Start) durch ist. Ändert die Quelle die
+Adresse eines Wappens, wird es spätestens einen Tag nach dem letzten Abruf neu geladen.
+
 ## Verschoben / abgelehnt
 
 - **DFB-Pokal:** nicht aufgenommen. Das K.-o.-Format hat keinen Spieltagszähler und keine

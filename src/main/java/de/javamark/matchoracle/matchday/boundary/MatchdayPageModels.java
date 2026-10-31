@@ -171,7 +171,7 @@ public final class MatchdayPageModels {
             return new MatchRow(m.id, "/" + leagueShortcut + "/matches/" + m.id,
                     TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
                     m.homeTeam.name, m.awayTeam.name, m.homeTeam.shortName, m.awayTeam.shortName,
-                    m.homeTeam.iconUrl, m.awayTeam.iconUrl,
+                    crestLink(m.homeTeam), crestLink(m.awayTeam),
                     m.fullTimeScore == null ? null : m.fullTimeScore.home + ":" + m.fullTimeScore.away,
                     m.halfTimeScore == null ? null : m.halfTimeScore.home + ":" + m.halfTimeScore.away,
                     m.isPlayed(), m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
@@ -293,7 +293,7 @@ public final class MatchdayPageModels {
         static StandingRow of(StandingPosition p, League league) {
             Balance b = p.balance();
             int diff = b.goalDifference();
-            return new StandingRow(p.position(), p.team().name, MatchdayPageModels.teamLink(p.team(), league.sourceShortcut()), p.team().iconUrl,
+            return new StandingRow(p.position(), p.team().name, MatchdayPageModels.teamLink(p.team(), league.sourceShortcut()), MatchdayPageModels.crestLink(p.team()),
                     b.played(), b.wins(), b.draws(), b.losses(),
                     b.goalsFor() + ":" + b.goalsAgainst(), (diff > 0 ? "+" : "") + diff, b.points(), MatchdayPageModels.zone(league, p.position()),
                     p.team().shortName == null ? p.team().name : p.team().shortName);
@@ -302,6 +302,11 @@ public final class MatchdayPageModels {
 
     static String teamLink(Team team, String leagueShortcut) {
         return "/" + leagueShortcut + "/teams/" + team.id;
+    }
+
+    /** Must match {@code CrestResource}'s {@code @Path("/crests/{teamId}/{file}")}; null until the crest is downloaded. */
+    static String crestLink(Team team) {
+        return team.crestFile == null ? null : "/crests/" + team.id + "/" + team.crestFile;
     }
 
     /** Must match {@code SeasonOutlookPages}'s {@code @Path("/{league}/{season}/teams/{id}/outlook")} (spec 04). */
@@ -449,7 +454,7 @@ public final class MatchdayPageModels {
             }
             return new ScheduleRow(m.matchday.number, m.matchday.displayName(),
                     DAY_SHORT.format(m.kickoff.atZone(DISPLAY_ZONE)), TIME.format(m.kickoff.atZone(DISPLAY_ZONE)),
-                    opponent.name, opponent.iconUrl, home, score, result,
+                    opponent.name, MatchdayPageModels.crestLink(opponent), home, score, result,
                     m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL,
                     decisionLabel(m.decision, m.penaltyScore), "/" + leagueShortcut + "/matches/" + m.id);
         }

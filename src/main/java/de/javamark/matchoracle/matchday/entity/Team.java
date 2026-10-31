@@ -26,6 +26,10 @@ public class Team extends PanacheEntity {
     @Column(columnDefinition = "text")
     public String iconUrl;
 
+    /** File name of the crest the application serves itself (content hash plus extension); null until one is stored. */
+    @Column(length = 40)
+    public String crestFile;
+
     public static Optional<Team> findByExternalId(int externalId) {
         return find("externalId", externalId).firstResultOptional();
     }
