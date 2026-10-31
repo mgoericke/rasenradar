@@ -5,12 +5,13 @@
 <section class="matchday">
   <div class="matchday-head">
     <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
-    <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
+    <p class="matchday-season">{page.nav.leagueName} {page.season}{#if page.dateRange} · {page.dateRange}{/if}</p>
     <p class="matchday-actions">
       {#if page.nav.forecastSupported}
       <a class="link-button ai" href="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts">KI-Vorschau zum Spieltag</a>
       {/if}
       <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
+      {#if page.days}<button type="button" class="link-button print-button" data-print>Bogen drucken</button>{/if}
     </p>
     <nav class="pager" aria-label="Spieltag wechseln">
       {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
@@ -34,7 +35,7 @@
           {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
           <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
         </span>
-        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if m.provisional}<span class="print-note"> vorläufig</span>{/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
     </li>
     {/for}
