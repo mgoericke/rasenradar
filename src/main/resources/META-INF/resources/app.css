@@ -133,9 +133,9 @@ h2 { font-size: 1.35rem; }
 .pager .disabled { color: var(--ink-mute); }
 
 /* fixtures */
-.day { margin: 2rem 0 .5rem; font-size: .95rem; font-weight: 500; color: var(--ink-soft); }
-.fixtures { list-style: none; margin: 0; padding: 0; background: var(--surface); border-radius: 12px; border: 1px solid var(--line); }
-.fixtures li + li { border-top: 1px solid var(--line); }
+.day { display: flex; align-items: center; gap: .8rem; margin: 2rem 0 .5rem; font: 700 1.25rem var(--display); color: var(--ink); }
+.day::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+.fixtures { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .fixture {
   display: grid; align-items: center; gap: .75rem;
   grid-template-columns: 3.2rem minmax(0, 1fr) auto minmax(0, 1fr) 2.6rem;
@@ -178,16 +178,15 @@ h2 { font-size: 1.35rem; }
 .score.is-live.has-score { font-family: var(--display); font-size: 1.45rem; font-weight: 800; letter-spacing: 0; }
 
 /* standings */
-.standings { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; align-self: start; }
+.standings { align-self: start; }
 .standings table { width: 100%; border-collapse: collapse; margin-top: .85rem; font-size: .92rem; }
 /* narrow screens: scroll the table instead of squeezing nine columns and wrapping every team name */
 @media (max-width: 480px) {
   .standings { overflow-x: auto; }
   .standings table { width: auto; min-width: 30rem; }
 }
-.standings th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .3rem .4rem; border-bottom: 1px solid var(--line); }
-.standings td { text-align: right; padding: .42rem .4rem; border-bottom: 1px solid var(--line); }
-.standings tbody tr:last-child td { border-bottom: 0; }
+.standings th { text-align: right; font-weight: 600; color: var(--ink-mute); padding: .3rem .4rem; border-bottom: 2px solid var(--ink); }
+.standings td { text-align: right; padding: .42rem .4rem; height: 2.5rem; }
 .standings th.team, .standings td.team { text-align: left; }
 .standings td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .55rem; }
 .standings .points { font-family: var(--display); font-weight: 800; font-size: 1.2rem; }
@@ -258,7 +257,7 @@ h2 { font-size: 1.35rem; }
   .match-layout { grid-template-columns: minmax(0, 1fr); }
   .match-rail { position: static; }
 }
-.stream-table tr.is-match-team td { background: var(--zone); font-weight: 600; }
+
 .ki-reasoning h2 { font-size: 1.6rem; margin-bottom: .3rem; }
 .ki-reasoning .section-sub { color: var(--ink-soft); font-size: .92rem; margin: 0 0 1rem; max-width: 62ch; }
 .ki-reasoning .assessment { background: var(--surface); border: 1px solid var(--line); }
@@ -290,12 +289,12 @@ h2 { font-size: 1.35rem; }
 
 .history { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; margin-top: 2rem; }
 @media (max-width: 800px) { .history { grid-template-columns: 1fr; } }
-.chart-block, .h2h { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
+.chart-block { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
 .chart { position: relative; height: 240px; margin-top: .75rem; }
 .h2h-balance { color: var(--ink-soft); margin: .3rem 0 .8rem; }
-.meetings { list-style: none; margin: 0; padding: 0; }
-.meetings li + li { border-top: 1px solid var(--line); }
-.meetings a { display: grid; grid-template-columns: 5rem 1fr auto; gap: .75rem; align-items: center; padding: .4rem 0; }
+.meetings { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.meetings a { display: grid; grid-template-columns: 5rem 1fr auto; gap: .75rem; align-items: center; min-height: 2.5rem; padding: .45rem .75rem; }
+.meetings a:hover { background: var(--zone); }
 .meetings .date { color: var(--ink-mute); font-size: .9rem; }
 .meetings .venue { color: var(--ink-soft); }
 
@@ -384,18 +383,18 @@ h2 { font-size: 1.35rem; }
 .stream-part + .stream-part { margin-top: 2.6rem; }
 .stream-title { font-size: 1.6rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .7rem; }
 .stream-title small { font: 400 .88rem var(--text); color: var(--ink-soft); }
-.stream-day-label { font: 600 .92rem var(--text); color: var(--ink-soft); margin: 1.1rem 0 .45rem; }
-.stream-slot { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stream-day-label { display: flex; align-items: center; gap: .8rem; font: 700 1.25rem var(--display); color: var(--ink); margin: 1.4rem 0 .5rem; }
+.stream-day-label::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+.stream-slot { background: var(--mow-b); border-radius: 8px; overflow: hidden; }
 .stream-slot + .stream-slot { margin-top: .6rem; }
-.stream-slot-head { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; color: var(--ink-mute); padding: .5rem .9rem 0; }
+.stream-slot-head { display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem; font-weight: 600; color: var(--ink-mute); padding: .45rem .9rem; }
 .slot-ki { color: var(--ink-soft); }
 .stream-rows { list-style: none; margin: 0; padding: 0; }
 .stream-row { display: grid; grid-template-columns: minmax(0, 1fr) 8.8rem; align-items: center; gap: .6rem; padding-right: .9rem; }
-.stream-row + .stream-row { border-top: 1px solid var(--line); }
 .stream-row[hidden], .stream-slot[hidden], .stream-day[hidden] { display: none; }
 .stream-row .fixture { grid-template-columns: 1.6rem minmax(0, 1fr) auto minmax(0, 1fr); gap: .6rem; padding: .55rem .2rem .55rem .9rem; }
-.stream-row .badge { border-color: var(--line); color: var(--ink-mute); }
-.stream-empty { padding: 1.2rem; color: var(--ink-soft); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; margin-top: 1rem; }
+.stream-row .badge { border-color: var(--ink-mute); color: var(--ink-mute); }
+.stream-empty { padding: 1.2rem; color: var(--ink-soft); background: var(--mow-a); border-radius: 8px; margin-top: 1rem; }
 .stream-empty[hidden] { display: none; }
 
 /* the KI cell sits beside the link: guide value with the brass line, then tendency or verdict */
@@ -411,7 +410,7 @@ h2 { font-size: 1.35rem; }
 
 /* rail: table with tabs, KI-Bilanz */
 .landing-rail { position: sticky; top: 7.6rem; display: grid; gap: 1.2rem; }
-.rail-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; }
+.rail-card { min-width: 0; }
 .rail-card h2 { font-size: 1.45rem; margin: 0 0 .6rem; }
 .rail-tabs { display: flex; gap: .3rem; margin-bottom: .6rem; }
 .rail-tabs label { font: 500 .85rem var(--text); border: 1px solid var(--line); border-radius: 999px; padding: .25rem .7rem; cursor: pointer; color: var(--ink-soft); }
@@ -421,9 +420,8 @@ h2 { font-size: 1.35rem; }
 #table-bl2:checked ~ .rail-tabs label[for="table-bl2"] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .table-input:focus-visible ~ .rail-tabs { outline: 3px solid var(--win); outline-offset: 2px; border-radius: 999px; }
 .stream-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
-.stream-table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .25rem .3rem; border-bottom: 1px solid var(--line); }
-.stream-table td { text-align: right; padding: .3rem .3rem; border-bottom: 1px solid var(--line); }
-.stream-table tbody tr:last-child td { border-bottom: 0; }
+.stream-table th { text-align: right; font-weight: 600; color: var(--ink-mute); padding: .25rem .3rem; border-bottom: 2px solid var(--ink); }
+.stream-table td { text-align: right; padding: .38rem .3rem; height: 2.5rem; }
 .stream-table th.team, .stream-table td.team { text-align: left; }
 .stream-table td.team a { display: flex; align-items: center; gap: .4rem; white-space: nowrap; }
 .stream-table td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .5rem; }
@@ -432,10 +430,9 @@ h2 { font-size: 1.35rem; }
 .rail-card .note a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 
 /* Spec 05, "Wer liegt vorne?": the leaderboard fragment, now the rail's KI-Bilanz */
-.leaderboard { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.leaderboard li { display: flex; justify-content: space-between; align-items: center; padding: .55rem .9rem; font-size: .92rem; }
-.leaderboard li + li { border-top: 1px solid var(--line); }
-.leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
+.leaderboard { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.leaderboard li { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .5rem .9rem; font-size: .92rem; }
+.leaderboard li.is-oracle { font-weight: 600; box-shadow: inset 3px 0 0 var(--ki); }
 .leaderboard-rate { font-family: var(--display); font-weight: 700; }
 .leaderboard-caption { margin: .6rem 0 0; font-size: .82rem; }
 
@@ -561,8 +558,7 @@ h2 { font-size: 1.35rem; }
 .how-it-works-section p { color: var(--ink-soft); }
 .how-it-works-section p + p { margin-top: .8rem; }
 
-.forecast-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
-.forecast-list li + li { border-top: 1px solid var(--line); }
+.forecast-list { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .forecast-row { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 8rem minmax(0, 1fr); gap: 1rem; align-items: center; padding: .7rem .9rem; }
 .forecast-row:hover { background: var(--zone); }
 .forecast-row .time { color: var(--ink-mute); font-size: .85rem; }
@@ -611,10 +607,9 @@ h2 { font-size: 1.35rem; }
 @media (max-width: 800px) { .club-body { grid-template-columns: 1fr; } .club-head { flex-direction: column; align-items: flex-start; } }
 .club-main { display: grid; gap: 1.5rem; }
 .club-side { display: grid; gap: 1.5rem; }
-.schedule-block, .facts-block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
-.schedule { list-style: none; margin: .5rem 0 0; padding: 0; }
-.schedule li + li { border-top: 1px solid var(--line); }
-.schedule a { display: grid; grid-template-columns: 2rem 6.5rem 3.2rem 1fr auto; gap: .6rem; align-items: center; padding: .4rem 0; }
+.schedule-block, .facts-block { min-width: 0; }
+.schedule { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.schedule a { display: grid; grid-template-columns: 2rem 6.5rem 3.2rem 1fr auto; gap: .6rem; align-items: center; min-height: 2.5rem; padding: .4rem .7rem; }
 .schedule a:hover { background: var(--zone); }
 .schedule .md { color: var(--ink-mute); font-size: .85rem; }
 .schedule .date { font-size: .9rem; }
@@ -622,12 +617,12 @@ h2 { font-size: 1.35rem; }
 .schedule .opponent { font-weight: 500; }
 .schedule .pill.open { background: transparent; border-color: var(--line); color: var(--ink-mute); font-weight: 500; }
 @media (max-width: 500px) { .schedule a { grid-template-columns: 2rem 1fr auto; } .schedule .date, .schedule .venue { display: none; } }
-.scorers { list-style: none; margin: .5rem 0 0; padding: 0; }
-.scorers li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; border-bottom: 1px solid var(--line); }
-.scorers .count { font-family: var(--display); font-weight: 700; }
-.outlook-goals { list-style: none; margin: .5rem 0 0; padding: 0; }
-.outlook-goals li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; border-bottom: 1px solid var(--line); }
-.outlook-goals .percent { font-family: var(--display); font-weight: 700; }
+.scorers { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.scorers li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
+.scorers .count { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
+.outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
 .standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
 
 /* club crests from the source; sized so they never dominate the score cell */
@@ -732,9 +727,9 @@ h2 { font-size: 1.35rem; }
 /* Gruppenwettbewerb: jede Gruppe eine eigene kleine Tabelle, darunter ihre Begegnungen */
 .group { margin-top: 2rem; }
 .group-table { width: 100%; border-collapse: collapse; margin: .4rem 0 .8rem; font-size: .9rem; }
-.group-table th { text-align: right; font-weight: 500; color: var(--ink-mute); padding: .2rem .4rem; }
+.group-table th { text-align: right; font-weight: 600; color: var(--ink-mute); padding: .2rem .4rem; border-bottom: 2px solid var(--ink); }
 .group-table th.pos, .group-table th.team { text-align: left; }
-.group-table td { text-align: right; padding: .25rem .4rem; border-top: 1px solid var(--line); }
+.group-table td { text-align: right; padding: .5rem .4rem; }
 .group-table td.pos, .group-table td.team { text-align: left; }
 .group-table td.points { font-weight: 700; }
 .group-table td.team a { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: .3rem; }
@@ -791,3 +786,20 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .funnel-row { grid-template-columns: 5.5rem 1fr 2rem; gap: .4rem; }
   .funnel-label { font-size: .78rem; }
 }
+
+/* --- mowing stripes: the rhythm of every data list (docs/styleguide.md) ------------------
+   Two close greens row by row instead of cards, borders and hairlines. They carry rhythm,
+   not meaning — every text colour is measured against both. */
+.fixtures > li:nth-child(odd), .stream-rows > li:nth-child(odd), .meetings > li:nth-child(odd),
+.schedule > li:nth-child(odd), .scorers > li:nth-child(odd), .outlook-goals > li:nth-child(odd),
+.forecast-list > li:nth-child(odd), .leaderboard > li:nth-child(odd),
+.standings tbody tr:nth-child(odd) > td, .stream-table tbody tr:nth-child(odd) > td,
+.group-table tbody tr:nth-child(odd) > td { background: var(--mow-a); }
+.fixtures > li:nth-child(even), .stream-rows > li:nth-child(even), .meetings > li:nth-child(even),
+.schedule > li:nth-child(even), .scorers > li:nth-child(even), .outlook-goals > li:nth-child(even),
+.forecast-list > li:nth-child(even), .leaderboard > li:nth-child(even),
+.standings tbody tr:nth-child(even) > td, .stream-table tbody tr:nth-child(even) > td,
+.group-table tbody tr:nth-child(even) > td { background: var(--mow-b); }
+/* a highlighted row lights up on chalk: the two teams of the match in the table beside it */
+.stream-table tbody tr.is-match-team > td { background: var(--zone); font-weight: 600; }
+.fixture:hover, .forecast-row:hover, .schedule a:hover { background: var(--zone); }
