@@ -27,11 +27,11 @@
         <span class="time">{m.time}</span>
         <span class="home">
           <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-          {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+          {#crest src=m.homeIcon lazy=true /}
         </span>
         {#score m=m /}
         <span class="away">
-          {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+          {#crest src=m.awayIcon lazy=true /}
           <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
         </span>
         <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
@@ -55,7 +55,7 @@
       {#for r in page.standings}
       <tr class="{r.zone}">
         <td class="pos">{r.position}</td>
-        <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}<span class="name-long">{r.team}</span><span class="name-short">{r.teamShort}</span></a></td>
+        <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} <span class="name-long">{r.team}</span><span class="name-short">{r.teamShort}</span></a></td>
         <td>{r.played}</td><td class="wdl">{r.wins}</td><td class="wdl">{r.draws}</td><td class="wdl">{r.losses}</td>
         <td class="goals-for">{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
         <td class="form-cell">{#if r.form}<ol class="form-strip" aria-label="Form, letzte Spiele, ältestes links">{#for f in r.form}<li><a class="{f.result.toString.toLowerCase}" href="{f.link}" title="{f.description}" aria-label="{f.description}">{f.letter}</a></li>{/for}</ol>{/if}</td>
@@ -83,11 +83,11 @@
           <span class="time">{m.time}</span>
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.homeIcon lazy=true /}
           </span>
           {#score m=m /}
           <span class="away">
-            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.awayIcon lazy=true /}
             <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
           </span>
           <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>

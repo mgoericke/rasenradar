@@ -1,0 +1,5 @@
+{! Story r002: a club crest in a box of fixed size, so nothing moves when it arrives. Without a
+   crest file the same box stays as an empty disc; a crest that fails to load is hidden by the
+   head script in base.html (class is-broken) instead of showing a broken-image icon.
+   Params: src (may be null), size (small, large, hero or none), lazy (true for lists). !}
+{#if src}<img class="crest{#if size??} {size}{/if}" src="{src}" alt="" width="64" height="64" decoding="async"{#if lazy??} loading="lazy"{/if}>{#else}<span class="crest{#if size??} {size}{/if} is-missing" aria-hidden="true"></span>{/if}

@@ -68,7 +68,7 @@
               {#for r in l.table}
               <tr class="{r.zone}">
                 <td class="pos">{r.position}</td>
-                <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.teamShort}</a></td>
+                <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.teamShort}</a></td>
                 <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
               </tr>
               {/for}

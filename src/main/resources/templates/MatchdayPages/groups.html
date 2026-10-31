@@ -26,7 +26,7 @@
         {#for r in g.table}
         <tr>
           <td class="pos">{r.position}</td>
-          <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.team}</a></td>
+          <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}</a></td>
           <td>{r.played}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
           <td>{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
         </tr>
@@ -43,11 +43,11 @@
             <span class="time">{m.time}</span>
             <span class="home">
               <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-              {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+              {#crest src=m.homeIcon lazy=true /}
             </span>
             {#score m=m /}
             <span class="away">
-              {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+              {#crest src=m.awayIcon lazy=true /}
               <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
             </span>
             <span class="half">{#if m.halfTime}({m.halfTime}){/if}</span>
@@ -71,11 +71,11 @@
           <span class="time">{m.time}</span>
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
-            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.homeIcon lazy=true /}
           </span>
           {#score m=m /}
           <span class="away">
-            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.awayIcon lazy=true /}
             <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
           </span>
           <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>

@@ -25,7 +25,7 @@
       <tr>
         <td class="pos">{s.rank}.</td>
         <td class="team">{s.name}</td>
-        <td class="team club">{#if s.crest}<img class="crest small" src="{s.crest}" alt="" loading="lazy"> {/if}<span class="name-long">{s.team}</span><span class="name-short">{s.teamShort}</span></td>
+        <td class="team club">{#crest src=s.crest size="small" lazy=true /} <span class="name-long">{s.team}</span><span class="name-short">{s.teamShort}</span></td>
         <td class="points">{s.goals}</td>
         <td>{#if s.penalties > 0}{s.penalties}{#else}–{/if}</td>
       </tr>

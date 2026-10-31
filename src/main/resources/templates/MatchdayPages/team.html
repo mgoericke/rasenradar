@@ -7,7 +7,7 @@
 {#body}
 <article class="club">
   <header class="club-head">
-    {#if page.icon}<img class="crest hero" src="{page.icon}" alt="">{/if}
+    {#crest src=page.icon size="hero" /}
     <div>
       <h1 class="club-name">{page.name}</h1>
       <p class="club-season">{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
@@ -52,7 +52,7 @@
               <span class="md">{#if page.hasTable}{r.matchday}.{#else}{r.section}{/if}</span>
               <span class="date">{r.date} <span class="muted">{r.time}</span></span>
               <span class="venue">{#if r.home}Heim{#else}Ausw.{/if}</span>
-              <span class="opponent">{#if r.opponentIcon}<img class="crest small" src="{r.opponentIcon}" alt="" loading="lazy"> {/if}{r.opponent}</span>
+              <span class="opponent">{#crest src=r.opponentIcon size="small" lazy=true /} {r.opponent}</span>
               {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>{#if r.decision}<span class="decision">{r.decision}</span>{/if}
               {#else}<span class="pill open">–:–</span>{/if}
             </a>
