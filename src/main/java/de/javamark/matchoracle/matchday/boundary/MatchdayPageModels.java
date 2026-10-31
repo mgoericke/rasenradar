@@ -799,7 +799,7 @@ public final class MatchdayPageModels {
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
-                    boolean noMatchesLeft, List<ResultRow> form) {
+                    boolean noMatchesLeft, List<ResultRow> form, String calendarLink) {
 
         public List<BalanceRow> balances() {
             return List.of(home, away);

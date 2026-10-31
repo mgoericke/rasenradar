@@ -292,6 +292,12 @@ h2 { font-size: 1.35rem; }
 .share-link { font: inherit; color: var(--ink-soft); background: none; border: 0; padding: 0; min-height: 24px; border-bottom: 1px solid var(--line); cursor: pointer; }
 .share-link:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .share-status { color: var(--ink-soft); font-size: .9rem; }
+/* story r027: the calendar download, a quiet action like "Link teilen" */
+.calendar-link { margin: 0; }
+.match-actions { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.2rem; }
+.calendar-link a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--line); }
+.calendar-link a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.club-next .calendar-link { margin-top: .7rem; }
 .not-found { max-width: 40rem; padding: 2rem 0 3rem; }
 /* the match head is the one stage: the mown pitch, framed by the touchline and two penalty boxes.
    The facts are the large type; the KI is one marked line under a chalk line. No scoreboard look. */
