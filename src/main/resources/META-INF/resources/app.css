@@ -289,6 +289,12 @@ h2 { font-size: 1.35rem; }
   .scoreboard .score { justify-self: center; }
 }
 .scoreboard .forecast-summary { border-top: 2px solid var(--turf-line); margin-top: 1.4rem; padding-top: 1.1rem; }
+/* the KI line is loaded after the page: hold its height while the placeholder is there, so the goals below do not jump */
+.scoreboard .forecast-summary:has(> .ki-pending) { min-height: 8.6rem; }
+@media (max-width: 720px) {
+  .scoreboard .forecast-summary:has(> .ki-pending) { min-height: 10.75rem; }
+  .scoreboard .forecast-summary[data-played]:has(> .ki-pending) { min-height: 13.7rem; }
+}
 /* the KI line of the match head: guide score left, probability bar in the middle, verdict right */
 .board-ai { flex: 1 1 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem 1.4rem; align-items: center; text-align: left; }
 .board-ai-label { margin: 0; font-size: .9rem; color: var(--turf-soft); }
@@ -344,7 +350,8 @@ h2 { font-size: 1.35rem; }
 .ki-forecaster p { margin: 0; max-width: 66ch; }
 .ki-reviewer { margin-top: .9rem !important; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .92rem; color: var(--ink-soft); }
 .ki-reviewer strong { color: var(--ink); }
-.ki-reasoning[hidden] + .situations { margin-top: 0; }
+.match-main > .situations:first-child { margin-top: 0; }
+.ki-reasoning { margin-top: 2.6rem; }
 .situations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
 @media (max-width: 700px) { .situations { grid-template-columns: 1fr; } }
 .situation { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
