@@ -24,7 +24,7 @@
       </thead>
       <tbody>
         {#for r in g.table}
-        <tr>
+        <tr data-clubs="{r.teamId}">
           <td class="pos">{r.position}</td>
           <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}</a></td>
           <td>{r.played}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
@@ -39,7 +39,7 @@
       <ol class="fixtures">
         {#for m in day.matches}
         <li>
-          <a class="fixture" href="{m.link}">
+          <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
             <span class="time">{m.time}</span>
             <span class="home">
               <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
@@ -67,7 +67,7 @@
     <ol class="fixtures">
       {#for m in r.matches}
       <li>
-        <a class="fixture" href="{m.link}">
+        <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
           <span class="time">{m.time}</span>
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>

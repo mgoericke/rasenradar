@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,5 +33,15 @@ public class Team extends PanacheEntity {
 
     public static Optional<Team> findByExternalId(int externalId) {
         return find("externalId", externalId).firstResultOptional();
+    }
+
+    /** The clubs with matches in a league and season, by name. */
+    public static List<Team> findInLeagueSeason(League league, int season) {
+        return getEntityManager()
+                .createQuery("select distinct t from Match m join m.homeTeam t"
+                        + " where m.matchday.league = :league and m.matchday.season = :season order by t.name", Team.class)
+                .setParameter("league", league)
+                .setParameter("season", season)
+                .getResultList();
     }
 }

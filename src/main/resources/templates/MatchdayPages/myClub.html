@@ -1,0 +1,26 @@
+{#include base nav=page.nav}
+{#title}Mein Verein wählen{/title}
+{#description}Einen Verein der 1. oder 2. Bundesliga als Mein Verein wählen – er wird in Spieltagen und Tabellen hervorgehoben. Die Wahl bleibt nur in diesem Browser.{/description}
+{#body}
+{! Story r003: the choice is stored in this browser only (localStorage, nav.js) — no account,
+   nothing on the server. The buttons need script; without it the page says so. !}
+<section class="my-club-page">
+  <h1>Mein Verein</h1>
+  <p class="my-club-intro">Dein Verein wird in Spieltagen und Tabellen hervorgehoben, und oben in der Navigation führt ein Link direkt zu seiner Seite. Die Wahl bleibt nur in diesem Browser gespeichert – ohne Konto, nichts davon liegt auf dem Server.</p>
+  <noscript><p class="note">Zum Wählen braucht diese Seite JavaScript.</p></noscript>
+  <p class="my-club-current" data-my-club-current hidden>
+    Gewählt: <a data-my-club-current-link href="#"></a>
+    <button type="button" class="link-button" data-club-clear>Auswahl entfernen</button>
+  </p>
+  <p class="note" data-my-club-gone hidden>Dein bisher gewählter Verein spielt in dieser Saison in keiner der beiden Bundesligen. Die Auswahl wurde entfernt.</p>
+  {#for l in page.leagues}
+  <h2>{l.name}</h2>
+  <ul class="my-club-list">
+    {#for c in l.clubs}
+    <li><button type="button" class="my-club-option" data-club-choose data-club-id="{c.id}" data-club-name="{c.name}" data-club-short="{c.shortName}" aria-pressed="false">{#crest src=c.crest lazy=true /} <span>{c.name}</span></button></li>
+    {/for}
+  </ul>
+  {/for}
+</section>
+{/body}
+{/include}

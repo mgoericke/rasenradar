@@ -7,7 +7,7 @@
     <ol class="stream-rows">
       {#for r in s.rows}
       <li class="stream-row lg-{r.league}{#if r.match.played} is-played{#else if r.match.live} is-live{#else} is-open{/if}">
-        <a class="fixture" href="{r.match.link}">
+        <a class="fixture" href="{r.match.link}" data-clubs="{r.match.homeId} {r.match.awayId}">
           <span class="badge" title="{#if r.league == 'bl1'}1. Bundesliga{#else}2. Bundesliga{/if}">{r.badge}</span>
           <span class="home">
             <span class="team-name">{r.match.homeShort}</span>

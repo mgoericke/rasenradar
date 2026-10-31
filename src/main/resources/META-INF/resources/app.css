@@ -786,6 +786,28 @@ h2 { font-size: 1.35rem; }
 .crest.small { width: 1.1rem; height: 1.1rem; }
 .crest.large { width: 2.4rem; height: 2.4rem; }
 .crest.hero { width: 5.5rem; height: 5.5rem; flex-shrink: 0; }
+/* story r003: "Mein Verein" — the link in the navigation (needs script), the choice page and buttons.
+   The row highlight itself comes from the head script (base.html), in the neutral --zone. */
+.my-club-link { display: none; }
+.js .my-club-link {
+  display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 .75rem; max-width: 11rem;
+  border: 1px solid var(--line); border-radius: 8px; font-weight: 600; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.js .my-club-link:hover { border-color: var(--ink); }
+.club-choice { margin: .9rem 0 0; }
+.my-club-page { grid-column: 1 / -1; max-width: 60rem; }
+.my-club-intro { max-width: 40rem; color: var(--ink-soft); }
+.my-club-current { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; font-weight: 600; }
+.my-club-current[hidden] { display: none; }
+.my-club-list { list-style: none; margin: 0 0 2rem; padding: 0; display: grid; gap: .4rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+.my-club-option {
+  display: flex; align-items: center; gap: .6rem; width: 100%; min-height: 2.75rem; padding: .4rem .7rem; text-align: left;
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+}
+.my-club-option:hover { border-color: var(--ink); }
+.my-club-option[aria-pressed="true"] { background: var(--zone); border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); font-weight: 700; }
+.my-club-option:focus-visible, .js .my-club-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 /* story r002: the box stays when there is no crest (an empty disc) or it fails to load (hidden, no broken icon) */
 span.crest { display: inline-block; flex: none; box-sizing: border-box; }
 .crest.is-missing { border: 1px dashed var(--line); border-radius: 50%; }
@@ -986,10 +1008,14 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 .theme-options button:hover { background: var(--mow-a); color: var(--ink); }
 .theme-options button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+/* story r003: with "Mein Verein" the header no longer fits one row even at full width — brand,
+   "Mein Verein" and the theme share the first row, the competitions get the second to themselves */
+.topnav-inner .brand { flex: 1; }
+.theme-menu, .my-club-link { order: 0; }
+.nav-links { order: 4; }
+@media (min-width: 561px) { .nav-links { width: 100%; } }
 @media (max-width: 560px) {
-  .brand { width: auto; flex: 1; }
-  .theme-menu { order: 0; }
-  .nav-links { order: 4; }
+  .brand { width: auto; }
 }
 
 /* Story r028: the matchday on paper. A4 portrait, black on white, only the fixtures:

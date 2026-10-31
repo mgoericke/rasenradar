@@ -24,7 +24,7 @@
     <ol class="fixtures">
       {#for m in round.matches}
       <li>
-        <a class="fixture" href="{m.link}">
+        <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
           <span class="time">{m.time}</span>
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>

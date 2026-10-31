@@ -66,7 +66,7 @@
             <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr></thead>
             <tbody>
               {#for r in l.table}
-              <tr class="{r.zone}">
+              <tr data-clubs="{r.teamId}" class="{r.zone}">
                 <td class="pos">{r.position}</td>
                 <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.teamShort}</a></td>
                 <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>

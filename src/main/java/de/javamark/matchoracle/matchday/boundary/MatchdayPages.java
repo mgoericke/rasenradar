@@ -10,6 +10,9 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveScoresFr
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchNotFoundPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeague;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubChoice;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubLeague;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
@@ -104,6 +107,7 @@ public class MatchdayPages {
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
+        static native TemplateInstance myClub(MyClubPage page);
     }
 
     @Inject
@@ -240,6 +244,36 @@ public class MatchdayPages {
     public TemplateInstance team(@PathParam("league") String league, @PathParam("season") int season, @PathParam("id") long id) {
         Team team = Team.<Team>findByIdOptional(id).orElseThrow(() -> new NotFoundException("team not found"));
         return Templates.team(teamPage(team, league(league), season));
+    }
+
+    /** Story r003: "Mein Verein" is chosen among the clubs of the two Bundesligas. */
+    private static final List<League> MY_CLUB_LEAGUES = List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2);
+
+    /** Story r003: the clubs to choose "Mein Verein" from; the choice itself stays in the browser. */
+    @GET
+    @Path("/mein-verein")
+    public TemplateInstance myClubChoice() {
+        List<MyClubLeague> leagues = MY_CLUB_LEAGUES.stream()
+                .flatMap(l -> Matchday.latestSeason(l).map(season -> new MyClubLeague(MatchdayPageModels.leagueName(l),
+                        Team.findInLeagueSeason(l, season).stream().map(MyClubChoice::of).toList())).stream())
+                .toList();
+        return Templates.myClub(new MyClubPage(Nav.page("myClub"), leagues));
+    }
+
+    /**
+     * Story r003: the chosen club's page in whichever Bundesliga it plays this season, so a stored
+     * choice survives promotion and relegation. A club in neither leads back to the choice.
+     */
+    @GET
+    @Path("/mein-verein/{id}")
+    public Response myClub(@PathParam("id") long id) {
+        String target = Team.<Team>findByIdOptional(id).flatMap(team -> Match.findLeagueSeasonsOf(team).stream()
+                        .filter(ls -> MY_CLUB_LEAGUES.contains(ls.league()))
+                        .filter(ls -> Matchday.latestSeason(ls.league()).orElse(-1) == ls.season())
+                        .findFirst()
+                        .map(ls -> MatchdayPageModels.teamLink(team, ls.league().sourceShortcut())))
+                .orElse("/mein-verein?nicht-gefunden=" + id);
+        return Response.seeOther(URI.create(target)).build();
     }
 
     /** Liga-Torschützenliste: current season, every club. */
@@ -588,7 +622,8 @@ public class MatchdayPages {
                 positionChartJson,
                 hasTable ? MatchdayPageModels.outlookLink(shortcut, season, team.id) : null,
                 DataInfo.of(reference, Instant.now()),
-                hasTable, cupRunOutcome(team, league, played), tierLabel(team, league, season));
+                hasTable, cupRunOutcome(team, league, played), tierLabel(team, league, season),
+                MY_CLUB_LEAGUES.contains(league) ? MyClubChoice.of(team) : null);
     }
 
     /** Spec 06: how a club's cup run ended — empty while it is still in, or outside a cup. */
