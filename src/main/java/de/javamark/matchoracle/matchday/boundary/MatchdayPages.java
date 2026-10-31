@@ -486,7 +486,8 @@ public class MatchdayPages {
                         .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
                 crossTable(l, season, shortcut, homeAdvantage),
-                reach(l, season, settled, shortcut)));
+                reach(l, season, settled, shortcut),
+                runIn(l, season, settled, shortcut)));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */
@@ -495,6 +496,14 @@ public class MatchdayPages {
         all.addAll(Match.findUnplayed(league, season));
         Standings finalTable = standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
         return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), shortcut);
+    }
+
+    /** Story r045: the next matchdays per club, opponents by their current place (final results only). */
+    private MatchdayPageModels.RunInView runIn(League league, int season, List<Match> settled, String shortcut) {
+        List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
+        all.addAll(Match.findUnplayed(league, season));
+        Standings finalTable = standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
+        return MatchdayPageModels.RunInView.of(de.javamark.matchoracle.matchday.control.RunInCalculator.of(finalTable, all), shortcut);
     }
 
     /** Story r072: every pairing of the season, in the order of the table as it stands (provisional results included, as there). */
