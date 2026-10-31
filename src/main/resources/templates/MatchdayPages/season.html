@@ -1,6 +1,6 @@
 {#include base nav=page.nav}
 {#title}Saison {page.season} – {page.nav.leagueName}{/title}
-{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
+{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Serien, Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
 {#body}
 {! The season page of a Bundesliga: one section per figure of the whole season so far. Final results
    only; every section says on how many matches it rests. !}
@@ -10,6 +10,28 @@
   <nav class="scorer-switch" aria-label="Liga">
     {#for l in page.leagues}<a href="/{l.shortcut}/saison"{#if l.active} aria-current="page" class="is-active"{/if}>{l.name}</a>{/for}
   </nav>
+
+  {! story r068: who is on a run and who is stuck — only the strongest running streak of each club per group !}
+  <section class="season-block" id="serien" aria-labelledby="serien-title">
+    <h2 id="serien-title">Serien</h2>
+    {#if page.basedOn == 0}
+    <p class="muted">Noch kein Spiel beendet.</p>
+    {#else}
+    <div class="streak-groups">
+      <div>
+        <h3>Läuft</h3>
+        {#if page.streaksGoing}{#include MatchdayPages/streakRows rows=page.streaksGoing /}
+        {#else}<p class="muted">Gerade ist kein Verein auf einer Serie.</p>{/if}
+      </div>
+      <div>
+        <h3>Hängt</h3>
+        {#if page.streaksStuck}{#include MatchdayPages/streakRows rows=page.streaksStuck /}
+        {#else}<p class="muted">Gerade hängt kein Verein in einer Serie fest.</p>{/if}
+      </div>
+    </div>
+    <p class="note">Läuft: ab 3 Siegen in Folge, 4 Spielen ohne Niederlage, 3 ohne Gegentor oder 6 mit eigenem Tor. Hängt: ab 3 Niederlagen in Folge, 4 Spielen ohne Sieg oder 3 ohne eigenes Tor. Gezählt wird vom letzten Spiel rückwärts, nur in dieser Saison.</p>
+    {/if}
+  </section>
 
   {! story r098: how much the home side really gains — the league as a whole, then the clubs !}
   <section class="season-block" id="heimvorteil" aria-labelledby="heimvorteil-title">

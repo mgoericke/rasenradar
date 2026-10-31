@@ -1,0 +1,10 @@
+{! story r068: a running streak per row — club, sentence, the results it is made of (oldest left, letters as in the table) !}
+<ol class="streaks">
+  {#for r in rows}
+  <li>
+    <a class="team" href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}</a>
+    <span class="sentence">{r.sentence}</span>
+    <ol class="form-strip" aria-label="Die Spiele der Serie, ältestes links">{#for f in r.results}<li><a class="{f.result.toString.toLowerCase}" href="{f.link}" title="{f.description}" aria-label="{f.description}">{f.letter}</a></li>{/for}</ol>
+  </li>
+  {/for}
+</ol>
