@@ -290,5 +290,5 @@ Bausteine:
 
 - `base.html`: Kopf mit Navigation (`Nav`-Record aus `matchday.boundary.MatchdayPageModels`, von allen Features genutzt), Fußzeile mit Datenherkunft und Alter (`DataInfo`, „das kann veraltet sein“ ab 1 h), `hx-boost="true"` für Navigationslinks, Slots `title`, `body`, `scripts`.
 - Chart-Daten werden als JSON in einem `<script type="application/json">`-Block ausgegeben (`{page.chartJson.raw}`) und von `match.js` / `accuracy.js` gelesen; kein Inline-Rendering im Template.
-- htmx und Chart.js liegen lokal unter `META-INF/resources/vendor/`; die Schriften kommen von Google Fonts.
-- Gestaltung nach `docs/styleguide.md` (heller Grund, eine dunkle Bühne, Messing als einziger Akzent für die KI-Vorschau).
+- htmx und Chart.js liegen lokal unter `META-INF/resources/vendor/`, die Schriften (Sofia Sans) unter `META-INF/resources/fonts/`, die Vereinswappen kommen von `/crests/` (`CrestResource`).
+- Gestaltung nach `docs/styleguide.md` (Kreidegrund, Mähstreifen, der Spielkopf als einzige grüne Bühne, Lila nur für die KI, hell und dunkel nach Systemeinstellung).

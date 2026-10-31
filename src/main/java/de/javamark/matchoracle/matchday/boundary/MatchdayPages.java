@@ -458,7 +458,7 @@ public class MatchdayPages {
     /**
      * Spec 06: the funnel as bars — each round against the widest one, and inside a round
      * each division against that round's field. The widths carry the meaning, the divisions
-     * are told apart by ink alone (styleguide: green and red are results, brass is the AI).
+     * are told apart by ink alone (styleguide: green and red are results, lilac is the AI).
      */
     private static List<FunnelRow> funnelRows(CupFunnel funnel) {
         int widest = funnel.widest();

@@ -238,9 +238,11 @@ für diesen Umfang unverhältnismäßig.
 **Entscheidung:** Serverseitiges Rendering mit Qute (`@CheckedTemplate`, logikfreie Templates,
 View-Models als Records), htmx 2 für Fragmente (`summary`, `markers`, `progress`) und Polling,
 Chart.js 4 für die wenigen Diagramme — beide Bibliotheken lokal unter `META-INF/resources/vendor/`
-statt per CDN. Gestaltung nach `docs/styleguide.md`: helle Seite, genau eine dunkle Bühne
-(Top-Navigation und Anzeigetafel), Messing (`--accent`) ausschließlich für Wege zur und
-Elemente der KI-Vorschau. Trefferbilanz und Bewertungsmaßstäbe liegen in der Fußzeile, nicht in
+statt per CDN. Gestaltung nach `docs/styleguide.md` (seit PR 57 „Rasenschnitt“): Kreidegrund,
+Datenlisten auf Mähstreifen, genau eine grüne Bühne (der Spielkopf der Spielseite), Lila (`--ki`)
+ausschließlich für die KI und immer mit dem Wort „KI“, hell und dunkel nach Systemeinstellung.
+Bis Oktober 2026 waren es eine dunkle Bühne (Top-Navigation und Anzeigetafel) und Messing als
+KI-Akzent. Trefferbilanz und Bewertungsmaßstäbe liegen in der Fußzeile, nicht in
 der Top-Navigation.
 
 **Konsequenzen:** Kein Build-Schritt für ein Frontend-Framework, keine JSON-API-Verdopplung nur
