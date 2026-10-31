@@ -16,9 +16,9 @@
     {! the pitch markings of the match head: two penalty boxes inside the touchline, never across text !}
     <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
     <h1 class="teams">
-      <span class="home">{page.match.home}{#if page.match.homeIcon} <img class="crest large" src="{page.match.homeIcon}" alt="">{/if}</span>
+      <span class="home">{page.match.home} {#crest src=page.match.homeIcon size="large" /}</span>
       {#score m=page.match /}
-      <span class="away">{#if page.match.awayIcon}<img class="crest large" src="{page.match.awayIcon}" alt=""> {/if}{page.match.away}</span>
+      <span class="away">{#crest src=page.match.awayIcon size="large" /} {page.match.away}</span>
     </h1>
     {#half m=page.match countdown=page.countdown /}
     {#if page.nav.forecastSupported}
@@ -110,7 +110,7 @@
             {#for r in page.table}
             <tr class="{r.zone}{#if page.playsHere(r)} is-match-team{/if}">
               <td class="pos">{r.position}</td>
-              <td class="team"><a href="{r.teamLink}">{#if r.icon}<img class="crest small" src="{r.icon}" alt="" loading="lazy"> {/if}{r.teamShort}</a></td>
+              <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.teamShort}</a></td>
               <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
             </tr>
             {/for}

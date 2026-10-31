@@ -29,11 +29,11 @@
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
             {#if m.homeTier}<span class="tier">{m.homeTier}</span>{/if}
-            {#if m.homeIcon}<img class="crest" src="{m.homeIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.homeIcon lazy=true /}
           </span>
           {#score m=m /}
           <span class="away">
-            {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
+            {#crest src=m.awayIcon lazy=true /}
             <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
             {#if m.awayTier}<span class="tier">{m.awayTier}</span>{/if}
           </span>

@@ -786,6 +786,10 @@ h2 { font-size: 1.35rem; }
 .crest.small { width: 1.1rem; height: 1.1rem; }
 .crest.large { width: 2.4rem; height: 2.4rem; }
 .crest.hero { width: 5.5rem; height: 5.5rem; flex-shrink: 0; }
+/* story r002: the box stays when there is no crest (an empty disc) or it fails to load (hidden, no broken icon) */
+span.crest { display: inline-block; flex: none; box-sizing: border-box; }
+.crest.is-missing { border: 1px dashed var(--line); border-radius: 50%; }
+.crest.is-broken { visibility: hidden; }
 .fixture .home, .fixture .away { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
 .fixture .home { justify-content: flex-end; }
 

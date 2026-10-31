@@ -11,11 +11,11 @@
           <span class="badge" title="{#if r.league == 'bl1'}1. Bundesliga{#else}2. Bundesliga{/if}">{r.badge}</span>
           <span class="home">
             <span class="team-name">{r.match.homeShort}</span>
-            {#if r.match.homeIcon}<img class="crest" src="{r.match.homeIcon}" alt="" loading="lazy">{/if}
+            {#crest src=r.match.homeIcon lazy=true /}
           </span>
           {#score m=r.match /}
           <span class="away">
-            {#if r.match.awayIcon}<img class="crest" src="{r.match.awayIcon}" alt="" loading="lazy">{/if}
+            {#crest src=r.match.awayIcon lazy=true /}
             <span class="team-name">{r.match.awayShort}</span>
           </span>
         </a>
