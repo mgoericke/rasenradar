@@ -8,6 +8,7 @@ import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
 import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
+import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.ArrayList;
@@ -40,6 +41,26 @@ public class StandingsCalculator {
         return standings(league, season, matchday, Match.findPlayedBefore(league, season, matchday));
     }
 
+    /**
+     * Story r059, "Wenn es so bleibt": the table with every running match counted at its current
+     * score — 0:0 while the source has none. A match with a final score is already in
+     * {@code before} and never running, so nothing counts twice. Never stored, never used for the
+     * review: the result is marked as including provisional results.
+     */
+    public Standings liveStandings(Standings before, List<Match> running) {
+        Map<Team, Balance> balances = new LinkedHashMap<>();
+        before.positions().forEach(p -> balances.put(p.team(), p.balance()));
+        for (Match match : running) {
+            int home = match.liveScore == null ? 0 : match.liveScore.home;
+            int away = match.liveScore == null ? 0 : match.liveScore.away;
+            balances.merge(match.homeTeam, Balance.EMPTY.plus(new TeamMatchView(match, true, home, away)),
+                    (a, b) -> a.plus(new TeamMatchView(match, true, home, away)));
+            balances.merge(match.awayTeam, Balance.EMPTY.plus(new TeamMatchView(match, false, away, home)),
+                    (a, b) -> a.plus(new TeamMatchView(match, false, away, home)));
+        }
+        return new Standings(before.league(), before.season(), before.beforeMatchday(), ranked(balances), true);
+    }
+
     /** Pure calculation over the played matches of one season; public for pages that reuse the same matches. */
     public Standings standings(League league, int season, int beforeMatchday, List<Match> played) {
         Map<Team, Balance> balances = new LinkedHashMap<>();
@@ -47,12 +68,16 @@ public class StandingsCalculator {
             balances.merge(match.homeTeam, Balance.EMPTY.plus(match.viewedBy(match.homeTeam)), (a, b) -> a.plus(match.viewedBy(match.homeTeam)));
             balances.merge(match.awayTeam, Balance.EMPTY.plus(match.viewedBy(match.awayTeam)), (a, b) -> a.plus(match.viewedBy(match.awayTeam)));
         }
+        boolean provisional = played.stream().anyMatch(m -> m.resultStatus == ResultStatus.PROVISIONAL);
+        return new Standings(league, season, beforeMatchday, ranked(balances), provisional);
+    }
+
+    private static List<StandingPosition> ranked(Map<Team, Balance> balances) {
         List<StandingPosition> positions = new ArrayList<>();
         int position = 1;
         for (Map.Entry<Team, Balance> entry : balances.entrySet().stream().sorted(RANKING).toList()) {
             positions.add(new StandingPosition(position++, entry.getKey(), entry.getValue()));
         }
-        boolean provisional = played.stream().anyMatch(m -> m.resultStatus == ResultStatus.PROVISIONAL);
-        return new Standings(league, season, beforeMatchday, List.copyOf(positions), provisional);
+        return List.copyOf(positions);
     }
 }

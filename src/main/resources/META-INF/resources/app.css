@@ -247,6 +247,24 @@ h2 { font-size: 1.35rem; }
 .standings .name-short { display: none; }
 /* story r013: the last five final results, oldest left; the letter carries the result besides the colour */
 .standings th.form-cell, .standings td.form-cell { text-align: left; padding-left: .7rem; }
+/* story r059: the live table "wenn es so bleibt" beside the normal one — Live first while a match runs */
+.table-view-switch { margin-bottom: .8rem; }
+.table-view-input:nth-of-type(1):checked ~ .table-view-switch label:nth-of-type(1),
+.table-view-input:nth-of-type(2):checked ~ .table-view-switch label:nth-of-type(2) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+.table-view-input:focus-visible ~ .table-view-switch { outline: 3px solid var(--ink); outline-offset: 2px; }
+.standings:not(:has(.live-table[data-live-ended])) #table-view-live:checked ~ .table-total,
+#table-view-total:checked ~ .live-table { display: none; }
+/* once nothing runs any more, the poll answers "ended": back to the normal table */
+.standings:has(.live-table[data-live-ended]) .table-view-switch { display: none; }
+.live-table-note { margin: -.2rem 0 .7rem; font-size: .85rem; color: var(--ink-soft); }
+.live-table td.move { width: 2.6rem; color: var(--ink-soft); font-size: .8rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.live-table td.team { white-space: normal; }
+.live-chip { display: block; width: fit-content; max-width: 100%; margin: .15rem 0 0; padding: 0 .4rem; border: 1px solid var(--line); border-radius: 6px; font-size: .78rem; color: var(--ink); white-space: normal; }
+.live-table td { height: auto; }
+.live-chip.win { border-color: var(--win); }
+.live-chip.loss { border-color: var(--loss); }
+.live-chip.unknown { border-style: dashed; color: var(--ink-soft); }
+@media print { .table-view-switch, .live-table { display: none !important; } .table-total { display: block !important; } }
 .form-strip { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; }
 .form-strip a {
   display: block; width: 1.15rem; height: 1.45rem; line-height: 1.45rem; border-radius: 3px; text-align: center;

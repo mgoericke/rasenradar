@@ -57,6 +57,16 @@
 </section>
 
 <aside class="standings">
+  {#if page.live}
+  {! story r059: while a match runs, the live view comes first; without CSS both tables simply follow each other !}
+  <input class="table-view-input sr-only" type="radio" name="table-view" id="table-view-live" checked>
+  <input class="table-view-input sr-only" type="radio" name="table-view" id="table-view-total">
+  <div class="seg table-view-switch" role="group" aria-label="Tabelle">
+    <label for="table-view-live">Live</label><label for="table-view-total">Gesamt</label>
+  </div>
+  {#include MatchdayPages/liveTable live=page.live /}
+  {/if}
+  <div class="table-total">
   <h2>Tabelle <span class="muted">nach dem {page.number}. Spieltag</span></h2>
   <table>
     <thead>
@@ -75,6 +85,7 @@
     </tbody>
   </table>
   {#if page.standingsProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
+  </div>
 </aside>
 
 {#if page.rounds}

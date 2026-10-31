@@ -357,7 +357,8 @@ public final class MatchdayPageModels {
     /** {@code rounds} carries a competition's knockout phase — empty where it has none. */
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
-                        List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes) {
+                        List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
+                        LiveTable live) {
 
         /** Story r070: the "Es geht um" line of an open match, or null. */
         public String stakeOf(long matchId) {
@@ -416,6 +417,27 @@ public final class MatchdayPageModels {
                     return p.team().id + ":" + p.position() + ":" + name.replace(";", ",").replace(":", " ");
                 })
                 .collect(java.util.stream.Collectors.joining(";"));
+    }
+
+    /**
+     * Story r059, "Wenn es so bleibt": the table with running matches at their current score.
+     * {@code ended} once nothing runs any more — the page then falls back to the normal table.
+     */
+    record LiveTable(String link, boolean ended, List<LiveRow> rows) {
+    }
+
+    /** {@code move}: places up (positive) or down against the table before kickoff; {@code live} is empty for a club not playing. */
+    record LiveRow(int position, int move, long teamId, String team, String teamShort, String icon, String teamLink,
+                   int played, String difference, int points, String live, String liveClass) {
+
+        public String moveLabel() {
+            return move > 0 ? "▲ " + move : move < 0 ? "▼ " + (-move) : "–";
+        }
+
+        public String moveDescription() {
+            int n = Math.abs(move);
+            return move == 0 ? "unverändert" : n + (n == 1 ? " Platz " : " Plätze ") + (move > 0 ? "hoch" : "runter");
+        }
     }
 
     /** A match in the stream, with the league it belongs to — the stream mixes both. */

@@ -2,6 +2,7 @@ package de.javamark.matchoracle.matchday.control;
 
 import de.javamark.matchoracle.matchday.entity.League;
 import de.javamark.matchoracle.matchday.entity.Match;
+import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.StandingPosition;
 import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
@@ -81,5 +82,33 @@ class StandingsCalculatorTest {
 
         assertTrue(Match.countsTowardsTable(leaguePhase));
         assertFalse(Match.countsTowardsTable(knockout));
+    }
+
+    /** Story r059: a running match counts at its live score, without one at 0:0 — and never twice. */
+    @Test
+    void liveTableCountsRunningMatchesAtTheirCurrentScore() {
+        Standings before = calculator.standings(League.BUNDESLIGA_1, 2025, 2, List.of(
+                played(1, mainz, 1, leipzig, 0),
+                played(1, koeln, 0, bremen, 0)));
+        Match leading = running(leipzig, mainz, new Score(2, 0));
+        Match unknown = running(bremen, koeln, null);
+
+        Standings live = calculator.liveStandings(before, List.of(leading, unknown));
+
+        // Leipzig passes Mainz on goal difference (+1 against -1), both on 3 points
+        assertEquals(List.of(leipzig, mainz), live.positions().stream().limit(2).map(StandingPosition::team).toList());
+        assertEquals(3, live.of(leipzig).orElseThrow().balance().points());
+        assertEquals(2, live.of(bremen).orElseThrow().balance().points(), "unknown score counts as 0:0");
+        assertEquals(2, live.of(mainz).orElseThrow().balance().played());
+        assertTrue(live.includesProvisional());
+        assertEquals(1, before.of(mainz).orElseThrow().position(), "the table before kickoff stays as it was");
+    }
+
+    private static Match running(Team home, Team away, Score liveScore) {
+        Match match = new Match();
+        match.homeTeam = home;
+        match.awayTeam = away;
+        match.liveScore = liveScore;
+        return match;
     }
 }
