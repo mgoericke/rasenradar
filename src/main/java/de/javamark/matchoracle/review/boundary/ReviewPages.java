@@ -3,12 +3,14 @@ package de.javamark.matchoracle.review.boundary;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Nav;
 import de.javamark.matchoracle.review.control.ReviewService;
 import de.javamark.matchoracle.review.entity.AccuracyReport;
+import de.javamark.matchoracle.review.entity.ClubRecord;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -27,6 +29,7 @@ public class ReviewPages {
     static class Templates {
         static native TemplateInstance accuracy(AccuracyPage page);
         static native TemplateInstance leaderboard(LeaderboardFragment fragment);
+        static native TemplateInstance clubRecords(List<ClubRecord> records);
     }
 
     @Inject
@@ -186,5 +189,18 @@ public class ReviewPages {
             return Response.seeOther(URI.create("/trefferbilanz")).build();
         }
         return Response.ok(Templates.leaderboard(LeaderboardFragment.of(review.combinedAccuracy()))).build();
+    }
+
+    /**
+     * Story N01: the AI record of both clubs, loaded via htmx at the end of matchday's match page.
+     * Only clubs with enough evaluations get a line; with none the fragment is empty and the page shows nothing.
+     */
+    @GET
+    @Path("/spiel/{matchId}")
+    public Response clubRecords(@PathParam("matchId") long matchId, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/trefferbilanz")).build();
+        }
+        return Response.ok(Templates.clubRecords(review.clubRecords(matchId).stream().filter(ClubRecord::reliable).toList())).build();
     }
 }

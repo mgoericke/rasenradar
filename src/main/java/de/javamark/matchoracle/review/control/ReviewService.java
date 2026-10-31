@@ -5,6 +5,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
 import de.javamark.matchoracle.matchday.boundary.ScorelineForecast;
 import de.javamark.matchoracle.review.entity.AccuracyReport;
 import de.javamark.matchoracle.review.entity.Baseline;
+import de.javamark.matchoracle.review.entity.ClubRecord;
 import de.javamark.matchoracle.review.entity.ContrarianReport;
 import de.javamark.matchoracle.review.entity.ForecastEvaluation;
 import de.javamark.matchoracle.review.entity.Outcome;
@@ -241,6 +242,28 @@ public class ReviewService {
             situations.put(s.matchId, s);
         }
         return accuracy("bl1+bl2", false, evaluations, situations, minEvaluations);
+    }
+
+    /**
+     * Story N01: the AI record of both clubs of a match in its league season — live forecasts only,
+     * one per match (the one evaluated last), and only matches with a FINAL result, since only those get evaluated.
+     */
+    @Transactional
+    public List<ClubRecord> clubRecords(long matchId) {
+        return matchday.clubsOf(matchId)
+                .map(c -> List.of(clubRecord(c.home().name(), ForecastEvaluation.findLiveByMatchIds(c.home().matchIds()), minEvaluations),
+                        clubRecord(c.away().name(), ForecastEvaluation.findLiveByMatchIds(c.away().matchIds()), minEvaluations)))
+                .orElse(List.of());
+    }
+
+    static ClubRecord clubRecord(String club, List<ForecastEvaluation> evaluations, int required) {
+        Map<Long, ForecastEvaluation> lastPerMatch = new HashMap<>();
+        for (ForecastEvaluation e : evaluations) {
+            lastPerMatch.merge(e.matchId, e, (a, b) -> a.evaluatedAt.isAfter(b.evaluatedAt) ? a : b);
+        }
+        int exact = (int) lastPerMatch.values().stream().filter(e -> e.scoreHit).count();
+        int tendency = (int) lastPerMatch.values().stream().filter(e -> e.tendencyHit).count();
+        return new ClubRecord(club, lastPerMatch.size(), exact, tendency, required);
     }
 
     /** Spec 03, step 6: hit rate per league, live and backtest apart; null hit rate while fewer than {@code minEvaluations} exist. */

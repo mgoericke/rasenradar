@@ -1,0 +1,13 @@
+{! Story N01: the AI record per club, loaded via htmx at the end of matchday's match page. Empty while
+   no club has enough evaluated forecasts — no weak number instead (Spec 03). !}
+{#if !records.isEmpty}
+<section class="club-records" aria-labelledby="club-records-title">
+  <h2 id="club-records-title"><span class="ki-chip">KI</span> Bilanz bei diesen Vereinen</h2>
+  <ul>
+    {#for r in records}
+    <li>Bei {r.club} hatte die KI-Vorschau in <strong>{r.tendencyPercent} %</strong> der Spiele die Tendenz getroffen, in {r.exactPercent} % das genaue Ergebnis <span class="muted">({r.evaluated} bewertete Vorschauen dieser Saison)</span>.</li>
+    {/for}
+  </ul>
+  <p class="note"><a href="/trefferbilanz">Zur Trefferbilanz</a></p>
+</section>
+{/if}

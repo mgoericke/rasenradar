@@ -228,4 +228,41 @@ class ReviewServiceTest {
         }
         return list;
     }
+
+    @Test
+    void clubRecordCountsEachMatchOnceAndExactWithinTendency() {
+        Instant t = Instant.parse("2026-10-01T12:00:00Z");
+        List<ForecastEvaluation> evaluations = List.of(
+                clubEvaluation(1, true, true, t),
+                clubEvaluation(2, true, false, t),
+                clubEvaluation(3, false, false, t),
+                clubEvaluation(3, true, false, t.plusSeconds(60)), // re-evaluated later: only this one counts
+                clubEvaluation(4, false, false, t));
+
+        var record = ReviewService.clubRecord("Bayern", evaluations, 4);
+
+        assertEquals(4, record.evaluated());
+        assertEquals(1, record.exact());
+        assertEquals(3, record.tendency());
+        assertEquals(25, record.exactPercent());
+        assertEquals(75, record.tendencyPercent());
+    }
+
+    @Test
+    void clubRecordHasNoRatesBelowTheRequiredNumber() {
+        var record = ReviewService.clubRecord("Bayern",
+                List.of(clubEvaluation(1, true, true, Instant.now())), 10);
+
+        assertFalse(record.reliable());
+        assertNull(record.tendencyPercent());
+    }
+
+    private static ForecastEvaluation clubEvaluation(long matchId, boolean tendencyHit, boolean scoreHit, Instant at) {
+        ForecastEvaluation e = new ForecastEvaluation();
+        e.matchId = matchId;
+        e.tendencyHit = tendencyHit;
+        e.scoreHit = scoreHit;
+        e.evaluatedAt = at;
+        return e;
+    }
 }
