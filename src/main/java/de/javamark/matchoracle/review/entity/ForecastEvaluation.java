@@ -70,4 +70,9 @@ public class ForecastEvaluation extends PanacheEntity {
     public static List<ForecastEvaluation> findByMatch(long matchId) {
         return list("matchId", matchId);
     }
+
+    /** Live evaluations (no backtest) of the given matches. */
+    public static List<ForecastEvaluation> findLiveByMatchIds(java.util.Collection<Long> matchIds) {
+        return matchIds.isEmpty() ? List.of() : list("matchId in ?1 and backtest = false", matchIds);
+    }
 }

@@ -46,6 +46,13 @@ public class MatchdayFacade {
     public record TeamState(long teamId, int points, int goalDifference, int goalsFor, Balance homeRecord, Balance awayRecord) {
     }
 
+    /** The two clubs of a match with the league season it belongs to; ids of all their matches in it. */
+    public record MatchClubs(String league, int season, Club home, Club away) {
+    }
+
+    public record Club(long id, String name, List<Long> matchIds) {
+    }
+
     @Inject
     FormCalculator formCalculator;
 
@@ -82,6 +89,22 @@ public class MatchdayFacade {
 
     private static de.javamark.matchoracle.matchday.entity.Balance entityBalance(Balance b) {
         return new de.javamark.matchoracle.matchday.entity.Balance(b.wins(), b.draws(), b.losses(), b.goalsFor(), b.goalsAgainst());
+    }
+
+    /** Story N01: the clubs of a match and every match each of them plays in that league season, for the review's AI record per club. */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Optional<MatchClubs> clubsOf(long matchId) {
+        return Match.<Match>findByIdOptional(matchId).map(m -> {
+            League league = m.matchday.league;
+            int season = m.matchday.season;
+            return new MatchClubs(league.sourceShortcut(), season,
+                    club(m.homeTeam, league, season), club(m.awayTeam, league, season));
+        });
+    }
+
+    private static Club club(Team team, League league, int season) {
+        return new Club(team.id, team.shortName == null ? team.name : team.shortName,
+                Match.findByTeam(team, league, season).stream().map(m -> m.id).toList());
     }
 
     /** Ids of all matches whose result is FINAL — the review derives a situation for each of them. */

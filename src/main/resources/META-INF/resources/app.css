@@ -373,6 +373,11 @@ h2 { font-size: 1.35rem; }
 .ki-reviewer strong { color: var(--ink); }
 .match-main > .situations:first-child { margin-top: 0; }
 .ki-reasoning { margin-top: 2.6rem; }
+/* story N01: the AI record of both clubs, a few plain lines after the data */
+.club-records { margin-top: 2.6rem; }
+.club-records h2 { font-size: 1.6rem; margin-bottom: .5rem; }
+.club-records ul { list-style: none; margin: 0; padding: 0; max-width: 62ch; }
+.club-records li { padding: .5rem 0; }
 .situations { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
 @media (max-width: 700px) { .situations { grid-template-columns: 1fr; } }
 .situation { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }

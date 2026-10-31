@@ -74,7 +74,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -602,15 +601,8 @@ public class MatchdayPages {
         return new TeamSituation(team.name, team.shortName, MatchdayPageModels.teamLink(team, shortcut),
                 standing.map(s -> s.position()).orElse(null),
                 standing.map(s -> s.balance().points()).orElse(0),
-                form.results(), chronological(form.lastMatches()).stream().map(v -> ResultRow.of(v, shortcut)).toList(),
+                form.results(), form.lastMatches().stream().map(v -> ResultRow.of(v, shortcut)).toList(),
                 BalanceRow.of("Heim", form.home()), BalanceRow.of("Auswärts", form.away()), form.includesProvisional());
-    }
-
-    /** Form is computed newest first; on the page it reads left to right like a timeline. */
-    private static <T> List<T> chronological(List<T> newestFirst) {
-        List<T> copy = new ArrayList<>(newestFirst);
-        Collections.reverse(copy);
-        return copy;
     }
 
     /** Table position of both teams after each matchday before this one, as JSON for the chart. */
