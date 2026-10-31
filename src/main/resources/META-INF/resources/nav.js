@@ -46,3 +46,25 @@
   document.addEventListener('DOMContentLoaded', setUp);
   document.addEventListener('htmx:afterSettle', setUp);
 })();
+
+// Story r057: while a match on the page runs, the tab title leads with it — "1:0 Bremen – Hoffenheim
+// · läuft – Rasen-Radar" — so a background tab still shows the score. It follows the live poll, which
+// swaps the score cells; once nothing runs the page's own title comes back. No alerts, no permissions.
+(function () {
+  var ours = null, base = document.title;
+  function update() {
+    if (document.title !== ours) base = document.title; // hx-boost brought a new page title
+    var cell = document.querySelector('.score.is-live[data-teams]');
+    if (!cell) {
+      if (ours) { document.title = base; ours = null; }
+      return;
+    }
+    var score = cell.classList.contains('has-score') ? cell.textContent.trim() + ' ' : '';
+    ours = score + cell.dataset.teams + ' · läuft – Rasen-Radar';
+    if (document.title !== ours) document.title = ours;
+  }
+  window.rrLiveTitle = update; // match.js calls it when its countdown turns into "Läuft"
+  document.addEventListener('DOMContentLoaded', update);
+  document.addEventListener('htmx:afterSettle', update);
+  document.addEventListener('htmx:oobAfterSwap', update); // the live poll swaps out of band only
+})();
