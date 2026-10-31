@@ -1,9 +1,9 @@
-{! The KI part of the match page's scoreboard: guide score, tendency and, once played, the verdict.
+{! The KI part of the match head (scoreboard): guide score, tendency and, once played, the verdict.
    The reasoning (three assessors, forecaster, reviewer) goes out of band into the page body. !}
 {#if fragment.forecast}
 {#let f=fragment.forecast v=fragment.verdict}
 <div class="board-ai">
-  <p class="board-ai-label">KI vor dem Anstoß · {f.createdAt}<strong><span class="sr-only">Richtwert </span>{f.expectedScore} · {f.tendency}</strong></p>
+  <p class="board-ai-label"><span class="ki-chip">KI</span> vor dem Anstoß · {f.createdAt}<strong><span class="sr-only">Richtwert </span>{f.expectedScore} · {f.tendency}</strong></p>
   <div class="board-ai-odds">
     <span class="mini-bars" role="img" aria-label="Heimsieg {f.homeWin} Prozent, Unentschieden {f.draw} Prozent, Auswärtssieg {f.awayWin} Prozent">
       <span class="home" style="flex-basis: {f.homeWin}%"></span><span class="draw" style="flex-basis: {f.draw}%"></span><span class="away" style="flex-basis: {f.awayWin}%"></span>
