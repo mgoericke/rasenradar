@@ -6,7 +6,8 @@
     <div class="stream-slot-head"><span>{s.time} Uhr</span><span id="slot-ki-{s.key}" class="slot-ki"></span></div>
     <ol class="stream-rows">
       {#for r in s.rows}
-      <li class="stream-row lg-{r.league}{#if r.match.played} is-played{#else if r.match.live} is-live{#else} is-open{/if}">
+      <li class="stream-row lg-{r.league}{#if r.match.played} is-played{#else if r.match.live} is-live{#else} is-open{/if}" data-watch="{r.match.id}">
+        <span class="watch-when">{r.match.weekday} {r.match.time} Uhr</span>
         <a class="fixture" href="{r.match.link}" data-clubs="{r.match.homeId} {r.match.awayId}">
           <span class="badge" title="{#if r.league == 'bl1'}1. Bundesliga{#else}2. Bundesliga{/if}">{r.badge}</span>
           <span class="home">
@@ -20,6 +21,7 @@
           </span>
         </a>
         <span id="ki-{r.match.id}" class="stream-ki is-pending"></span>
+        {#if !r.match.played && !r.match.live}<button type="button" class="star" data-star="{r.match.id}" aria-pressed="false" aria-label="{r.match.homeShort} – {r.match.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
       </li>
       {/for}
     </ol>

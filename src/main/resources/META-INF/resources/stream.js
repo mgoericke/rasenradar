@@ -29,6 +29,12 @@
       day.hidden = !day.querySelector('.stream-slot:not([hidden])');
       any = any || !day.hidden;
     });
+    // story r096: the block "Beobachtet" holds rows moved out of their day; it follows the filter too
+    var watched = root.querySelector('[data-watch-block]');
+    if (watched && watched.querySelector('.stream-row')) {
+      watched.hidden = !watched.querySelector('.stream-row:not([hidden])');
+      any = any || !watched.hidden;
+    }
     var empty = root.querySelector('.stream-empty[hidden], .stream-empty.is-filtered');
     if (empty) {
       empty.hidden = any;
@@ -62,6 +68,11 @@
       state = { status: 'alle', hidden: {} };
     }
     apply(root);
+  });
+
+  document.addEventListener('rr:watch', function () {
+    var root = document.querySelector('.landing');
+    if (root) apply(root);
   });
 
   window.rasenRadarStream = init;

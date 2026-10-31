@@ -825,6 +825,20 @@ h2 { font-size: 1.35rem; }
 .watched .fixtures { border: 1px solid var(--line); }
 .watch-day { display: none; }
 .watched .watch-day { display: block; }
+/* the same star on the start page: a third column beside the KI cell; the kickoff shows only
+   in "Beobachtet", where the row is away from its kickoff block */
+.js .stream-row { grid-template-columns: minmax(0, 1fr) 8.8rem 2.75rem; padding-right: .25rem; }
+.stream-row > .star { grid-column: 3; margin: 0; }
+.watch-when { display: none; }
+.watched .watch-when { display: block; grid-column: 1 / -1; font-size: .85rem; font-weight: 600; color: var(--ink-mute); padding: .45rem .9rem 0; }
+.watched .stream-rows { border: 1px solid var(--line); border-radius: 8px; }
+@media (max-width: 720px) {
+  .js .stream-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .stream-row > .fixture, .stream-row > .stream-ki { grid-column: 1; }
+  .stream-row > .star { grid-column: 2; grid-row: 1 / span 2; }
+  .watched .stream-row > .star { grid-row: 2 / span 2; }
+  .watched .watch-when { padding: .45rem .7rem 0; text-align: center; }
+}
 @media print { .star { display: none !important; } }
 /* story r078: "Gut für <Verein>: …" under an open match — plain ink, no brass, no green or red */
 .fixtures > li[data-good-for] { flex-wrap: wrap; }

@@ -196,6 +196,8 @@ document.addEventListener('click', function (e) {
       return sa && sb && (sa.compareDocumentPosition(sb) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
     }).forEach(function (li) { list.append(li); });
     block.hidden = list.children.length === 0;
+    // the start page filter (stream.js) re-runs on this, so the block follows the filter
+    document.dispatchEvent(new CustomEvent('rr:watch'));
   }
   document.addEventListener('click', function (e) {
     var star = e.target.closest && e.target.closest('[data-star]');
