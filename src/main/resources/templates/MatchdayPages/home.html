@@ -34,7 +34,12 @@
   </div>
 
   <div class="landing-layout">
-    <div class="stream">
+    {! story r096: starred open matches move up into "Beobachtet" (nav.js); the stream never ends a matchday on its own, so nothing unpins here !}
+    <div class="stream" data-watch-root data-watch-over="false">
+      <section class="stream-part watched" data-watch-block hidden aria-labelledby="stream-watched">
+        <h2 id="stream-watched" class="stream-title">Beobachtet</h2>
+        <ol class="stream-rows"></ol>
+      </section>
       {#if page.days}
       <section class="stream-part" aria-labelledby="stream-now">
         <h2 id="stream-now" class="stream-title">Spieltag <small>mit Urteil über die KI-Vorschau nach dem Abpfiff</small></h2>
