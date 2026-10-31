@@ -125,13 +125,24 @@ document.addEventListener('click', function (e) {
       if (c && a) { a.textContent = c.name; a.href = '/mein-verein/' + c.id; }
     }
   }
+  // story r092: the bar with the club's next match, refreshed every minute while the tab is visible
+  function loadNextMatch(c) {
+    var slot = document.getElementById('next-match');
+    if (!slot) return;
+    function mark() { document.documentElement.classList.toggle('has-next-match', slot.children.length > 0); }
+    if (!c || !window.htmx) { slot.innerHTML = ''; mark(); return; }
+    htmx.ajax('GET', '/mein-verein/' + c.id + '/naechstes-spiel', { target: slot, swap: 'innerHTML' }).then(mark, mark);
+  }
+  setInterval(function () { if (document.visibilityState === 'visible') loadNextMatch(read()); }, 60000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') loadNextMatch(read()); });
+  document.addEventListener('DOMContentLoaded', function () { loadNextMatch(read()); });
   document.addEventListener('click', function (e) {
     if (!e.target.closest) return;
     var choose = e.target.closest('[data-club-choose]');
     var clear = e.target.closest('[data-club-clear]');
     if (!choose && !clear) return;
     var c = choose ? { id: choose.dataset.clubId, name: choose.dataset.clubName, short: choose.dataset.clubShort } : null;
-    write(c); highlight(c); render();
+    write(c); highlight(c); render(); loadNextMatch(c);
   });
   document.addEventListener('DOMContentLoaded', render);
   document.addEventListener('htmx:afterSettle', render);

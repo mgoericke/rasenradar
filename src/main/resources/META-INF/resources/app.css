@@ -796,6 +796,7 @@ h2 { font-size: 1.35rem; }
 }
 .js .my-club-link:hover { border-color: var(--ink); }
 .club-choice { margin: .9rem 0 0; }
+.club-choice [hidden] { display: none; }
 .my-club-page { grid-column: 1 / -1; max-width: 60rem; }
 .my-club-intro { max-width: 40rem; color: var(--ink-soft); }
 .my-club-current { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; font-weight: 600; }
@@ -808,6 +809,29 @@ h2 { font-size: 1.35rem; }
 .my-club-option:hover { border-color: var(--ink); }
 .my-club-option[aria-pressed="true"] { background: var(--zone); border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); font-weight: 700; }
 .my-club-option:focus-visible, .js .my-club-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+/* story r092: the next match of "Mein Verein" — flat (hairline, surface, no shadow), fixed in the
+   corner on desktop and along the bottom on phones, where the page gets room so nothing is covered.
+   Fixed, so it moves nothing when it arrives. */
+.next-match:empty { display: none; }
+.next-match { position: fixed; z-index: 15; right: 1.25rem; bottom: 1.25rem; width: min(22rem, calc(100vw - 2.5rem)); }
+.next-match-link {
+  display: flex; align-items: center; gap: .7rem; padding: .6rem .8rem; min-height: 3.2rem;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+}
+.next-match-link:hover { border-color: var(--ink); }
+.next-match-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.next-match-text { display: grid; min-width: 0; flex: 1; }
+.next-match-title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.next-match-when { color: var(--ink-soft); font-size: .85rem; }
+.next-match-score { flex: none; font-weight: 700; padding: .15rem .5rem; border: 1px solid var(--ink); border-radius: 6px; font-variant-numeric: tabular-nums; }
+.next-match-score.is-live { border: 2px solid var(--loss); }
+.next-match-score.is-provisional { border-style: dashed; }
+.next-match-score .note { font-weight: 400; font-size: .75rem; color: var(--ink-soft); }
+@media (max-width: 560px) {
+  .next-match { left: .6rem; right: .6rem; bottom: .6rem; width: auto; }
+  html.has-next-match body { padding-bottom: 4.6rem; }
+}
+@media print { .next-match { display: none !important; } }
 /* story r002: the box stays when there is no crest (an empty disc) or it fails to load (hidden, no broken icon) */
 span.crest { display: inline-block; flex: none; box-sizing: border-box; }
 .crest.is-missing { border: 1px dashed var(--line); border-radius: 50%; }

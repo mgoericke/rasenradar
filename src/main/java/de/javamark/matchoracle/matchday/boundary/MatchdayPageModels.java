@@ -668,12 +668,72 @@ public final class MatchdayPageModels {
      */
     record MyClubChoice(long id, String name, String shortName, String crest) {
         static MyClubChoice of(Team t) {
-            return new MyClubChoice(t.id, t.name, t.shortName == null ? t.name : t.shortName, crestLink(t));
+            return new MyClubChoice(t.id, t.name, t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName, crestLink(t));
         }
 
         /** League-free, so the link survives promotion and relegation (MatchdayPages.myClub). */
         public String link() {
             return "/mein-verein/" + id;
+        }
+    }
+
+    /**
+     * Story r092: the bar with the next match of "Mein Verein" on every page. Server-made and
+     * fetched by nav.js every minute, so the countdown moves on without a page reload.
+     */
+    record NextMatchBar(String title, String when, String countdown, String opponentCrest, String link,
+                        boolean live, String score, boolean provisional) {
+
+        private static final DateTimeFormatter WEEKDAY_DATE = DateTimeFormatter.ofPattern("EE, d.M.", Locale.GERMAN);
+
+        /**
+         * The match the bar shows: the running one, one just ended with a provisional result while
+         * still in the live window, else the next one not yet played. {@code null} when none is left.
+         */
+        static Match pick(List<Match> byKickoff, Instant now, Duration liveWindow) {
+            for (Match m : byKickoff) {
+                boolean inWindow = now.isBefore(m.kickoff.plus(liveWindow));
+                if (!m.isPlayed() && (inWindow || m.kickoff.isAfter(now))) return m;
+                if (m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL && inWindow && !now.isBefore(m.kickoff)) return m;
+            }
+            return null;
+        }
+
+        static NextMatchBar of(Match m, Team club, Instant now, Duration liveWindow) {
+            boolean home = m.homeTeam.equals(club);
+            Team opponent = home ? m.awayTeam : m.homeTeam;
+            String clubName = shortOrName(club);
+            String opponentName = shortOrName(opponent);
+            boolean live = isLive(m.kickoff, m.isPlayed(), now, liveWindow);
+            Score shown = m.isPlayed() ? m.fullTimeScore : live ? m.liveScore : null;
+            return new NextMatchBar(clubName + (home ? " gegen " : " bei ") + opponentName,
+                    when(m.kickoff, now), live || m.isPlayed() ? null : countdown(m.kickoff, now),
+                    crestLink(opponent), "/" + m.matchday.league.sourceShortcut() + "/matches/" + m.id,
+                    live, shown == null ? null : shown.home + ":" + shown.away,
+                    m.isPlayed() && m.resultStatus == ResultStatus.PROVISIONAL);
+        }
+
+        private static String shortOrName(Team t) {
+            return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
+        }
+
+        /** "heute 15:30", "morgen 20:30", "Sa., 8.11. 15:30". */
+        static String when(Instant kickoff, Instant now) {
+            java.time.ZonedDateTime k = kickoff.atZone(DISPLAY_ZONE);
+            long days = java.time.temporal.ChronoUnit.DAYS.between(now.atZone(DISPLAY_ZONE).toLocalDate(), k.toLocalDate());
+            String day = days == 0 ? "heute" : days == 1 ? "morgen" : WEEKDAY_DATE.format(k);
+            return day + " " + TIME.format(k);
+        }
+
+        /** "in 42 Min", "in 13 Std 26 Min", "in 3 Tagen" (calendar days once a day or more is left). */
+        static String countdown(Instant kickoff, Instant now) {
+            Duration d = Duration.between(now, kickoff);
+            if (d.isNegative() || d.isZero()) return null;
+            long minutes = (d.toSeconds() + 59) / 60;
+            if (minutes < 60) return "in " + minutes + " Min";
+            if (minutes < 24 * 60) return "in " + minutes / 60 + " Std" + (minutes % 60 == 0 ? "" : " " + minutes % 60 + " Min");
+            long days = java.time.temporal.ChronoUnit.DAYS.between(now.atZone(DISPLAY_ZONE).toLocalDate(), kickoff.atZone(DISPLAY_ZONE).toLocalDate());
+            return days == 1 ? "in einem Tag" : "in " + days + " Tagen";
         }
     }
 
@@ -687,7 +747,9 @@ public final class MatchdayPageModels {
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
-                    boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub) {
+                    boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
+                    boolean noMatchesLeft) {
+
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }
