@@ -485,6 +485,10 @@ h2 { font-size: 1.35rem; }
 /* the way to the forecast carries the KI lilac — nothing else does */
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--ki); border-color: var(--ki); color: var(--on-ink); }
+/* story r028: the print button needs script, so it shows only once the head script set .js */
+.print-button { display: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
+.js .print-button { display: inline-block; }
+.print-note { display: none; }
 
 /* --- landing page, spec 01 "Spieltags-Strom": one stream by day and kickoff block across both
    Bundesligas, tables and KI-Bilanz in a rail beside it ----------------------------------- */
@@ -972,4 +976,35 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .brand { width: auto; flex: 1; }
   .theme-menu { order: 0; }
   .nav-links { order: 4; }
+}
+
+/* Story r028: the matchday on paper. A4 portrait, black on white, only the fixtures:
+   no navigation, buttons, table, crests or forecast markers, and no guessing columns. */
+@media print {
+  @page { size: A4 portrait; margin: 14mm 14mm 16mm; }
+  /* the extra weight beats the dark-mode token blocks, so a dark screen still prints black on white */
+  html:root:not([data-print-sheet]), html:root[data-theme] {
+    --ink: #000; --ink-soft: #222; --ink-mute: #444; --paper: #fff; --surface: #fff; --line: #999;
+    color-scheme: light;
+  }
+  html { font-size: 11pt; }
+  body { background: #fff !important; color: #000; }
+  .topnav, .site-footer, .matchday-actions, .pager, .standings, .knockout-phase, .forecast-marker,
+  .crest, #live-poller, .skip-link { display: none !important; }
+  .page { display: block; max-width: none; padding: 0; margin: 0; }
+  .matchday-title { font-size: 22pt; line-height: 1.1; }
+  .matchday-season { font-size: 11pt; color: #000; }
+  .day { margin: 5mm 0 1mm; font-size: 12pt; break-after: avoid; }
+  .day::after { height: 1px; background: #000; }
+  .fixtures { border-radius: 0; overflow: visible; }
+  .fixtures > li { background: none !important; border-bottom: 1px solid #bbb; break-inside: avoid; }
+  .fixture { grid-template-columns: 3.2rem minmax(0, 1fr) 4rem minmax(0, 1fr) 5.5rem; padding: 1.6mm 0; gap: .6rem; color: #000; }
+  .fixture .team-name.full { display: inline; }
+  .fixture .team-name.short { display: none; }
+  .fixture .time, .fixture .half { color: #000; font-size: 10pt; }
+  .fixture .score { background: none !important; color: #000 !important; border: 1px solid #000; box-shadow: none; text-align: center; }
+  .fixture .score:not(.is-played) { border-color: #999; color: #444 !important; }
+  .fixture .score.is-provisional { border-style: dashed; }
+  .print-note { display: inline; font-style: italic; }
+  a { color: inherit; text-decoration: none; }
 }

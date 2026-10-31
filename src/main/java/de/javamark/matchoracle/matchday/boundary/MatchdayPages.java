@@ -289,7 +289,10 @@ public class MatchdayPages {
 
         return new MatchdayPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.season, matchday.number,
                 prev, next, days, rows, standings.includesProvisional(), DataInfo.of(matchday, Instant.now()),
-                roundSections(matchday.league, matchday.season, shortcut, now));
+                roundSections(matchday.league, matchday.season, shortcut, now),
+                matches.isEmpty() ? null : MatchdayPageModels.dateRange(
+                        matches.getFirst().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate(),
+                        matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()));
     }
 
     /**

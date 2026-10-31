@@ -352,7 +352,7 @@ public final class MatchdayPageModels {
     /** {@code rounds} carries a competition's knockout phase — empty where it has none. */
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
-                        List<RoundSection> rounds) {
+                        List<RoundSection> rounds, String dateRange) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
