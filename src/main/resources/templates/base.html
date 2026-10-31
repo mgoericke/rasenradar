@@ -23,6 +23,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Rasen-Radar">
+  {! the visitor's theme choice ("Darstellung"), set before the first paint so pages never flash; browser-only !}
+  <script>{|try { var t = localStorage.getItem('rr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}|}</script>
   <link rel="preload" href="/fonts/sofia-sans-extra-condensed-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/sofia-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/app.css?v={assetVersion}">
@@ -46,6 +48,14 @@
         <li><a class="nav-link {#if l.active}is-active{/if}" href="/{l.shortcut}" {#if l.active}aria-current="page"{/if}><span class="badge">{l.badge}</span>{l.name}</a></li>
         {/for}
       </ul>
+      <details class="theme-menu" hidden>
+        <summary aria-label="Darstellung" title="Darstellung"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></summary>
+        <div class="theme-options">
+          <button type="button" data-theme-choice="system">Wie System</button>
+          <button type="button" data-theme-choice="light">Hell</button>
+          <button type="button" data-theme-choice="dark">Dunkel</button>
+        </div>
+      </details>
     </nav>
   </header>
   <main class="page">

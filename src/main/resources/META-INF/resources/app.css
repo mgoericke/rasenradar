@@ -29,6 +29,7 @@
   --ki-on-turf: #DCCBFF;
   --live: #1D4FD8;
   --zone: var(--paper);
+  --on-result: #fff;
   /* former names, kept while the components move over */
   --ground: var(--chalk);
   --surface: var(--paper);
@@ -41,12 +42,72 @@
   --text: "Sofia Sans", system-ui, sans-serif;
 }
 
+
+/* evening match: the dark theme follows the system setting; the "Darstellung" menu can pin either
+   theme in this browser (data-theme on <html>, set in the head before the first paint) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --chalk: #0A1A10;
+    --paper: #11261A;
+    --mow-a: #0F2318;
+    --mow-b: #16301F;
+    --turf-a: #0E2F1B;
+    --turf-b: #123A22;
+    --turf-ink: #E8F0E4;
+    --turf-soft: #B9CCB4;
+    --turf-line: rgba(232, 240, 228, .4);
+    --ink: #E8F0E4;
+    --on-ink: #0A1A10;
+    --ink-soft: #A8BBA8;
+    --ink-mute: #9CB09C;
+    --line: #2C4A35;
+    --win: #5BC27E;
+    --loss: #FF7A63;
+    --draw: #8A988B;
+    --ki: #B49CFF;
+    --ki-wash: #2E2160;
+    --ki-deep: #E6DCFF;
+    --ki-on-turf: #C4B0FF;
+    --live: #8FB4FF;
+    --zone: #1F3D29;
+    --on-result: #0A1A10;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --chalk: #0A1A10;
+  --paper: #11261A;
+  --mow-a: #0F2318;
+  --mow-b: #16301F;
+  --turf-a: #0E2F1B;
+  --turf-b: #123A22;
+  --turf-ink: #E8F0E4;
+  --turf-soft: #B9CCB4;
+  --turf-line: rgba(232, 240, 228, .4);
+  --ink: #E8F0E4;
+  --on-ink: #0A1A10;
+  --ink-soft: #A8BBA8;
+  --ink-mute: #9CB09C;
+  --line: #2C4A35;
+  --win: #5BC27E;
+  --loss: #FF7A63;
+  --draw: #8A988B;
+  --ki: #B49CFF;
+  --ki-wash: #2E2160;
+  --ki-deep: #E6DCFF;
+  --ki-on-turf: #C4B0FF;
+  --live: #8FB4FF;
+  --zone: #1F3D29;
+  --on-result: #0A1A10;
+  color-scheme: dark;
+}
+
 * { box-sizing: border-box; }
 /* Die Schriftgroesse sitzt an der Wurzel, nicht am body: sonst rechnet jedes rem im
    Rest der Datei gegen die 16px des Browsers, waehrend der Fliesstext auf 15px steht —
    .95rem war dadurch groesser als der Fliesstext. Fluid, aber mit rem-Anteil, damit
    Zoom benutzbar bleibt: 16px auf dem Telefon, 17.5px auf grossen Schirmen. */
-html { color-scheme: light; font-size: clamp(16px, 0.9rem + 0.35vw, 17.5px); }
+html { color-scheme: light dark; font-size: clamp(16px, 0.9rem + 0.35vw, 17.5px); }
 body {
   margin: 0;
   background: var(--ground);
@@ -68,7 +129,7 @@ h2 { font-size: 1.35rem; }
   background: var(--chalk); color: var(--ink); border-bottom: 1px solid var(--line);
 }
 .topnav-inner {
-  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem 2rem;
+  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem 1.5rem;
   padding: .7rem clamp(1rem, 4vw, 3rem);
   max-width: 1280px;
 }
@@ -170,7 +231,7 @@ h2 { font-size: 1.35rem; }
   min-width: 3.6rem; padding: .15rem .45rem; text-align: center; border-radius: 6px;
   border: 1.5px solid var(--line); color: var(--ink-mute);
 }
-.score.is-played { background: var(--ink); color: #fff; border-color: var(--ink); }
+.score.is-played { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .score.is-played.is-provisional { background: transparent; color: var(--ink); border-color: var(--ink); border-style: dashed; }
 /* a running match (spec 01): "Läuft" while the source has no interim score yet, then the
    interim score itself — red outline, never filled, so it can't be mistaken for a result */
@@ -291,7 +352,7 @@ h2 { font-size: 1.35rem; }
 .form { list-style: none; margin: 0; padding: 0; display: flex; gap: .4rem; flex-wrap: wrap; }
 .pill {
   display: inline-block; min-width: 2.9rem; text-align: center; padding: .25rem .4rem; border-radius: 6px;
-  font-family: var(--display); font-weight: 700; color: #fff; border: 2px solid transparent;
+  font-family: var(--display); font-weight: 700; color: var(--on-result); border: 2px solid transparent;
 }
 .pill.win { background: var(--win); border-color: var(--win); }
 .pill.loss { background: var(--loss); border-color: var(--loss); }
@@ -360,15 +421,15 @@ h2 { font-size: 1.35rem; }
 
 /* --- buttons ---------------------------------------------------------------------- */
 .button {
-  font: inherit; font-weight: 600; color: #fff; background: var(--ink); border: 0; border-radius: 8px;
+  font: inherit; font-weight: 600; color: var(--on-ink); background: var(--ink); border: 0; border-radius: 8px;
   padding: .55rem 1rem; cursor: pointer;
 }
-.button:hover { background: var(--stage); }
+.button:hover { background: var(--turf-a); color: var(--turf-ink); }
 .link-button { display: inline-block; font-weight: 500; border: 1px solid var(--line); border-radius: 8px; padding: .4rem .8rem; background: var(--surface); }
 .link-button:hover { border-color: var(--ink); }
 /* the way to the forecast carries the brass accent — nothing else does */
 .link-button.ai { border-color: var(--accent); }
-.link-button.ai:hover { background: var(--ki); border-color: var(--ki); color: #fff; }
+.link-button.ai:hover { background: var(--ki); border-color: var(--ki); color: var(--on-ink); }
 
 /* --- landing page, spec 01 "Spieltags-Strom": one stream by day and kickoff block across both
    Bundesligas, tables and KI-Bilanz in a rail beside it ----------------------------------- */
@@ -382,7 +443,7 @@ h2 { font-size: 1.35rem; }
 /* segmented control and chips: filter bar and phone view switch */
 .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .seg button, .seg label { font: 500 .88rem var(--text); color: var(--ink-soft); background: none; border: 0; padding: .35rem .8rem; border-radius: 999px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
 .seg button:disabled { color: var(--ink-mute); cursor: default; }
 .chip { font: 500 .88rem var(--text); display: inline-flex; gap: .4rem; align-items: center; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .3rem .75rem; cursor: pointer; }
 .chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
@@ -434,7 +495,7 @@ h2 { font-size: 1.35rem; }
 .rail-panel { display: none; }
 #table-bl1:checked ~ .table-bl1, #table-bl2:checked ~ .table-bl2 { display: block; }
 #table-bl1:checked ~ .rail-tabs label[for="table-bl1"],
-#table-bl2:checked ~ .rail-tabs label[for="table-bl2"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+#table-bl2:checked ~ .rail-tabs label[for="table-bl2"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .table-input:focus-visible ~ .rail-tabs { outline: 3px solid var(--win); outline-offset: 2px; border-radius: 999px; }
 .stream-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
 .stream-table th { text-align: right; font-weight: 600; color: var(--ink-mute); padding: .25rem .3rem; border-bottom: 2px solid var(--ink); }
@@ -459,7 +520,7 @@ h2 { font-size: 1.35rem; }
   .view-switch { display: inline-flex; margin-top: .7rem; }
   .view-input:nth-of-type(1):checked ~ .view-switch label:nth-of-type(1),
   .view-input:nth-of-type(2):checked ~ .view-switch label:nth-of-type(2),
-  .view-input:nth-of-type(3):checked ~ .view-switch label:nth-of-type(3) { background: var(--ink); color: #fff; }
+  .view-input:nth-of-type(3):checked ~ .view-switch label:nth-of-type(3) { background: var(--ink); color: var(--on-ink); }
   .view-input:focus-visible ~ .view-switch { outline: 3px solid var(--win); outline-offset: 2px; }
   #view-spiele:checked ~ .landing-layout .landing-rail { display: none; }
   #view-tabelle:checked ~ .landing-layout .stream, #view-bilanz:checked ~ .landing-layout .stream { display: none; }
@@ -521,7 +582,7 @@ h2 { font-size: 1.35rem; }
 
 /* the probability bars: one row, widths are the probabilities */
 .bars { display: flex; gap: 3px; height: 2.6rem; border-radius: 8px; overflow: hidden; }
-.bar { display: flex; align-items: center; gap: .4rem; padding: 0 .6rem; color: #fff; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.bar { display: flex; align-items: center; gap: .4rem; padding: 0 .6rem; color: var(--on-ink); font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bar b { font-family: var(--display); font-size: 1.05rem; }
 .bar.home { background: var(--ink); }
 .bar.draw { background: var(--draw); }
@@ -820,3 +881,29 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 /* a highlighted row lights up on chalk: the two teams of the match in the table beside it */
 .stream-table tbody tr.is-match-team > td { background: var(--zone); font-weight: 600; }
 .fixture:hover, .forecast-row:hover, .schedule a:hover { background: var(--zone); }
+
+/* the "Darstellung" menu: system, light or dark, remembered in this browser only.
+   Hidden until nav.js runs — without a script there is nothing to switch. */
+.theme-menu { position: relative; order: 3; }
+.theme-menu > summary {
+  list-style: none; display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
+}
+.theme-menu > summary::-webkit-details-marker { display: none; }
+.theme-menu > summary:hover, .theme-menu[open] > summary { border-color: var(--ink); }
+.theme-menu > summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.theme-options {
+  position: absolute; right: 0; top: calc(100% + .4rem); z-index: 20; display: grid; min-width: 11rem; padding: .35rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.theme-options button {
+  font: 600 .92rem var(--text); text-align: left; color: var(--ink-soft); background: none; border: 0;
+  border-radius: 6px; padding: .55rem .7rem; min-height: 2.5rem; cursor: pointer;
+}
+.theme-options button:hover { background: var(--mow-a); color: var(--ink); }
+.theme-options button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+@media (max-width: 560px) {
+  .brand { width: auto; flex: 1; }
+  .theme-menu { order: 0; }
+  .nav-links { order: 4; }
+}
