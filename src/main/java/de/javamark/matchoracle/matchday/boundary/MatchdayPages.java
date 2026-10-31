@@ -119,6 +119,7 @@ public class MatchdayPages {
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
+        static native TemplateInstance season(MatchdayPageModels.SeasonPage page);
         static native TemplateInstance myClub(MyClubPage page);
         static native TemplateInstance nextMatch(NextMatchBar bar);
         static native TemplateInstance liveTable(LiveTable live);
@@ -454,6 +455,28 @@ public class MatchdayPages {
                 ? Nav.of(l).leagues().stream().filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList()
                 : List.of();
         return Templates.leagueScorers(new LeagueScorersPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), rows, switcher));
+    }
+
+    /**
+     * The season page of a Bundesliga: figures of the season so far, final results only. Only the two
+     * Bundesligas have one — cup and Nations League have no season of their own to count (Spec 06).
+     */
+    @GET
+    @Path("/{league}/saison")
+    public TemplateInstance season(@PathParam("league") String league) {
+        League l = league(league);
+        if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
+            throw new NotFoundException("no season page for " + league);
+        }
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> settled = Match.findPlayedBefore(l, season, Integer.MAX_VALUE).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        String shortcut = l.sourceShortcut();
+        List<NavLeague> switcher = Nav.of(l).leagues().stream()
+                .filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList();
+        return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), switcher,
+                settled.size(),
+                MatchdayPageModels.HomeAdvantageView.of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled), shortcut)));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {

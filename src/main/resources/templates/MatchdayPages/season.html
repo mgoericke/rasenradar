@@ -1,0 +1,49 @@
+{#include base nav=page.nav}
+{#title}Saison {page.season} – {page.nav.leagueName}{/title}
+{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
+{#body}
+{! The season page of a Bundesliga: one section per figure of the whole season so far. Final results
+   only; every section says on how many matches it rests. !}
+<section class="forecast-page season-page">
+  <h1 class="page-title">Saison {page.season}</h1>
+  <p class="muted">{page.nav.leagueName} · {#if page.basedOn == 1}1 beendetes Spiel{#else}{page.basedOn} beendete Spiele{/if}, vorläufige Ergebnisse zählen nicht mit</p>
+  <nav class="scorer-switch" aria-label="Liga">
+    {#for l in page.leagues}<a href="/{l.shortcut}/saison"{#if l.active} aria-current="page" class="is-active"{/if}>{l.name}</a>{/for}
+  </nav>
+
+  {! story r098: how much the home side really gains — the league as a whole, then the clubs !}
+  <section class="season-block" id="heimvorteil" aria-labelledby="heimvorteil-title">
+    <h2 id="heimvorteil-title">Heimvorteil</h2>
+    {#if page.basedOn == 0}
+    <p class="muted">Noch kein Spiel beendet.</p>
+    {#else}
+    {#let h=page.homeAdvantage}
+    {#if h.lead}<p class="season-lead">{h.lead}</p>{/if}
+    <div class="share-bar" aria-hidden="true">
+      {#if h.homeWinPercent > 0}<span class="home" style="flex-grow: {h.homeWinPercent}"></span>{/if}
+      {#if h.drawPercent > 0}<span class="draw" style="flex-grow: {h.drawPercent}"></span>{/if}
+      {#if h.awayWinPercent > 0}<span class="away" style="flex-grow: {h.awayWinPercent}"></span>{/if}
+    </div>
+    <p class="share-legend">{h.homeWinPercent} % Heimsiege · {h.drawPercent} % Remis · {h.awayWinPercent} % Auswärtssiege <span class="muted">aus {page.basedOn} {#if page.basedOn == 1}Spiel{#else}Spielen{/if}</span></p>
+
+    <div class="home-away-lists">
+      <div>
+        <h3>Zu Hause am stärksten</h3>
+        {#if h.strongestAtHome}
+        {#include MatchdayPages/homeAwayRows rows=h.strongestAtHome /}
+        {#else}<p class="muted">Kein Verein holt zu Hause mehr Punkte je Spiel als auswärts.</p>{/if}
+      </div>
+      <div>
+        <h3>Lieber auswärts</h3>
+        {#if h.preferAway}
+        {#include MatchdayPages/homeAwayRows rows=h.preferAway /}
+        {#else}<p class="muted">Kein Verein holt auswärts mehr Punkte je Spiel als zu Hause.</p>{/if}
+      </div>
+    </div>
+    <p class="note">Punkte je Spiel: links zu Hause, rechts auswärts. Vereine ohne Heim- oder ohne Auswärtsspiel fehlen.</p>
+    {/let}
+    {/if}
+  </section>
+</section>
+{/body}
+{/include}
