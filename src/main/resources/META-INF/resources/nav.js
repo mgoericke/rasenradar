@@ -134,16 +134,40 @@ document.addEventListener('click', function (e) {
     if (!c || !window.htmx) { slot.innerHTML = ''; mark(); return; }
     htmx.ajax('GET', '/mein-verein/' + c.id + '/naechstes-spiel', { target: slot, swap: 'innerHTML' }).then(mark, mark);
   }
-  setInterval(function () { if (document.visibilityState === 'visible') loadNextMatch(read()); }, 60000);
-  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') loadNextMatch(read()); });
+  function refresh() {
+    if (document.visibilityState !== 'visible') return;
+    var c = read();
+    loadNextMatch(c);
+    if (c) loadStage(c, true);
+  }
+  setInterval(refresh, 60000);
+  document.addEventListener('visibilitychange', refresh);
   document.addEventListener('DOMContentLoaded', function () { loadNextMatch(read()); });
+  // the start page's stage: the club's own running or next match instead of the top match. The
+  // server's top match is kept and comes back without a club, or when the club has no match.
+  function loadStage(c, force) {
+    var slot = document.getElementById('top-stage');
+    if (!slot || !window.htmx) return;
+    if (slot.rrTop == null) slot.rrTop = slot.innerHTML;
+    var id = c ? String(c.id) : '';
+    if (!force && slot.dataset.club === id) return;
+    slot.dataset.club = id;
+    if (!c) { slot.innerHTML = slot.rrTop; return; }
+    htmx.ajax('GET', '/mein-verein/' + c.id + '/topspiel', { target: slot, swap: 'innerHTML' })
+      .then(function () { if (!slot.children.length) slot.innerHTML = slot.rrTop; });
+  }
+  document.addEventListener('DOMContentLoaded', function () { loadStage(read()); });
+  document.addEventListener('htmx:afterSettle', function (e) {
+    if (e.target.closest && e.target.closest('#top-stage')) return;
+    loadStage(read());
+  });
   document.addEventListener('click', function (e) {
     if (!e.target.closest) return;
     var choose = e.target.closest('[data-club-choose]');
     var clear = e.target.closest('[data-club-clear]');
     if (!choose && !clear) return;
     var c = choose ? { id: choose.dataset.clubId, name: choose.dataset.clubName, short: choose.dataset.clubShort } : null;
-    write(c); highlight(c); render(); loadNextMatch(c);
+    write(c); highlight(c); render(); loadNextMatch(c); loadStage(c, true);
   });
   document.addEventListener('DOMContentLoaded', render);
   document.addEventListener('htmx:afterSettle', render);

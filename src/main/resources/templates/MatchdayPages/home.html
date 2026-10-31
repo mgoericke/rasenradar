@@ -15,6 +15,9 @@
     <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.name}</b> {l.matchdayNumber}. Spieltag</a>{#if l_hasNext} · {/if}{/for}</p>
   </header>
 
+  {! the start page's stage: the top match of the 1. Bundesliga, or the club's own with "Mein Verein" !}
+  {#if page.top}<div id="top-stage">{#include MatchdayPages/topStage stage=page.top /}</div>{/if}
+
   {! story r044: the browser remembers the last visit and the final table of then (rr-visit) and
      shows here what has been played since — before the first paint, so nothing below jumps.
      Neither the visit nor the club ever reaches the server. !}

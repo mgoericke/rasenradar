@@ -17,6 +17,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.NextMatchBar
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
 import de.javamark.matchoracle.matchday.control.MatchdayStream;
 import de.javamark.matchoracle.matchday.control.MatchdayStream.StreamDay;
@@ -52,6 +53,7 @@ import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.control.Stakes;
+import de.javamark.matchoracle.matchday.control.TopMatch;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
@@ -119,6 +121,7 @@ public class MatchdayPages {
         static native TemplateInstance myClub(MyClubPage page);
         static native TemplateInstance nextMatch(NextMatchBar bar);
         static native TemplateInstance liveTable(LiveTable live);
+        static native TemplateInstance topStage(TopStage stage);
     }
 
     @Inject
@@ -170,7 +173,66 @@ public class MatchdayPages {
         int live = (int) shown.stream().filter(m -> m.isLive(now, liveWindow)).count();
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
-                MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces)));
+                MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces),
+                topStage(shown, next, now)));
+    }
+
+    /** The top match of the start page: the 1. Bundesliga first, the 2. Bundesliga when it has nothing. */
+    private TopStage topStage(List<Match> shown, List<Match> next, Instant now) {
+        for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
+            List<Match> candidates = java.util.stream.Stream.concat(shown.stream(), next.stream())
+                    .filter(m -> m.matchday.league == l).toList();
+            if (candidates.isEmpty()) continue;
+            Matchday md = candidates.getFirst().matchday;
+            Map<Team, Integer> places = placesOf(l, md.season, Integer.MAX_VALUE);
+            Optional<Match> top = TopMatch.pick(candidates, places, now, liveWindow);
+            if (top.isPresent()) {
+                return stageOf(top.get(), "Topspiel", places, now);
+            }
+        }
+        return null;
+    }
+
+    /** The stage for one match, with both table places when the competition has a table. */
+    private TopStage stageOf(Match m, String label, Map<Team, Integer> places, Instant now) {
+        String shortcut = m.matchday.league.sourceShortcut();
+        MatchRow row = MatchRow.of(m, shortcut, now, liveWindow);
+        Integer home = places.get(m.homeTeam);
+        Integer away = places.get(m.awayTeam);
+        String reason = home == null || away == null ? "" : "Platz " + home + " gegen Platz " + away;
+        String when = m.isPlayed() ? "Endstand · " + MatchdayPageModels.dayLabel(m.kickoff)
+                : m.isLive(now, liveWindow) ? "läuft"
+                : NextMatchBar.when(m.kickoff, now) + " Uhr";
+        return new TopStage(label, MatchdayPageModels.leagueName(m.matchday.league), when, reason, row);
+    }
+
+    private Map<Team, Integer> placesOf(League league, int season, int beforeMatchday) {
+        if (!league.hasTable()) {
+            return Map.of();
+        }
+        Map<Team, Integer> places = new HashMap<>();
+        standingsCalculator.standingsBefore(league, season, beforeMatchday).positions()
+                .forEach(p -> places.put(p.team(), p.position()));
+        return places;
+    }
+
+    /**
+     * The start page's stage for "Mein Verein": the club's running or next match in any competition,
+     * swapped in by nav.js. Empty when the club has none — the top match then stays.
+     */
+    @GET
+    @Path("/mein-verein/{id}/topspiel")
+    public Response clubStage(@PathParam("id") long id, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        TopStage stage = Team.<Team>findByIdOptional(id)
+                .map(team -> nextMatchOf(team, now))
+                .map(m -> stageOf(m, "Mein Verein", placesOf(m.matchday.league, m.matchday.season, Integer.MAX_VALUE), now))
+                .orElse(null);
+        return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
+                .header("Cache-Control", "no-store").build();
     }
 
     /** Story r044: the played matches the card "Seit dem letzten Besuch" can pick from, newest first. */

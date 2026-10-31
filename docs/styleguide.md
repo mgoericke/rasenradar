@@ -16,10 +16,14 @@ entwickelt und gemessen).
   Haarlinien zwischen Zeilen. Die Streifen tragen Rhythmus, keine Bedeutung — nichts darf davon abhängen,
   sie zu unterscheiden.
 - **Kreidelinien trennen.** Tagesüberschriften enden in einer 2-px-Kreidelinie, Abschnitte ebenso.
-- **Genau eine grüne Bühne: der Spielkopf.** Auf der Spielseite steht die Begegnung auf dem gestreiften
-  Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als Rahmen; keine Linie kreuzt Text.
-  Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte, Form) sind die große Schrift; die
-  KI-Vorschau ist eine markierte Zeile darunter.
+- **Grüne Bühne nur für ein einzelnes Spiel: der Spielkopf und das Topspiel.** Auf der Spielseite steht
+  die Begegnung auf dem gestreiften Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als
+  Rahmen; keine Linie kreuzt Text. Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte,
+  Form) sind die große Schrift; die KI-Vorschau ist eine markierte Zeile darunter. Die Startseite zeigt
+  darüber hinaus genau ein Spiel auf demselben Rasen, kleiner und als Link zur Spielseite: das Topspiel
+  (laufend vor anstehend vor beendet, je die beste Paarung nach Tabellenplatz) oder mit „Mein Verein"
+  dessen laufendes bzw. nächstes Spiel. Mehr Bühnen gibt es nicht; Listen, Tabellen und Karten bleiben
+  auf Kreide.
 - **Keine Anzeigetafel-Optik.** Keine LED- oder Klappziffern, kein tickender Sekunden-Countdown, keine
   Laufschrift. Eine Anstoßzeit steht in Worten da („in 5 Std 11 Min").
 - **Wertigkeit durch Verzicht.** Keine Schatten, keine weichen Verläufe, keine Icons als Dekoration.

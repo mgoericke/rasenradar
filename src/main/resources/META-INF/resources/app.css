@@ -357,6 +357,25 @@ h2 { font-size: 1.35rem; }
   .scoreboard .home { flex-direction: column-reverse; }
   .scoreboard .score { justify-self: center; }
 }
+/* the start page's stage: the match head, smaller, one link to the match page */
+.top-stage { display: block; padding: 1.5rem 2.2rem 1.2rem; margin: 0 0 1.4rem; text-decoration: none; }
+.top-stage:hover .teams, .top-stage:focus-visible .teams { text-decoration: underline; text-underline-offset: .2em; }
+.top-stage .box { top: 1.6rem; height: 4.4rem; }
+.top-stage .teams { font-size: clamp(1.25rem, 2.6vw, 2rem); gap: 1rem; margin: .5rem 0 0; }
+.top-stage .score { font-size: clamp(2rem, 4.6vw, 3rem); min-width: 4.6rem; }
+.top-stage .score.is-live.has-score { font-size: clamp(2rem, 4.6vw, 3rem); }
+.top-stage .crest.large { width: 2.6rem; height: 2.6rem; }
+.top-stage-label, .top-stage-when { display: block; color: var(--turf-soft); }
+.top-stage-label b { color: var(--turf-ink); margin-right: .3rem; }
+.top-stage-when { margin-top: .6rem; }
+@media (max-width: 560px) {
+  .top-stage { padding: 1.2rem 1rem 1rem; }
+  .top-stage .teams { grid-template-columns: 1fr auto 1fr; font-size: 1.05rem; gap: .5rem; }
+  .top-stage .home, .top-stage .away { gap: .3rem; }
+  .top-stage .crest.large { width: 2rem; height: 2rem; padding: .2rem; }
+  .top-stage .score { font-size: 1.7rem; min-width: 3.6rem; padding: 0 .4rem; }
+  .top-stage .score.is-live.has-score { font-size: 1.7rem; }
+}
 .scoreboard .forecast-summary { border-top: 2px solid var(--turf-line); margin-top: 1.4rem; padding-top: 1.1rem; }
 /* the KI line is loaded after the page: hold its height while the placeholder is there, so the goals below do not jump */
 .scoreboard .forecast-summary:has(> .ki-pending) { min-height: 8.6rem; }
