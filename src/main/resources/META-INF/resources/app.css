@@ -336,6 +336,26 @@ h2 { font-size: 1.35rem; }
 .home-away-bar .home { justify-content: flex-end; border-right: 1px solid var(--ink-mute); }
 .home-away-bar .home span { background: var(--ink); border-radius: 3px 0 0 3px; }
 .home-away-bar .away span { background: var(--ink-soft); border-radius: 0 3px 3px 0; }
+/* story r058: one points scale — filled today, outlined what is still possible, a tick for the pace, thin reference lines; ink only */
+.reach-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .45rem; color: var(--ink-soft); font-size: .9rem; margin: 0 0 .5rem; }
+.reach-legend .key { display: inline-block; width: 1rem; height: .6rem; border-radius: 2px; }
+.reach-legend .key.now { background: var(--ink); }
+.reach-legend .key.max { border: 1px solid var(--ink-mute); }
+.reach-legend .key.pace { width: 3px; height: .9rem; background: var(--ink-soft); }
+.reach { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.reach li { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); align-items: center; gap: .15rem .8rem; padding: .4rem .7rem; background: var(--mow-a); }
+.reach li:nth-child(even) { background: var(--mow-b); }
+.reach .team { display: flex; align-items: center; gap: .4rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.reach .pos { color: var(--ink-mute); font-weight: 400; min-width: 1.6rem; font-variant-numeric: tabular-nums; }
+.reach .figures { grid-column: 1 / -1; color: var(--ink-soft); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.reach .figures strong { color: var(--ink); font-weight: 600; }
+.reach-track { position: relative; height: .8rem; }
+.reach-max, .reach-now { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.reach-max { border: 1px solid var(--ink-mute); }
+.reach-now { background: var(--ink); }
+.reach-pace { position: absolute; top: -.2rem; bottom: -.2rem; width: 3px; margin-left: -1px; background: var(--ink-soft); }
+.reach-line { position: absolute; top: -.4rem; bottom: -.4rem; width: 1px; background: var(--line); }
+@media (max-width: 560px) { .reach li { grid-template-columns: minmax(0, 1fr); } }
 /* story r068: Läuft / Hängt — the result letters carry win and loss, the rows stay neutral */
 .streak-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.5rem; }
 .streaks { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }

@@ -485,7 +485,16 @@ public class MatchdayPages {
                 de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
                         .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
-                crossTable(l, season, shortcut, homeAdvantage)));
+                crossTable(l, season, shortcut, homeAdvantage),
+                reach(l, season, settled, shortcut)));
+    }
+
+    /** Story r058: points, maximum and pace per club, from final results only. */
+    private MatchdayPageModels.ReachView reach(League league, int season, List<Match> settled, String shortcut) {
+        List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
+        all.addAll(Match.findUnplayed(league, season));
+        Standings finalTable = standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
+        return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), shortcut);
     }
 
     /** Story r072: every pairing of the season, in the order of the table as it stands (provisional results included, as there). */

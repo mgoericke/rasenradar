@@ -705,7 +705,8 @@ public final class MatchdayPageModels {
      */
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
-                      List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable) {
+                      List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
+                      ReachView reach) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -948,6 +949,45 @@ public final class MatchdayPageModels {
 
     /** {@code kind}: home, draw, away, open or self (the diagonal). */
     record CrossCell(String kind, String score, String link, String label, boolean provisional) {
+    }
+
+    /**
+     * Story r058: every club on one points scale — today's points (filled), what is still possible
+     * (outlined), the pace value (a neutral tick) and the reference places as thin lines.
+     */
+    record ReachView(String lead, List<ReachLine> lines, List<ReachRow> rows) {
+        static ReachView of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, String shortcut) {
+            if (r.clubs().isEmpty()) {
+                return new ReachView(null, List.of(), List.of());
+            }
+            int scale = Math.max(1, r.clubs().stream().mapToInt(c -> Math.max(c.maximum(), c.pace() == null ? 0 : c.pace())).max().orElse(1));
+            List<ReachLine> lines = r.thresholds().stream()
+                    .map(t -> new ReachLine(t.label(), t.points(), percent(t.points(), scale))).toList();
+            List<ReachRow> rows = r.clubs().stream().map(c -> new ReachRow(c.position(), shortOrName(c.team()),
+                    MatchdayPageModels.crestLink(c.team()), MatchdayPageModels.teamLink(c.team(), shortcut),
+                    c.points(), c.maximum(), c.pace(), c.titleOutOfReach(),
+                    percent(c.points(), scale), percent(c.maximum(), scale), c.pace() == null ? null : percent(c.pace(), scale))).toList();
+            var leader = r.clubs().getFirst();
+            long out = r.clubs().stream().filter(de.javamark.matchoracle.matchday.control.ReachCalculator.ClubReach::titleOutOfReach).count();
+            String lead = (r.remainingMatchdays() == 0 ? "Alle Spiele sind gespielt. "
+                    : "Noch bis zu " + r.remainingMatchdays() + (r.remainingMatchdays() == 1 ? " Spiel" : " Spiele") + " je Verein. ")
+                    + shortOrName(leader.team()) + " führt mit " + leader.points() + (leader.points() == 1 ? " Punkt" : " Punkten")
+                    + (out == 0 ? "; jeder Verein kann Platz 1 rechnerisch noch erreichen."
+                       : "; " + out + (out == 1 ? " Verein kann" : " Vereine können") + " Platz 1 rechnerisch nicht mehr erreichen.")
+                    + " Eine Rechnung, keine Vorhersage.";
+            return new ReachView(lead, lines, rows);
+        }
+
+        private static int percent(int value, int scale) {
+            return (int) Math.round(100.0 * value / scale);
+        }
+    }
+
+    record ReachLine(String label, int points, int at) {
+    }
+
+    record ReachRow(int position, String team, String icon, String teamLink, int points, int maximum, Integer pace,
+                    boolean titleOutOfReach, int pointsAt, int maximumAt, Integer paceAt) {
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
