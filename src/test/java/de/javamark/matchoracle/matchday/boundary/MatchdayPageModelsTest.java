@@ -10,6 +10,8 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Spec 1: a match counts as "läuft" purely from its kickoff time — no live score. */
@@ -140,5 +142,28 @@ class MatchdayPageModelsTest {
     void aMatchWithAResultOrPastItsLiveWindowIsNoLongerWatched() {
         assertFalse(MatchdayPageModels.isWatched(KICKOFF, true, KICKOFF.plus(Duration.ofMinutes(110)), LIVE_WINDOW));
         assertFalse(MatchdayPageModels.isWatched(KICKOFF, false, KICKOFF.plus(Duration.ofHours(3)), LIVE_WINDOW));
+    }
+
+    @Test
+    void countdownLabelRoundsMinutesUp() {
+        assertEquals("Anstoß in 2 Std. 14 Min.", MatchdayPageModels.countdownLabel(Duration.ofMinutes(133).plusSeconds(20)));
+        assertEquals("Anstoß in 3 Std.", MatchdayPageModels.countdownLabel(Duration.ofHours(3)));
+        assertEquals("Anstoß in 1 Min.", MatchdayPageModels.countdownLabel(Duration.ofSeconds(5)));
+    }
+
+    @Test
+    void countdownOnlyWithinADayBeforeKickoff() {
+        assertNotNull(MatchdayPageModels.Countdown.of(NOW.plus(Duration.ofHours(24)), false, NOW));
+        assertNull(MatchdayPageModels.Countdown.of(NOW.plus(Duration.ofHours(24)).plusSeconds(1), false, NOW));
+        assertNull(MatchdayPageModels.Countdown.of(NOW, false, NOW));
+        assertNull(MatchdayPageModels.Countdown.of(NOW.plusSeconds(600), true, NOW));
+    }
+
+    @Test
+    void countdownCarriesTheServerClock() {
+        MatchdayPageModels.Countdown c = MatchdayPageModels.Countdown.of(NOW.plusSeconds(600), false, NOW);
+        assertEquals(NOW.getEpochSecond(), c.now());
+        assertEquals(NOW.getEpochSecond() + 600, c.kickoff());
+        assertEquals("Anstoß in 10 Min.", c.label());
     }
 }

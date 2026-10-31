@@ -77,3 +77,48 @@ function rrChartDefaults() {
     }
   });
 })();
+
+// Story r004: the match head counts down to kickoff, on the server's clock rather than a skewed
+// device clock. At kickoff it says "Läuft" and starts the live poll, in case the page was opened
+// too early to get one. No live region: a screen reader is not told every minute.
+(function () {
+  function label(ms) {
+    var min = Math.max(1, Math.ceil(ms / 60000)), h = Math.floor(min / 60), m = min % 60;
+    return 'Anstoß in ' + (h ? h + ' Std.' + (m ? ' ' + m + ' Min.' : '') : m + ' Min.');
+  }
+  function kickoff(el) {
+    el.remove();
+    var score = document.querySelector('.scoreboard .score');
+    if (!score || score.classList.contains('is-played') || score.classList.contains('is-live')) return;
+    score.classList.add('is-live');
+    score.textContent = 'Läuft';
+    var poller = document.getElementById('live-poller');
+    if (poller && poller.getAttribute('hx-get')) return;
+    var div = document.createElement('div');
+    div.id = 'live-poller';
+    div.setAttribute('hx-get', '/live/spielstaende?match=' + score.dataset.match + '&details=true');
+    div.setAttribute('hx-trigger', "every 60s, visibilitychange[document.visibilityState === 'visible'] from:document");
+    div.setAttribute('hx-swap', 'none');
+    if (poller) poller.replaceWith(div); else document.body.appendChild(div);
+    if (window.htmx) htmx.process(div);
+  }
+  function tick() {
+    var el = document.querySelector('.scoreboard .countdown');
+    if (!el) { clearInterval(window.rrCountdown); window.rrCountdown = null; return; }
+    if (!el.dataset.offset) el.dataset.offset = el.dataset.now * 1000 - Date.now();
+    var left = el.dataset.kickoff * 1000 - (Date.now() + Number(el.dataset.offset));
+    if (left > 0) el.textContent = label(left); else kickoff(el);
+  }
+  function start() {
+    if (window.rrCountdown || !document.querySelector('.scoreboard .countdown')) return;
+    window.rrCountdown = setInterval(tick, 15000);
+    tick();
+  }
+  if (!window.rrCountdownSeen) {
+    window.rrCountdownSeen = true;
+    document.addEventListener('visibilitychange', function () { if (window.rrCountdown && !document.hidden) tick(); });
+    // a poll before the server's kickoff brings the countdown back (a device clock running ahead)
+    document.addEventListener('htmx:oobAfterSwap', start);
+  }
+  start();
+})();

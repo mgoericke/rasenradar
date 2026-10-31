@@ -2,7 +2,7 @@
 {#for m in fragment.rows}{#score m=m oob=true /}
 {/for}
 {#if fragment.detail}
-<p class="half" id="half-{fragment.detail.id}" hx-swap-oob="true">{#if fragment.detail.halfTime}Halbzeit {fragment.detail.halfTime}{/if}{#if fragment.detail.provisional} · vorläufig{/if}</p>
+{#half m=fragment.detail countdown=fragment.countdown oob=true /}
 {#goals goals=fragment.goals matchId=fragment.detail.id oob=true /}
 {/if}
 {#if !fragment.keepPolling}<div id="live-poller" hx-swap-oob="true"></div>{/if}

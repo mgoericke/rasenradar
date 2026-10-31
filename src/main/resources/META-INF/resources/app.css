@@ -277,7 +277,8 @@ h2 { font-size: 1.35rem; }
 .scoreboard .score.is-played.is-provisional { background: transparent; color: var(--turf-ink); border-color: var(--turf-ink); }
 .scoreboard .score.is-live { color: var(--turf-ink); border-color: var(--turf-ink); border-width: 2px; }
 .scoreboard .score.is-live.has-score { font-size: clamp(2.8rem, 7vw, 4.6rem); }
-.scoreboard .half { margin: .8rem 0 0; color: var(--turf-soft); }
+/* one line held even while empty, so the countdown giving way to "Läuft" at kickoff moves nothing */
+.scoreboard .half { margin: .8rem 0 0; min-height: 1.5em; color: var(--turf-soft); }
 .scoreboard .crest.large { background: #fff; border-radius: 50%; padding: .3rem; width: 3.4rem; height: 3.4rem; flex: none; }
 /* narrow screens: crest above each name, the score between them */
 @media (max-width: 560px) {
