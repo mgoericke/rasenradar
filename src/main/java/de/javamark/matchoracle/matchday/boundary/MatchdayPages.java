@@ -479,7 +479,8 @@ public class MatchdayPages {
                 settled.size(),
                 MatchdayPageModels.HomeAdvantageView.of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled), shortcut),
                 streaks.going().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
-                streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList()));
+                streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
+                MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut)));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {

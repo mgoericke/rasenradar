@@ -344,6 +344,21 @@ h2 { font-size: 1.35rem; }
 .streaks .team { display: flex; align-items: center; gap: .4rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .streaks .sentence { grid-column: 1; color: var(--ink-soft); font-size: .9rem; }
 .streaks .form-strip { grid-column: 2; grid-row: 1 / span 2; flex-wrap: wrap; justify-content: flex-end; max-width: 9.5rem; }
+/* story r076: the score grid — tendency colours of the styleguide, deeper with frequency, the count always as text */
+.score-grid { border-collapse: separate; border-spacing: 3px; font-variant-numeric: tabular-nums; margin: .4rem 0 0; }
+.score-grid th { font-family: var(--display); font-weight: 700; color: var(--ink-mute); padding: 0 .3rem; text-align: center; }
+.score-grid td { padding: 0; }
+.score-cell { display: block; width: 3.2rem; height: 2.6rem; border: 0; border-radius: 6px; font: 700 1rem var(--display); color: var(--ink); cursor: pointer; }
+.score-grid .home .score-cell { background: color-mix(in srgb, var(--ink) var(--shade), var(--paper)); }
+.score-grid .away .score-cell { background: color-mix(in srgb, var(--ink-soft) var(--shade), var(--paper)); }
+.score-grid .draw .score-cell { background: color-mix(in srgb, var(--draw) var(--shade), var(--paper)); }
+.score-cell.is-light { color: var(--paper); }
+.score-cell.is-empty { display: grid; place-items: center; background: transparent; color: var(--ink-mute); font-weight: 400; cursor: default; border: 1px dashed var(--line); }
+.score-pop { margin: auto; max-width: min(24rem, calc(100vw - 2rem)); max-height: 80vh; overflow: auto; padding: 1rem 1.1rem; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; }
+.score-pop p { margin: 0 0 .4rem; }
+.score-pop ul { margin: 0; padding-left: 1.1rem; }
+.score-pop a { border-bottom: 1px solid var(--line); }
+@media (max-width: 400px) { .score-cell { width: 2.75rem; } }
 
 /* match page */
 .match { grid-column: 1 / -1; }

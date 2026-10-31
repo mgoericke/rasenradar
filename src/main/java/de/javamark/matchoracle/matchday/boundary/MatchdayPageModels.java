@@ -704,7 +704,7 @@ public final class MatchdayPageModels {
      * {@code basedOn} counts the final matches, {@code leagues} is the switch between the two Bundesligas.
      */
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
-                      List<StreakRow> streaksGoing, List<StreakRow> streaksStuck) {
+                      List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -769,6 +769,62 @@ public final class MatchdayPageModels {
             case WINLESS -> "seit " + n + " Spielen ohne Sieg";
             case GOALLESS -> "seit " + n + " Spielen ohne eigenes Tor";
         };
+    }
+
+    /** Story r076: the score grid, home goals down, away goals across, plus the two lead sentences. */
+    record ScoreGridView(List<String> heads, List<List<ScoreCell>> rows, String lead, String fourGoals) {
+        static ScoreGridView of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.ScoreFrequency f, String shortcut) {
+            int cap = de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.CAP;
+            List<String> heads = new java.util.ArrayList<>();
+            for (int i = 0; i <= cap; i++) heads.add(i == cap ? cap + "+" : String.valueOf(i));
+            int max = Math.max(1, f.max());
+            List<List<ScoreCell>> rows = new java.util.ArrayList<>();
+            for (int h = 0; h <= cap; h++) {
+                List<ScoreCell> row = new java.util.ArrayList<>();
+                for (int a = 0; a <= cap; a++) {
+                    int n = f.count(h, a);
+                    // the shade grows with the count; above half strength the figure turns light
+                    int shade = n == 0 ? 0 : 12 + (int) Math.round(68.0 * n / max);
+                    String kind = h > a ? "home" : h == a ? "draw" : "away";
+                    List<ScoreMatch> list = f.cells().get(h).get(a).stream().map(m -> new ScoreMatch(
+                            shortOrName(m.homeTeam) + " – " + shortOrName(m.awayTeam) + " " + m.fullTimeScore.home + ":" + m.fullTimeScore.away,
+                            m.matchday.number + ". Spieltag", "/" + shortcut + "/matches/" + m.id)).toList();
+                    row.add(new ScoreCell("score-" + h + "-" + a, heads.get(h) + ":" + heads.get(a), n, kind, shade, shade > 50, list));
+                }
+                rows.add(row);
+            }
+            String lead = null;
+            if (!f.mostFrequent().isEmpty()) {
+                String scores = joinGerman(f.mostFrequent());
+                String times = f.mostFrequentCount() + "-mal";
+                lead = "Am häufigsten in " + f.matches() + (f.matches() == 1 ? " Spiel: " : " Spielen: ") + scores
+                        + " (" + (f.mostFrequent().size() > 1 ? "je " : "") + times + ").";
+            }
+            int four = f.matchesWithFourGoals();
+            String fourGoals = four == 0 ? "In keinem Spiel erzielte eine Mannschaft vier oder mehr Tore."
+                    : "In " + four + (four == 1 ? " Spiel" : " Spielen") + " erzielte eine Mannschaft vier oder mehr Tore.";
+            return new ScoreGridView(heads, rows, lead, fourGoals);
+        }
+    }
+
+    /** One cell of the score grid: its count, the tendency it stands for, the shade and the matches behind it. */
+    record ScoreCell(String id, String label, int count, String kind, int shade, boolean light, List<ScoreMatch> matches) {
+        public String accessibleLabel() {
+            return label + ": " + count + (count == 1 ? " Spiel" : " Spiele");
+        }
+    }
+
+    record ScoreMatch(String title, String matchday, String link) {
+    }
+
+    /** "0:0", "0:0 und 2:1", "0:0, 2:1 und 1:0". */
+    static String joinGerman(List<String> items) {
+        if (items.size() == 1) return items.getFirst();
+        return String.join(", ", items.subList(0, items.size() - 1)) + " und " + items.getLast();
+    }
+
+    private static String shortOrName(Team t) {
+        return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
