@@ -19,13 +19,14 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#101B16">
+  <meta name="theme-color" content="#F3F5EE">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Rasen-Radar">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  {! the visitor's theme choice ("Darstellung"), set before the first paint so pages never flash; browser-only !}
+  <script>{|try { var t = localStorage.getItem('rr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}|}</script>
+  <link rel="preload" href="/fonts/sofia-sans-extra-condensed-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/sofia-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/app.css?v={assetVersion}">
   <script src="/vendor/htmx-2.0.10.min.js" defer></script>
   <script src="/nav.js?v={assetVersion}" defer></script>
@@ -47,6 +48,14 @@
         <li><a class="nav-link {#if l.active}is-active{/if}" href="/{l.shortcut}" {#if l.active}aria-current="page"{/if}><span class="badge">{l.badge}</span>{l.name}</a></li>
         {/for}
       </ul>
+      <details class="theme-menu">
+        <summary aria-label="Darstellung" title="Darstellung"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></summary>
+        <div class="theme-options">
+          <button type="button" data-theme-choice="system">Wie System</button>
+          <button type="button" data-theme-choice="light">Hell</button>
+          <button type="button" data-theme-choice="dark">Dunkel</button>
+        </div>
+      </details>
     </nav>
   </header>
   <main class="page">

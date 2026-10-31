@@ -9,6 +9,8 @@
   <p class="breadcrumb"><a href="{page.matchdayLink}">{page.number}. Spieltag</a> · {page.day}, {page.match.time} Uhr</p>
 
   <div class="scoreboard">
+    {! the pitch markings of the match head: two penalty boxes inside the touchline, never across text !}
+    <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
     <h1 class="teams">
       <span class="home">{page.match.home}{#if page.match.homeIcon} <img class="crest large" src="{page.match.homeIcon}" alt="">{/if}</span>
       {#score m=page.match /}

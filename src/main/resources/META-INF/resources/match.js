@@ -1,3 +1,11 @@
+// Chart colours come from the CSS tokens (docs/styleguide.md), so the charts follow light and dark.
+function rrToken(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function rrChartDefaults() {
+  Chart.defaults.color = rrToken('--ink-soft');
+  Chart.defaults.borderColor = rrToken('--line');
+  Chart.defaults.font.family = rrToken('--text');
+}
+
 // Table position over the season so far: both teams on the match page, one team on the club page.
 (function () {
   var el = document.getElementById('positions');
@@ -11,8 +19,11 @@
     el.replaceWith(p);
     return;
   }
-  var colors = ['#14201B', '#1E9E5A'];
-  var mutedColor = '#8C9691'; // lighter than --ink-mute on purpose: a previous season is a faded reference line, not text
+  rrChartDefaults();
+  // two teams in ink and soft ink, told apart by the point shape too; green and red stay results only
+  var colors = [rrToken('--ink'), rrToken('--ink-soft')];
+  var shapes = ['circle', 'rect'];
+  var mutedColor = rrToken('--line'); // a previous season is a faded reference line, not text
   new Chart(el, {
     type: 'line',
     data: {
@@ -20,7 +31,7 @@
       datasets: data.teams.map(function (t, i) {
         var color = t.dashed ? mutedColor : colors[i];
         return { label: t.name, data: t.positions, borderColor: color, backgroundColor: color,
-                 borderWidth: 2, pointRadius: t.dashed ? 0 : 3, tension: 0.2, spanGaps: true,
+                 borderWidth: 2, pointRadius: t.dashed ? 0 : 3, pointStyle: shapes[i] || 'circle', tension: 0.2, spanGaps: true,
                  borderDash: t.dashed ? [6, 4] : undefined };
       })
     },
@@ -45,13 +56,14 @@
   var dataEl = document.getElementById('goal-timing-data');
   if (!el || !dataEl) return;
   var data = JSON.parse(dataEl.textContent);
+  rrChartDefaults();
   new Chart(el, {
     type: 'bar',
     data: {
       labels: data.labels,
       datasets: [
-        { label: 'Erzielt', data: data.scored, backgroundColor: '#1A8A50' },
-        { label: 'Kassiert', data: data.conceded, backgroundColor: '#C63C3C' }
+        { label: 'Erzielt', data: data.scored, backgroundColor: rrToken('--win') },
+        { label: 'Kassiert', data: data.conceded, backgroundColor: rrToken('--loss') }
       ]
     },
     options: {
