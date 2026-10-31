@@ -15,11 +15,11 @@
       </div>
       <div class="role-card">
         <h2>Duellbewerter</h2>
-        <p>Blickt auf die bisherigen direkten Duelle der beiden Mannschaften.</p>
+        <p>Blickt auf die bisherigen {#term key="direkte-duelle"}direkten Duelle{/term} der beiden Mannschaften.</p>
       </div>
       <div class="role-card">
         <h2>Umfeldbewerter</h2>
-        <p>Blickt auf Tabellensituation, Heim- und Auswärtsbilanz und ähnliche Rahmenbedingungen.</p>
+        <p>Blickt auf das {#term key="umfeld"}Umfeld{/term}: Tabellensituation, Heim- und Auswärtsbilanz und ähnliche Rahmenbedingungen.</p>
       </div>
     </div>
     <p class="role-note muted">Die drei Bewerter arbeiten unabhängig voneinander, aus denselben Spieldaten.</p>
@@ -29,7 +29,7 @@
     <div class="role-card wide">
       <h2>Prognostiker</h2>
       <p>Verdichtet die drei Bewertungen zusammen mit einem statistischen Ausgangswert und der Rückschau (siehe unten)
-      zu einer Tendenz mit Wahrscheinlichkeiten und einer kurzen Begründung.</p>
+      zu einer {#term key="tendenz"}Tendenz{/term} mit Wahrscheinlichkeiten und einer kurzen Begründung.</p>
     </div>
 
     <div class="role-arrow" aria-hidden="true">↓</div>
@@ -51,6 +51,17 @@
     endgültigen Ergebnis; daraus entsteht die <a href="/trefferbilanz">Trefferbilanz</a>.</p>
     <p class="muted">Die Bewertungsmaßstäbe hinter alldem – Heimvorteil, Formzeitraum, Aufsteiger-Malus – sind ohne
     Deployment änderbar, aber nicht öffentlich einsehbar oder änderbar.</p>
+  </section>
+
+  {! story r099: every glossary term in one place — also the target of the term links without script !}
+  <section class="how-it-works-section" id="begriffe">
+    <h2>Begriffe</h2>
+    <dl class="glossary">
+      {#for e in glossary:all}
+      <dt id="{e.anchor}">{e.term}</dt>
+      <dd>{e.explanation}</dd>
+      {/for}
+    </dl>
   </section>
 
   <section class="how-it-works-section" id="was-das-system-nicht-weiss">

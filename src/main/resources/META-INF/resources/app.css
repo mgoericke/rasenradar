@@ -613,6 +613,20 @@ h2 { font-size: 1.35rem; }
 }
 
 /* --- forecast pages --------------------------------------------------------------- */
+/* story r099: a glossary term — a dotted ink underline, never brass; its box opens right under it */
+.term { color: inherit; text-decoration: underline dotted var(--ink-soft); text-decoration-thickness: 1.5px; text-underline-offset: .2em; cursor: help; }
+.term:hover, .term[aria-expanded="true"] { text-decoration-color: var(--ink); }
+.term:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+.term-box {
+  position: absolute; z-index: 30; display: block; padding: .6rem .75rem; font-size: .88rem; line-height: 1.45; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--ink); border-radius: 8px;
+}
+.glossary { margin: .6rem 0 0; display: grid; gap: .3rem 1.2rem; grid-template-columns: minmax(8rem, max-content) 1fr; max-width: 62ch; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: 0; }
+.glossary dt:target, .glossary dt:target + dd { background: var(--zone); }
+@media (max-width: 560px) { .glossary { grid-template-columns: 1fr; } .glossary dd { margin-bottom: .5rem; } }
+@media print { .term { text-decoration: none; } .term-box { display: none; } }
 .forecast-page { grid-column: 1 / -1; max-width: 960px; }
 .page-title { font-size: clamp(1.9rem, 6vw, 3.2rem); line-height: 1.05; font-weight: 700; letter-spacing: 0; margin-bottom: 1rem; }
 .start { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.5rem; }
