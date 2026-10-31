@@ -1,4 +1,5 @@
 {! The score cell of a match — one markup for every page and for the live fragment, which swaps
    it out of band by data-match: solid when final, dashed while provisional, red outline while
-   running (spec 01: the interim score once the source has one, "Läuft" before that). !}
-<span class="score{#if m.played} is-played{/if}{#if m.provisional} is-provisional{/if}{#if m.live} is-live{/if}{#if m.liveScore} has-score{/if}" data-match="{m.id}"{#if oob??} hx-swap-oob="outerHTML:.score[data-match='{m.id}']"{/if}>{#if m.played}{m.score}{#else if m.live}{#if m.liveScore}{m.liveScore}{#else}Läuft{/if}{#else}–:–{/if}</span>
+   running (spec 01: the interim score once the source has one, "Läuft" before that). data-teams
+   names an open match for the tab title while it runs (story r057, nav.js). !}
+<span class="score{#if m.played} is-played{/if}{#if m.provisional} is-provisional{/if}{#if m.live} is-live{/if}{#if m.liveScore} has-score{/if}" data-match="{m.id}"{#if !m.played} data-teams="{m.homeShort} – {m.awayShort}"{/if}{#if oob??} hx-swap-oob="outerHTML:.score[data-match='{m.id}']"{/if}>{#if m.played}{m.score}{#else if m.live}{#if m.liveScore}{m.liveScore}{#else}Läuft{/if}{#else}–:–{/if}</span>

@@ -92,6 +92,7 @@ function rrChartDefaults() {
     if (!score || score.classList.contains('is-played') || score.classList.contains('is-live')) return;
     score.classList.add('is-live');
     score.textContent = 'Läuft';
+    if (window.rrLiveTitle) rrLiveTitle();
     var poller = document.getElementById('live-poller');
     if (poller && poller.getAttribute('hx-get')) return;
     var div = document.createElement('div');
