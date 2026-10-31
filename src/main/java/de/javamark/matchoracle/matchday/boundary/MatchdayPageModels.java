@@ -668,7 +668,7 @@ public final class MatchdayPageModels {
      */
     record MyClubChoice(long id, String name, String shortName, String crest) {
         static MyClubChoice of(Team t) {
-            return new MyClubChoice(t.id, t.name, t.shortName == null ? t.name : t.shortName, crestLink(t));
+            return new MyClubChoice(t.id, t.name, t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName, crestLink(t));
         }
 
         /** League-free, so the link survives promotion and relegation (MatchdayPages.myClub). */

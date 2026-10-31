@@ -796,6 +796,7 @@ h2 { font-size: 1.35rem; }
 }
 .js .my-club-link:hover { border-color: var(--ink); }
 .club-choice { margin: .9rem 0 0; }
+.club-choice [hidden] { display: none; }
 .my-club-page { grid-column: 1 / -1; max-width: 60rem; }
 .my-club-intro { max-width: 40rem; color: var(--ink-soft); }
 .my-club-current { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; font-weight: 600; }
