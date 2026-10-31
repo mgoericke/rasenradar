@@ -87,6 +87,6 @@
   </div>
 </section>
 <script src="/stream.js?v={assetVersion}"></script>
-{#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s" hx-swap="none"></div>{/if}
+{#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {/include}

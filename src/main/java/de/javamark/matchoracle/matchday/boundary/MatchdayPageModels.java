@@ -92,7 +92,34 @@ public final class MatchdayPageModels {
      * The answer to a poll: one score cell per requested match; on the match page also the
      * half-time line and the goals. {@code keepPolling} is false once none of them runs any more.
      */
-    record LiveScoresFragment(List<MatchRow> rows, MatchRow detail, List<GoalRow> goals, boolean keepPolling) {
+    record LiveScoresFragment(List<MatchRow> rows, MatchRow detail, List<GoalRow> goals, boolean keepPolling,
+                              Countdown countdown) {
+    }
+
+    /** How long before kickoff the match head counts down (story r004). */
+    static final Duration COUNTDOWN_AHEAD = Duration.ofHours(24);
+
+    /**
+     * The countdown in the match head: the label as rendered, the kickoff and the server's clock
+     * (epoch seconds), so the page counts on from the server's time and not from a skewed device clock.
+     */
+    record Countdown(String label, long kickoff, long now) {
+        /** Only for a match without a result that kicks off within the next 24 hours, else null. */
+        static Countdown of(Instant kickoff, boolean played, Instant now) {
+            if (played || !now.isBefore(kickoff) || kickoff.isAfter(now.plus(COUNTDOWN_AHEAD))) {
+                return null;
+            }
+            return new Countdown(countdownLabel(Duration.between(now, kickoff)), kickoff.getEpochSecond(), now.getEpochSecond());
+        }
+    }
+
+    /** "Anstoß in 2 Std. 14 Min.", "Anstoß in 5 Min." — minutes round up, so it never says 0 before kickoff; match.js says the same. */
+    static String countdownLabel(Duration untilKickoff) {
+        long minutes = Math.max(1, (untilKickoff.toSeconds() + 59) / 60);
+        long hours = minutes / 60;
+        long rest = minutes % 60;
+        if (hours == 0) return "Anstoß in " + rest + " Min.";
+        return "Anstoß in " + hours + " Std." + (rest == 0 ? "" : " " + rest + " Min.");
     }
 
     /** "vor 12 Minuten", "vor 3 Stunden" — the age of the data. */
@@ -422,7 +449,8 @@ public final class MatchdayPageModels {
     record MatchPage(Nav nav, String season, int number, String matchdayLink, String forecastLink, String day, MatchRow match,
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
                      List<ResultRow> headToHead, BalanceRow headToHeadBalance, boolean headToHeadProvisional,
-                     String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data) {
+                     String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data,
+                     Countdown countdown) {
         public List<TeamSituation> teams() {
             return List.of(homeTeam, awayTeam);
         }

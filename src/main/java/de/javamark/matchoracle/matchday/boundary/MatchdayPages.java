@@ -1,6 +1,7 @@
 package de.javamark.matchoracle.matchday.boundary;
 
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BalanceRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Countdown;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
@@ -290,7 +291,9 @@ public class MatchdayPages {
         MatchRow detail = details && rows.size() == 1 ? rows.getFirst() : null;
         List<GoalRow> goals = detail == null ? List.of() : goalRows(matches.getFirst());
         boolean keepPolling = rows.stream().anyMatch(MatchRow::watched);
-        return Response.ok(Templates.liveScores(new LiveScoresFragment(rows, detail, goals, keepPolling))).build();
+        Countdown countdown = detail == null ? null
+                : Countdown.of(matches.getFirst().kickoff, detail.played(), now);
+        return Response.ok(Templates.liveScores(new LiveScoresFragment(rows, detail, goals, keepPolling, countdown))).build();
     }
 
     /** More than any page shows at once (two Bundesligas, one matchday each); caps what a crafted URL can ask for. */
@@ -324,7 +327,8 @@ public class MatchdayPages {
                 BalanceRow.of("Bilanz", h2h.balance()), h2h.includesProvisional(),
                 positionChart(matchday, match.homeTeam, match.awayTeam),
                 standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), standings.includesProvisional(),
-                DataInfo.of(matchday, Instant.now()));
+                DataInfo.of(matchday, Instant.now()),
+                Countdown.of(match.kickoff, match.isPlayed(), Instant.now()));
     }
 
     /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */

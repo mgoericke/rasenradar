@@ -16,7 +16,7 @@
       {#score m=page.match /}
       <span class="away">{#if page.match.awayIcon}<img class="crest large" src="{page.match.awayIcon}" alt=""> {/if}{page.match.away}</span>
     </h1>
-    <p class="half" id="half-{page.match.id}">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
+    {#half m=page.match countdown=page.countdown /}
     {#if page.nav.forecastSupported}
     <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML"{#if page.match.played} data-played{/if}>
       <a class="link-button ai ki-pending" href="{page.forecastLink}">{#if !page.match.played}Noch keine KI-Vorschau{#else}KI-Vorschau{/if}</a>
@@ -97,11 +97,11 @@
     {/if}
   </div>
 </article>
-{#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s" hx-swap="none"></div>{/if}
+{#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {#scripts}
 <script id="chart-data" type="application/json">{page.chartJson.raw}</script>
 <script src="/vendor/chart-4.5.1.umd.min.js"></script>
-<script src="/match.js"></script>
+<script src="/match.js?v={assetVersion}"></script>
 {/scripts}
 {/include}

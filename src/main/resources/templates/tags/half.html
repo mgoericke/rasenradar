@@ -1,0 +1,4 @@
+{! The line under the score in the match head — the page and the live fragment, which swaps it out of
+   band: half time and "vorläufig" once there is a result, before kickoff the countdown (story r004),
+   which match.js counts on from the server's clock. !}
+<p class="half" id="half-{m.id}"{#if oob??} hx-swap-oob="true"{/if}>{#if countdown}<span class="countdown" data-kickoff="{countdown.kickoff}" data-now="{countdown.now}">{countdown.label}</span>{/if}{#if m.halfTime}Halbzeit {m.halfTime}{/if}{#if m.provisional} · vorläufig{/if}</p>
