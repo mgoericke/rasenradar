@@ -358,7 +358,7 @@ public final class MatchdayPageModels {
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
-                        LiveTable live) {
+                        LiveTable live, List<SplitTable> splits) {
 
         /** Story r070: the "Es geht um" line of an open match, or null. */
         public String stakeOf(long matchId) {
@@ -417,6 +417,10 @@ public final class MatchdayPageModels {
                     return p.team().id + ":" + p.position() + ":" + name.replace(";", ",").replace(":", " ");
                 })
                 .collect(java.util.stream.Collectors.joining(";"));
+    }
+
+    /** Story r041: the table counted from home, away or the last five matches; {@code note} says what counts. */
+    record SplitTable(String key, String label, String note, List<StandingRow> rows) {
     }
 
     /**
