@@ -239,18 +239,38 @@ h2 { font-size: 1.35rem; }
 .score.is-live.has-score { font-family: var(--display); font-size: 1.45rem; font-weight: 800; letter-spacing: 0; }
 
 /* standings */
-.standings { align-self: start; }
+/* The columns follow the width of the table's own column, not the window: beside the matches it is
+   never wider than about 30rem. Narrower, the won/drawn/lost counts give way first (the form shows the
+   run of results) and the short names stand in, then the goals go. Scrolling stays as the last resort. */
+.standings { align-self: start; container-type: inline-size; overflow-x: auto; }
 .standings table { width: 100%; border-collapse: collapse; margin-top: .85rem; font-size: .92rem; }
-/* narrow screens: scroll the table instead of squeezing nine columns and wrapping every team name */
-@media (max-width: 480px) {
-  .standings { overflow-x: auto; }
-  .standings table { width: auto; min-width: 30rem; }
+.standings .name-short { display: none; }
+/* story r013: the last five final results, oldest left; the letter carries the result besides the colour */
+.standings th.form-cell, .standings td.form-cell { text-align: left; padding-left: .7rem; }
+.form-strip { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; }
+.form-strip a {
+  display: block; width: 1.15rem; height: 1.45rem; line-height: 1.45rem; border-radius: 3px; text-align: center;
+  font-family: var(--display); font-weight: 700; font-size: .75rem; color: var(--on-result); text-decoration: none;
 }
+.form-strip .win { background: var(--win); }
+.form-strip .draw { background: var(--draw); }
+.form-strip .loss { background: var(--loss); }
 .standings th { text-align: right; font-weight: 600; color: var(--ink-mute); padding: .3rem .4rem; border-bottom: 2px solid var(--ink); }
 .standings td { text-align: right; padding: .42rem .4rem; height: 2.5rem; }
 .standings th.team, .standings td.team { text-align: left; }
 .standings td.pos { color: var(--ink-mute); font-family: var(--display); font-weight: 600; padding-left: .55rem; }
 .standings .points { font-family: var(--display); font-weight: 800; font-size: 1.2rem; }
+@container (max-width: 40rem) {
+  .standings .wdl, .standings .name-long { display: none; }
+  .standings .name-short { display: inline; }
+  .standings td.team a { white-space: nowrap; }
+}
+@container (max-width: 25rem) {
+  .standings .goals-for { display: none; }
+  .standings th, .standings td { padding-left: .3rem; padding-right: .3rem; }
+  .standings th.form-cell, .standings td.form-cell { padding-left: .5rem; }
+  .form-strip a { width: 1.05rem; }
+}
 .note { color: var(--ink-mute); font-size: .85rem; margin: .75rem 0 0; }
 
 /* match page */

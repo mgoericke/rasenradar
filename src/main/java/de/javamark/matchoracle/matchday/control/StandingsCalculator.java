@@ -40,8 +40,8 @@ public class StandingsCalculator {
         return standings(league, season, matchday, Match.findPlayedBefore(league, season, matchday));
     }
 
-    /** Pure calculation over the played matches of one season. */
-    Standings standings(League league, int season, int beforeMatchday, List<Match> played) {
+    /** Pure calculation over the played matches of one season; public for pages that reuse the same matches. */
+    public Standings standings(League league, int season, int beforeMatchday, List<Match> played) {
         Map<Team, Balance> balances = new LinkedHashMap<>();
         for (Match match : played) {
             balances.merge(match.homeTeam, Balance.EMPTY.plus(match.viewedBy(match.homeTeam)), (a, b) -> a.plus(match.viewedBy(match.homeTeam)));

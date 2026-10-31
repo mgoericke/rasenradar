@@ -316,14 +316,20 @@ public final class MatchdayPageModels {
     }
 
     record StandingRow(int position, String team, String teamLink, String icon, int played, int wins, int draws, int losses,
-                       String goals, String difference, int points, String zone, String teamShort) {
+                       String goals, String difference, int points, String zone, String teamShort, List<ResultRow> form) {
         static StandingRow of(StandingPosition p, League league) {
+            return of(p, league, List.of());
+        }
+
+        /** With the team's last FINAL results, oldest first, for the form column (story r013). */
+        static StandingRow of(StandingPosition p, League league, List<TeamMatchView> form) {
             Balance b = p.balance();
             int diff = b.goalDifference();
             return new StandingRow(p.position(), p.team().name, MatchdayPageModels.teamLink(p.team(), league.sourceShortcut()), MatchdayPageModels.crestLink(p.team()),
                     b.played(), b.wins(), b.draws(), b.losses(),
                     b.goalsFor() + ":" + b.goalsAgainst(), (diff > 0 ? "+" : "") + diff, b.points(), MatchdayPageModels.zone(league, p.position()),
-                    p.team().shortName == null ? p.team().name : p.team().shortName);
+                    p.team().shortName == null ? p.team().name : p.team().shortName,
+                    form.stream().map(v -> ResultRow.of(v, league.sourceShortcut())).toList());
         }
     }
 
@@ -421,6 +427,17 @@ public final class MatchdayPageModels {
             return new ResultRow(DAY_SHORT.format(v.match().kickoff.atZone(DISPLAY_ZONE)), v.opponent().name, v.home(),
                     v.goalsFor() + ":" + v.goalsAgainst(), v.result(),
                     v.match().resultStatus == ResultStatus.PROVISIONAL, "/" + leagueShortcut + "/matches/" + v.match().id);
+        }
+
+        /** "S", "U", "N" — so the result never rests on its colour alone. */
+        public String letter() {
+            return switch (result) { case WIN -> "S"; case DRAW -> "U"; case LOSS -> "N"; };
+        }
+
+        /** "Sieg 3:1 gegen Werder Bremen", "Niederlage 0:2 bei Werder Bremen". */
+        public String description() {
+            String word = switch (result) { case WIN -> "Sieg"; case DRAW -> "Unentschieden"; case LOSS -> "Niederlage"; };
+            return word + " " + score + (home ? " gegen " : " bei ") + opponent;
         }
     }
 
