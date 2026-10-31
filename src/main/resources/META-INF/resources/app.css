@@ -872,6 +872,11 @@ h2 { font-size: 1.35rem; }
 .good-for[hidden] { display: none; }
 @media (max-width: 560px) { .good-for { padding-left: .9rem; } }
 @media print { .good-for { display: none !important; } }
+/* story r070: "Es geht um" under an open match — from the table as it stands, plain ink */
+.fixtures > li:has(> .stakes) { flex-wrap: wrap; }
+.stakes { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; font-size: .85rem; }
+.stakes + .good-for { margin-top: -.45rem; }
+@media (max-width: 560px) { .stakes { padding-left: .9rem; } }
 /* story r092: the next match of "Mein Verein" — flat (hairline, surface, no shadow), fixed in the
    corner on desktop and along the bottom on phones, where the page gets room so nothing is covered.
    Fixed, so it moves nothing when it arrives. */

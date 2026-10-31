@@ -43,6 +43,7 @@
         </span>
         <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if m.provisional}<span class="print-note"> vorläufig</span>{/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
+      {#let stake=page.stakeOf(m.id)}{#if stake}<p class="stakes"><span class="muted">Es geht um:</span> {stake}</p>{/if}{/let}
       {#if page.current && !m.played && !m.live}<p class="good-for" hidden></p>{/if}
       {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
     </li>

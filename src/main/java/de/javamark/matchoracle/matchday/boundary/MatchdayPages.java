@@ -50,6 +50,7 @@ import de.javamark.matchoracle.matchday.control.GoalTimingCalculator;
 import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
+import de.javamark.matchoracle.matchday.control.Stakes;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
@@ -352,7 +353,28 @@ public class MatchdayPages {
                 matches.isEmpty() ? null : MatchdayPageModels.dateRange(
                         matches.getFirst().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate(),
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
-                Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false));
+                Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
+                stakes(matchday, matches, now));
+    }
+
+    /**
+     * Story r070: "Es geht um" for the open matches of the current and coming matchdays, from the
+     * table of final results only — a provisional or running score elsewhere does not change a line.
+     */
+    private Map<Long, String> stakes(Matchday matchday, List<Match> matches, Instant now) {
+        boolean ahead = Matchday.findCurrent(matchday.league).map(c -> matchday.number >= c.number).orElse(false);
+        if (!ahead || !matchday.league.hasTable()) {
+            return Map.of();
+        }
+        List<Match> settled = Match.findPlayedBefore(matchday.league, matchday.season, Integer.MAX_VALUE).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        Standings table = standingsCalculator.standings(matchday.league, matchday.season, matchday.number, settled);
+        Map<Long, String> lines = new HashMap<>();
+        for (Match m : matches) {
+            if (m.isPlayed() || MatchdayPageModels.isLive(m.kickoff, false, now, liveWindow)) continue;
+            Stakes.of(m.homeTeam, m.awayTeam, table).ifPresent(line -> lines.put(m.id, line));
+        }
+        return lines;
     }
 
     /**
