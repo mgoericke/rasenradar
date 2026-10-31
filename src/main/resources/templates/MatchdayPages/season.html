@@ -68,6 +68,34 @@
     {/if}
   </section>
 
+  {! story r084: four kinds of goal and the clubs behind them; a chosen "Mein Verein" outside the top
+     places shows from the hidden rows (the club style in the head), nothing reaches the server !}
+  <section class="season-block" id="besondere-tore" aria-labelledby="besondere-tore-title">
+    <h2 id="besondere-tore-title">Tore der besonderen Art</h2>
+    {#if page.basedOn == 0}
+    <p class="muted">Noch kein Spiel beendet.</p>
+    {#else}
+    <div class="special-goals">
+      {#for c in page.specialGoals}
+      <section class="special-goal" aria-labelledby="special-{c_index}">
+        <h3 id="special-{c_index}">{c.title} <span class="special-total">{c.total}</span></h3>
+        <p class="muted">{c.description}</p>
+        {#if c.total == 0}
+        <p>Noch kein Tor dieser Art.</p>
+        {#else}
+        <ol class="special-clubs">
+          {#for r in c.top}<li><a href="{r.teamLink}" data-clubs="{r.teamId}"><span class="rank">{r.rank}.</span> {#crest src=r.icon size="small" lazy=true /} <span class="name">{r.team}</span> <span class="count">{r.count}</span></a></li>{/for}
+          {#for r in c.others}<li class="my-club-only" data-my-club-row="{r.teamId}"><a href="{r.teamLink}" data-clubs="{r.teamId}"><span class="rank">{r.rank}.</span> {#crest src=r.icon size="small" lazy=true /} <span class="name">{r.team}</span> <span class="count">{r.count}</span></a></li>{/for}
+        </ol>
+        {#if c.latest}<p class="special-latest"><a href="{c.latestLink}">{c.latest}</a></p>{/if}
+        {/if}
+      </section>
+      {/for}
+    </div>
+    <p class="note">Aus {page.basedOn} beendeten Spielen. Ein Tor zählt für die Mannschaft, deren Spielstand es erhöht hat.</p>
+    {/if}
+  </section>
+
   {! story r098: how much the home side really gains — the league as a whole, then the clubs !}
   <section class="season-block" id="heimvorteil" aria-labelledby="heimvorteil-title">
     <h2 id="heimvorteil-title">Heimvorteil</h2>

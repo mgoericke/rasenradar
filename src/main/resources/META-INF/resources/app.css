@@ -359,6 +359,20 @@ h2 { font-size: 1.35rem; }
 .score-pop ul { margin: 0; padding-left: 1.1rem; }
 .score-pop a { border-bottom: 1px solid var(--line); }
 @media (max-width: 400px) { .score-cell { width: 2.75rem; } }
+/* story r084: four cards (explanation cards, no data stripes) — counts in the display face, the club list plain */
+.special-goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
+.special-goal { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem; }
+.special-goal h3 { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; margin: 0; }
+.special-total { font-family: var(--display); font-weight: 800; font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+.special-goal > .muted { margin: 0 0 .6rem; font-size: .9rem; }
+.special-clubs { list-style: none; margin: 0; padding: 0; }
+.special-clubs a { display: grid; grid-template-columns: 1.6rem auto minmax(0, 1fr) auto; align-items: center; gap: .4rem; min-height: 36px; padding: 0 .3rem; border-radius: 6px; }
+.special-clubs .rank { color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+.special-clubs .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.special-clubs .count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.my-club-only { display: none; }
+.special-latest { margin: .6rem 0 0; font-size: .9rem; }
+.special-latest a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 
 /* match page */
 .match { grid-column: 1 / -1; }

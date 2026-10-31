@@ -704,7 +704,8 @@ public final class MatchdayPageModels {
      * {@code basedOn} counts the final matches, {@code leagues} is the switch between the two Bundesligas.
      */
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
-                      List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores) {
+                      List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
+                      List<SpecialGoalCard> specialGoals) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -825,6 +826,48 @@ public final class MatchdayPageModels {
 
     private static String shortOrName(Team t) {
         return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
+    }
+
+    /**
+     * Story r084: one card of "Tore der besonderen Art". {@code others} are the clubs below the top
+     * places, each rendered hidden — the "Mein Verein" style in the head shows the chosen one.
+     */
+    record SpecialGoalCard(String title, String description, int total, List<SpecialGoalClub> top, List<SpecialGoalClub> others,
+                           String latest, String latestLink) {
+        static SpecialGoalCard of(de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.Card c, String shortcut) {
+            String title = switch (c.kind()) {
+                case LATE -> "Ab der 90. Minute";
+                case EARLY -> "In den ersten fünf Minuten";
+                case PENALTY -> "Vom Punkt";
+                case OWN_GOAL -> "Geschenkt";
+            };
+            String description = switch (c.kind()) {
+                case LATE -> "Tore ab der 90. Minute, Nachspielzeit eingeschlossen";
+                case EARLY -> "Tore in den Minuten 1 bis 5";
+                case PENALTY -> "verwandelte Elfmeter, für die schießende Mannschaft";
+                case OWN_GOAL -> "Eigentore, für die Mannschaft, der sie nützen";
+            };
+            var top = c.top().stream().map(cc -> SpecialGoalClub.of(cc, shortcut)).toList();
+            var others = c.clubs().stream().filter(cc -> cc.rank() > de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.PLACES)
+                    .map(cc -> SpecialGoalClub.of(cc, shortcut)).toList();
+            String latest = null, link = null;
+            if (c.latest() != null) {
+                var g = c.latest().goal();
+                Match m = c.latest().match();
+                latest = "Zuletzt: " + (g.scorerName == null || g.scorerName.isBlank() ? "unbekannt" : g.scorerName)
+                        + (g.minute == null ? "" : ", " + g.minute + ". Minute") + ", " + shortOrName(m.homeTeam) + " – " + shortOrName(m.awayTeam);
+                link = "/" + shortcut + "/matches/" + m.id;
+            }
+            return new SpecialGoalCard(title, description, c.total(), top, others, latest, link);
+        }
+    }
+
+    record SpecialGoalClub(long teamId, int rank, String team, String icon, String teamLink, int count) {
+        static SpecialGoalClub of(de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.ClubCount cc, String shortcut) {
+            Team t = cc.team();
+            return new SpecialGoalClub(t.id == null ? 0 : t.id, cc.rank(), shortOrName(t), MatchdayPageModels.crestLink(t),
+                    MatchdayPageModels.teamLink(t, shortcut), cc.count());
+        }
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
