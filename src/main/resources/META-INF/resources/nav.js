@@ -210,3 +210,39 @@ document.addEventListener('click', function (e) {
   document.addEventListener('DOMContentLoaded', apply);
   document.addEventListener('htmx:afterSettle', apply);
 })();
+
+// Story r078: on the current matchday, an open match of a table neighbour of "Mein Verein" (up to
+// three places away) says which result helps the club — from the table alone, never from a
+// forecast. One neighbour: that neighbour should lose; two neighbours: a draw. The club stays in
+// the browser; the page only carries the places ("teamId:place,…").
+(function () {
+  function club() {
+    try {
+      var c = JSON.parse(localStorage.getItem('rr-club') || 'null');
+      return c && /^\d+$/.test(String(c.id)) ? c : null;
+    } catch (e) { return null; }
+  }
+  function apply() {
+    document.querySelectorAll('.good-for').forEach(function (p) { p.hidden = true; p.textContent = ''; });
+    var root = document.querySelector('[data-places]');
+    var c = club();
+    if (!root || !c) return;
+    var places = {};
+    root.dataset.places.split(',').forEach(function (pair) { var kv = pair.split(':'); places[kv[0]] = Number(kv[1]); });
+    var id = String(c.id), mine = places[id];
+    if (!mine) return;
+    function neighbour(team) { return team !== id && places[team] > 0 && Math.abs(places[team] - mine) <= 3; }
+    document.querySelectorAll('li[data-good-for]').forEach(function (li) {
+      var teams = li.dataset.goodFor.split(' ');
+      if (teams.indexOf(id) >= 0) return;
+      var home = neighbour(teams[0]), away = neighbour(teams[1]);
+      var good = home && away ? 'Remis' : home ? 'Sieg ' + li.dataset.awayName : away ? 'Sieg ' + li.dataset.homeName : null;
+      var p = li.querySelector('.good-for');
+      if (!good || !p) return;
+      p.textContent = 'Gut für ' + c.short + ': ' + good;
+      p.hidden = false;
+    });
+  }
+  document.addEventListener('DOMContentLoaded', apply);
+  document.addEventListener('htmx:afterSettle', apply);
+})();

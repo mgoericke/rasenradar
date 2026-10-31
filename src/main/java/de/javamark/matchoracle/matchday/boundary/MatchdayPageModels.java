@@ -356,7 +356,15 @@ public final class MatchdayPageModels {
     /** {@code rounds} carries a competition's knockout phase — empty where it has none. */
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
-                        List<RoundSection> rounds, String dateRange) {
+                        List<RoundSection> rounds, String dateRange, boolean current) {
+
+        /**
+         * Story r078: the table as "teamId:place,…" for nav.js, which works out in the browser which
+         * open match helps "Mein Verein" — the club itself is never sent to the server.
+         */
+        public String placesByTeam() {
+            return standings.stream().map(r -> r.teamId() + ":" + r.position()).collect(java.util.stream.Collectors.joining(","));
+        }
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
