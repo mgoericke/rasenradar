@@ -705,7 +705,7 @@ public final class MatchdayPageModels {
      */
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
-                      List<SpecialGoalCard> specialGoals, ComebackView comebacks) {
+                      List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -896,6 +896,58 @@ public final class MatchdayPageModels {
         public String sentence() {
             return won + " geholt, " + dropped + " verspielt";
         }
+    }
+
+    /**
+     * Story r072: the cross table — home teams down, away teams across, both in table order. The lead
+     * counts final results only; a provisional score is shown in its cell, marked, and not counted.
+     */
+    record CrossTable(List<CrossTeam> teams, List<List<CrossCell>> rows, String lead) {
+        static CrossTable of(List<Team> order, List<Match> seasonMatches, String shortcut,
+                             de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.HomeAdvantage shares) {
+            Map<String, Match> byPair = new java.util.HashMap<>();
+            for (Match m : seasonMatches) {
+                byPair.put(m.homeTeam.id + "-" + m.awayTeam.id, m);
+            }
+            List<CrossTeam> teams = order.stream().map(t -> new CrossTeam(t.name, shortOrName(t),
+                    MatchdayPageModels.teamLink(t, shortcut), MatchdayPageModels.crestLink(t))).toList();
+            List<List<CrossCell>> rows = new java.util.ArrayList<>();
+            for (Team home : order) {
+                List<CrossCell> row = new java.util.ArrayList<>();
+                for (Team away : order) {
+                    if (home == away || (home.id != null && home.id.equals(away.id))) {
+                        row.add(new CrossCell("self", null, null, null, false));
+                        continue;
+                    }
+                    Match m = byPair.get(home.id + "-" + away.id);
+                    String pairing = shortOrName(home) + " – " + shortOrName(away);
+                    if (m == null) {
+                        row.add(new CrossCell("open", null, null, pairing + ": noch offen", false));
+                    } else if (m.fullTimeScore == null) {
+                        row.add(new CrossCell("open", null, "/" + shortcut + "/matches/" + m.id, pairing + ": noch offen", false));
+                    } else {
+                        int h = m.fullTimeScore.home, a = m.fullTimeScore.away;
+                        String kind = h > a ? "home" : h == a ? "draw" : "away";
+                        String word = h > a ? "Heimsieg" : h == a ? "Remis" : "Auswärtssieg";
+                        boolean provisional = m.resultStatus == ResultStatus.PROVISIONAL;
+                        row.add(new CrossCell(kind, h + ":" + a, "/" + shortcut + "/matches/" + m.id,
+                                pairing + " " + h + ":" + a + ", " + word + (provisional ? ", vorläufig" : ""), provisional));
+                    }
+                }
+                rows.add(row);
+            }
+            String lead = shares.matches() == 0 ? null
+                    : "Bisher " + shares.matches() + (shares.matches() == 1 ? " Spiel: " : " Spiele: ") + shares.homeWinPercent()
+                    + " % Heimsiege, " + shares.drawPercent() + " % Remis, " + shares.awayWinPercent() + " % Auswärtssiege.";
+            return new CrossTable(teams, rows, lead);
+        }
+    }
+
+    record CrossTeam(String name, String shortName, String link, String icon) {
+    }
+
+    /** {@code kind}: home, draw, away, open or self (the diagonal). */
+    record CrossCell(String kind, String score, String link, String label, boolean provisional) {
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */

@@ -473,17 +473,31 @@ public class MatchdayPages {
                 .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
         String shortcut = l.sourceShortcut();
         var streaks = de.javamark.matchoracle.matchday.control.StreakCalculator.of(settled);
+        var homeAdvantage = de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled);
         List<NavLeague> switcher = Nav.of(l).leagues().stream()
                 .filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList();
         return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), switcher,
                 settled.size(),
-                MatchdayPageModels.HomeAdvantageView.of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled), shortcut),
+                MatchdayPageModels.HomeAdvantageView.of(homeAdvantage, shortcut),
                 streaks.going().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
                 streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
                 MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut),
                 de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
                         .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
-                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut)));
+                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
+                crossTable(l, season, shortcut, homeAdvantage)));
+    }
+
+    /** Story r072: every pairing of the season, in the order of the table as it stands (provisional results included, as there). */
+    private MatchdayPageModels.CrossTable crossTable(League league, int season, String shortcut,
+                                                     de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.HomeAdvantage shares) {
+        List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE);
+        List<Match> all = new ArrayList<>(played);
+        all.addAll(Match.findUnplayed(league, season).stream().filter(Match::countsTowardsTable).toList());
+        List<Team> order = new ArrayList<>(standingsCalculator.standings(league, season, Integer.MAX_VALUE, played)
+                .positions().stream().map(StandingPosition::team).toList());
+        Team.findInLeagueSeason(league, season).stream().filter(t -> !order.contains(t)).forEach(order::add);
+        return MatchdayPageModels.CrossTable.of(order, all, shortcut, shares);
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {
