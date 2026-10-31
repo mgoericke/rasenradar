@@ -64,6 +64,10 @@ import de.javamark.matchoracle.matchday.entity.LeagueSeason;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.Standings;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveTable;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveRow;
+import de.javamark.matchoracle.matchday.entity.StandingPosition;
+import de.javamark.matchoracle.matchday.entity.TeamResult;
 import de.javamark.matchoracle.matchday.entity.Team;
 import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import io.quarkus.qute.CheckedTemplate;
@@ -113,6 +117,7 @@ public class MatchdayPages {
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
         static native TemplateInstance myClub(MyClubPage page);
         static native TemplateInstance nextMatch(NextMatchBar bar);
+        static native TemplateInstance liveTable(LiveTable live);
     }
 
     @Inject
@@ -373,7 +378,68 @@ public class MatchdayPages {
                         matches.getFirst().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate(),
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
-                stakes(matchday, matches, now));
+                stakes(matchday, matches, now), liveTable(matchday, standings, matches, now));
+    }
+
+    /**
+     * Story r059: the table "wenn es so bleibt" while a match of this matchday runs, else null.
+     * {@code before} is the table of everything played so far, the running matches are not in it.
+     */
+    private LiveTable liveTable(Matchday matchday, Standings before, List<Match> matches, Instant now) {
+        List<Match> running = matches.stream().filter(m -> m.isLive(now, liveWindow)).toList();
+        if (running.isEmpty() || !matchday.league.hasTable()) {
+            return null;
+        }
+        String shortcut = matchday.league.sourceShortcut();
+        String link = "/" + shortcut + "/" + matchday.season + "/" + matchday.number + "/live-tabelle";
+        Standings live = standingsCalculator.liveStandings(before, running);
+        List<LiveRow> rows = live.positions().stream().map(p -> {
+            Team t = p.team();
+            int was = before.of(t).map(StandingPosition::position).orElse(p.position());
+            String text = "";
+            String css = "";
+            for (Match m : running) {
+                if (!m.homeTeam.equals(t) && !m.awayTeam.equals(t)) continue;
+                boolean home = m.homeTeam.equals(t);
+                Team opponent = home ? m.awayTeam : m.homeTeam;
+                String name = opponent.shortName == null || opponent.shortName.isBlank() ? opponent.name : opponent.shortName;
+                if (m.liveScore == null) {
+                    text = "läuft, Stand unbekannt · " + (home ? "gegen " : "bei ") + name;
+                    css = "unknown";
+                } else {
+                    int own = home ? m.liveScore.home : m.liveScore.away;
+                    int other = home ? m.liveScore.away : m.liveScore.home;
+                    text = own + ":" + other + (home ? " gegen " : " bei ") + name;
+                    css = TeamResult.of(own, other).toString().toLowerCase();
+                }
+            }
+            int diff = p.balance().goalDifference();
+            return new LiveRow(p.position(), was - p.position(), t.id, t.name,
+                    t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName,
+                    MatchdayPageModels.crestLink(t), MatchdayPageModels.teamLink(t, shortcut),
+                    p.balance().played(), (diff > 0 ? "+" : "") + diff, p.balance().points(), text, css);
+        }).toList();
+        return new LiveTable(link, false, rows);
+    }
+
+    /** Story r059: the live table again, polled every minute while it shows; "ended" once nothing runs. */
+    @GET
+    @Path("/{league}/{season}/{number}/live-tabelle")
+    public Response liveTableFragment(@PathParam("league") String league, @PathParam("season") int season,
+                                      @PathParam("number") int number, @HeaderParam("HX-Request") String htmxRequest) {
+        String page = "/" + league + "/" + season + "/" + number;
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create(page)).build();
+        }
+        Matchday matchday = Matchday.find(league(league), season, number)
+                .orElseThrow(() -> new NotFoundException("matchday not found"));
+        Standings before = standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1,
+                Match.findPlayedBefore(matchday.league, matchday.season, matchday.number + 1));
+        LiveTable live = liveTable(matchday, before, Match.findByMatchday(matchday), Instant.now());
+        if (live == null) {
+            live = new LiveTable(page + "/live-tabelle", true, List.of());
+        }
+        return Response.ok(Templates.liveTable(live)).header("Cache-Control", "no-store").build();
     }
 
     /**

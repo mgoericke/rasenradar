@@ -1,0 +1,27 @@
+{! Story r059: the table "wenn es so bleibt" — on the matchday page and as the answer to its own
+   poll every minute. Once nothing runs, it arrives empty and marked as ended; the page then shows
+   the normal table (CSS). Never stored, never counted for the review. !}
+<div class="live-table" id="live-table"{#if live.ended} data-live-ended{#else} hx-get="{live.link}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="outerHTML"{/if}>
+  {#if !live.ended}
+  <h2>Wenn es so bleibt</h2>
+  <p class="live-table-note">Vorläufig – nicht die offizielle Tabelle. Laufende Spiele zählen mit ihrem aktuellen Stand.</p>
+  <table>
+    <thead>
+      <tr><th class="pos">#</th><th class="move"><span class="sr-only">Bewegung</span></th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr>
+    </thead>
+    <tbody>
+      {#for r in live.rows}
+      <tr data-clubs="{r.teamId}">
+        <td class="pos">{r.position}</td>
+        <td class="move" title="{r.moveDescription}"><span aria-hidden="true">{r.moveLabel}</span><span class="sr-only">{r.moveDescription}</span></td>
+        <td class="team">
+          <a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} <span class="name-long">{r.team}</span><span class="name-short">{r.teamShort}</span></a>
+          {#if r.live}<span class="live-chip {r.liveClass}">{r.live}</span>{/if}
+        </td>
+        <td>{r.played}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+      </tr>
+      {/for}
+    </tbody>
+  </table>
+  {/if}
+</div>
