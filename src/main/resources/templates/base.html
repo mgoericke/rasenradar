@@ -107,6 +107,47 @@
       </p>
     </div>
   </footer>
+  {! story r011: the main areas within thumb reach on phones (CSS shows it below 560 px). The inline
+     script marks the current area before the first paint and points "Verein" at the club of this
+     browser; "Tabelle" is the table view of the start page. !}
+  <nav class="thumb-bar" aria-label="Bereiche">
+    <a href="/" data-area="spieltag">Spieltag</a>
+    <a href="/#tabelle" data-area="tabelle" hx-boost="false">Tabelle</a>
+    <a href="/trefferbilanz" data-area="bilanz">KI-Bilanz</a>
+    <a href="/mein-verein" data-area="verein" data-my-club-href>Verein</a>
+  </nav>
+  <script>{|(function () {
+    var path = location.pathname, area = null;
+    var table = document.getElementById('view-tabelle');
+    if (path === '/' && location.hash === '#tabelle' && table) table.checked = true;
+    if (/^\/trefferbilanz/.test(path)) area = 'bilanz';
+    else if (/^\/mein-verein|\/teams\//.test(path)) area = 'verein';
+    else if (path === '/') area = table && table.checked ? 'tabelle' : 'spieltag';
+    else if (/^\/(bl1|bl2|dfb|nla|ucl)(\/|$)/.test(path)) area = 'spieltag';
+    function mark(a) {
+      document.querySelectorAll('.thumb-bar [data-area]').forEach(function (l) {
+        if (l.dataset.area === a) l.setAttribute('aria-current', 'page'); else l.removeAttribute('aria-current');
+      });
+    }
+    mark(area);
+    try {
+      var c = JSON.parse(localStorage.getItem('rr-club') || 'null');
+      if (c && /^\d+$/.test(String(c.id))) document.querySelector('[data-my-club-href]').href = '/mein-verein/' + c.id;
+    } catch (e) {}
+    // on the start page the two first entries switch its view instead of loading it again
+    if (path === '/' && table) {
+      document.querySelectorAll('.thumb-bar [data-area="spieltag"], .thumb-bar [data-area="tabelle"]').forEach(function (l) {
+        l.addEventListener('click', function (e) {
+          e.preventDefault();
+          var t = l.dataset.area === 'tabelle';
+          document.getElementById(t ? 'view-tabelle' : 'view-spiele').checked = true;
+          history.replaceState(null, '', t ? '/#tabelle' : '/');
+          mark(l.dataset.area);
+          window.scrollTo(0, 0);
+        });
+      });
+    }
+  })();|}</script>
   {! story r092: the next match of "Mein Verein"; filled by nav.js, kept across hx-boost navigations !}
   <aside id="next-match" class="next-match" hx-preserve="true" aria-label="Nächstes Spiel von Mein Verein"></aside>
   {#insert scripts}{/}

@@ -1157,3 +1157,25 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .since-results .badge, .since-results .crest, .since-results .muted { display: none; }
 }
 @media print { .since { display: none !important; } }
+/* story r011: the thumb bar on phones — light surface and a hairline, text only; the current area
+   carries an ink line on top and bold type, not just a colour */
+.thumb-bar { display: none; }
+@media (max-width: 559.98px) {
+  .thumb-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+    background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
+  }
+  .thumb-bar a {
+    display: grid; place-items: center; min-height: 3rem; padding: 0 .2rem; font-size: .88rem; color: var(--ink-soft);
+    text-align: center; box-shadow: inset 0 3px 0 transparent;
+  }
+  .thumb-bar a[aria-current="page"] { color: var(--ink); font-weight: 700; box-shadow: inset 0 3px 0 var(--ink); }
+  .thumb-bar a:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+  body { padding-bottom: calc(3rem + 1px + env(safe-area-inset-bottom)); }
+  /* the next-match bar (r092) rests on top of the thumb bar */
+  .next-match { bottom: calc(3rem + 1px + env(safe-area-inset-bottom) + .5rem); }
+  html.has-next-match body { padding-bottom: calc(3rem + 1px + env(safe-area-inset-bottom) + 4.6rem); }
+  /* the start page's own Spiele/Tabelle/KI-Bilanz switch gives way to the bar */
+  .view-switch { display: none !important; }
+}
+@media print { .thumb-bar { display: none !important; } }
