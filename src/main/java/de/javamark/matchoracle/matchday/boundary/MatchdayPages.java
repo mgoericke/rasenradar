@@ -6,6 +6,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveScoresFragment;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchNotFoundPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeague;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
@@ -94,6 +95,7 @@ public class MatchdayPages {
         static native TemplateInstance liveScores(LiveScoresFragment fragment);
         static native TemplateInstance matchday(MatchdayPage page);
         static native TemplateInstance match(MatchPage page);
+        static native TemplateInstance matchNotFound(MatchNotFoundPage page);
         static native TemplateInstance team(TeamPage page);
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
@@ -208,11 +210,17 @@ public class MatchdayPages {
 
     @GET
     @Path("/{league}/matches/{id}")
-    public TemplateInstance match(@PathParam("league") String league, @PathParam("id") long id) {
-        Match match = Match.<Match>findByIdOptional(id)
-                .filter(m -> m.matchday.league == league(league))
-                .orElseThrow(() -> new NotFoundException("match not found"));
-        return Templates.match(matchPage(match));
+    public Response match(@PathParam("league") String league, @PathParam("id") long id) {
+        Optional<League> l = League.bySourceShortcut(league);
+        Optional<Match> match = l.flatMap(x -> Match.<Match>findByIdOptional(id).filter(m -> m.matchday.league == x));
+        if (match.isEmpty()) {
+            // story r005: a shared link to a match that isn't there ends on a page, not a blank 404
+            League shown = l.orElse(League.BUNDESLIGA_1);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Templates.matchNotFound(new MatchNotFoundPage(Nav.of(shown), "/" + shown.sourceShortcut())))
+                    .build();
+        }
+        return Response.ok(Templates.match(matchPage(match.get()))).build();
     }
 
     @GET

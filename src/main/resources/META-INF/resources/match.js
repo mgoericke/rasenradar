@@ -123,3 +123,43 @@ function rrChartDefaults() {
   }
   start();
 })();
+
+// Story r005: "Link teilen" hands the page's address to the device's share sheet, or copies it
+// where there is none. The address is the page's own canonical link, nothing personal in it.
+(function () {
+  var button = document.querySelector('.share-link');
+  if (!button || button.dataset.ready) return;
+  button.dataset.ready = '1';
+  var status = document.querySelector('.share-status');
+  function say(text) {
+    if (!status) return;
+    status.textContent = text;
+    setTimeout(function () { status.textContent = ''; }, 3000);
+  }
+  // browsers that refuse the clipboard API (an embedded view, an old engine): the selection way, else show the address
+  function copyOldStyle(url) {
+    var field = document.createElement('textarea');
+    field.value = url;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (e) {}
+    field.remove();
+    if (copied) { say('Link kopiert'); return; }
+    status.textContent = url;
+  }
+  button.addEventListener('click', function () {
+    var canonical = document.querySelector('link[rel="canonical"]');
+    var url = canonical ? canonical.href : location.href;
+    if (navigator.share) {
+      navigator.share({ title: button.dataset.shareText, text: button.dataset.shareText, url: url }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () { say('Link kopiert'); }, function () { copyOldStyle(url); });
+    } else {
+      copyOldStyle(url);
+    }
+  });
+})();
