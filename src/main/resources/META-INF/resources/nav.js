@@ -104,6 +104,7 @@ document.addEventListener('click', function (e) {
       var note = document.querySelector('[data-my-club-gone]');
       if (note) note.hidden = false;
     }
+    document.querySelectorAll('[data-my-club-href]').forEach(function (a) { a.href = c ? '/mein-verein/' + c.id : '/mein-verein'; });
     var link = document.querySelector('[data-my-club-link]');
     if (link) {
       link.href = c ? '/mein-verein/' + c.id : '/mein-verein';
