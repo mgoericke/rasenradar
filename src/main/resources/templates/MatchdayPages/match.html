@@ -18,8 +18,8 @@
     </h1>
     <p class="half" id="half-{page.match.id}">{#if page.match.halfTime}Halbzeit {page.match.halfTime}{/if}{#if page.match.provisional} · vorläufig{/if}</p>
     {#if page.nav.forecastSupported}
-    <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML">
-      <a class="link-button ai" href="{page.forecastLink}">{#if !page.match.played}Noch keine KI-Vorschau{#else}KI-Vorschau{/if}</a>
+    <div class="forecast-summary" hx-get="{page.forecastLink}/summary?played={page.match.played}" hx-trigger="load" hx-swap="innerHTML"{#if page.match.played} data-played{/if}>
+      <a class="link-button ai ki-pending" href="{page.forecastLink}">{#if !page.match.played}Noch keine KI-Vorschau{#else}KI-Vorschau{/if}</a>
     </div>
     {/if}
   </div>
@@ -28,9 +28,6 @@
 
   <div class="match-layout">
     <div class="match-main">
-      {! filled out of band by the KI summary in the scoreboard; stays empty without a forecast !}
-      <section id="ki-reasoning" class="ki-reasoning" hidden></section>
-
       <section class="situations">
         {#for t in page.teams}
         <div class="situation">
@@ -72,6 +69,10 @@
           {/if}
         </div>
       </section>
+
+      {! filled out of band by the KI summary in the scoreboard; stays empty without a forecast.
+         It sits after the data, so filling it moves nothing the reader already sees. !}
+      <section id="ki-reasoning" class="ki-reasoning" hidden></section>
     </div>
 
     {#if !page.table.isEmpty}
