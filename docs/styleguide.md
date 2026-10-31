@@ -4,57 +4,86 @@ Gilt für alle Seiten (Qute-Templates unter `src/main/resources/templates/`, Sty
 `src/main/resources/META-INF/resources/app.css`). Neue Seiten und Fragmente halten sich an
 diese Entscheidungen; Abweichungen werden hier eingetragen, nicht still im CSS.
 
-## Leitidee: hell und wertig, eine dunkle Bühne
+## Leitidee: der frisch gemähte Platz
 
-Wettseiten sind dunkel, weil Dunkel Spannung und Casino signalisiert. Professionalität
-kommt bei ihnen aus etwas anderem: strenger Typografie, sauberen Zahlenkolonnen, wenig
-Farbe, viel Luft. Genau das setzen wir **hell** um.
+Ein Bundesliga-Rasen von der Haupttribüne aus: zwei Grüntöne in breiten Bahnen, darauf Kreidelinien.
+Genau das ist die Struktur der Seite, nicht ihre Dekoration („Rasenschnitt", im UX-Lab als Design B
+entwickelt und gemessen).
 
-- **Heller Grund, weiße Flächen.** Inhalt steht auf Papier, nicht auf Nacht.
-- **Genau eine dunkle Bühne.** Die Top-Navigation und die Anzeigetafel der Spielseite
-  (Wappen – Ergebnis – Wappen) sind tiefes Grünschwarz („Flutlicht"). Sonst nichts.
-  Keine weiteren dunklen Panels, kein Dark Mode.
-- **Wertigkeit durch Verzicht.** Keine Schatten, keine Verläufe, keine Icons als
-  Dekoration. Haarlinien, Innenabstand und Typografie tragen die Hierarchie.
+- **Heller Kreidegrund.** Inhalt steht auf hellem Grund; die Navigation ist hell.
+- **Mähstreifen sind der Rhythmus der Daten.** Spiellisten, Tabellen, Torschützen und Spielpläne
+  wechseln zeilenweise zwei blasse Grüntöne (`--mow-a`/`--mow-b`). Sie ersetzen Zebra, weiße Karten und
+  Haarlinien zwischen Zeilen. Die Streifen tragen Rhythmus, keine Bedeutung — nichts darf davon abhängen,
+  sie zu unterscheiden.
+- **Kreidelinien trennen.** Tagesüberschriften enden in einer 2-px-Kreidelinie, Abschnitte ebenso.
+- **Genau eine grüne Bühne: der Spielkopf.** Auf der Spielseite steht die Begegnung auf dem gestreiften
+  Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als Rahmen; keine Linie kreuzt Text.
+  Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte, Form) sind die große Schrift; die
+  KI-Vorschau ist eine markierte Zeile darunter.
+- **Keine Anzeigetafel-Optik.** Keine LED- oder Klappziffern, kein tickender Sekunden-Countdown, keine
+  Laufschrift. Eine Anstoßzeit steht in Worten da („in 5 Std 11 Min").
+- **Wertigkeit durch Verzicht.** Keine Schatten, keine weichen Verläufe, keine Icons als Dekoration.
 
 ## Farben (Tokens in `app.css`)
 
+Hell („Tagspiel"); jede Textfarbe ist gegen **beide** Streifen gemessen.
+
 | Token | Wert | Verwendung |
 |---|---|---|
-| `--ground` | `#F4F4F1` | Seitengrund (Papier) |
-| `--surface` | `#FFFFFF` | Karten, Tabellen, Listen |
-| `--stage` | `#101B16` | Die dunkle Bühne: Top-Navigation, Anzeigetafel |
-| `--stage-ink` | `#EEF3EF` | Text auf der Bühne |
-| `--stage-soft` | `#9DB0A5` | Nebentext auf der Bühne |
-| `--stage-line` | `rgba(255,255,255,.14)` | Linien und Rahmen auf der Bühne |
-| `--ink` | `#14201B` | Text, gespielte Ergebnisse |
-| `--ink-soft` | `#5A655F` | Nebentext |
-| `--ink-mute` | `#66706B` | Beschriftungen, Zeiten, Platzziffern — ≥ 4,5:1 auf Grund und Karte (WCAG AA); vorher `#8C9691` mit 2,8:1 |
-| `--line` | `#E2E5E2` | Haarlinien |
-| `--win` | `#1A8A50` | Sieg, Aufstiegs-/CL-Zone, Auswärtssieg-Tendenz |
-| `--loss` | `#C63C3C` | Niederlage, Abstiegszone, Fehler, veraltete Daten |
-| `--draw` | `#A3ABA6` | Unentschieden |
-| `--accent` | `#B99A5B` | Messing: der eine Akzent für die KI-Vorschau |
+| `--chalk` | `#F3F5EE` | Seitengrund, Navigation |
+| `--paper` | `#FAFCF7` | Erklärkarten, Formulare, Menüs — keine Datenlisten |
+| `--mow-a` / `--mow-b` | `#E3EDDB` / `#D5E4CB` | Mähstreifen: Zeilenrhythmus jeder Datenliste |
+| `--turf-a` / `--turf-b` | `#1C5530` / `#24653A` | Die Bühne: Spielkopf |
+| `--turf-ink` / `--turf-soft` | `#F3F5EE` / `#D3E3CC` | Text auf der Bühne (8,0:1 / 5,2:1 auf dem helleren Band) |
+| `--turf-line` | `rgba(243,245,238,.55)` | Kreidelinien auf der Bühne |
+| `--ink` | `#0F2417` | Text, gespielte Ergebnisse, Auswahl („gedrückt", „aktiv") |
+| `--ink-soft` | `#3B5444` | Nebentext — ≥ 6,2:1 auf beiden Streifen |
+| `--ink-mute` | `#435B4B` | Beschriftungen, Zeiten, Platzziffern — ≥ 5,6:1 auf beiden Streifen |
+| `--line` | `#B9CCAE` | Kreidelinien auf hellem Grund |
+| `--win` | `#1E7038` | Sieg, Aufstiegs-/CL-Zone |
+| `--loss` | `#A5321F` | Niederlage, Abstiegszone, Fehler, veraltete Daten |
+| `--draw` | `#66726A` | Unentschieden (weiße Schrift darauf 5,0:1) |
+| `--ki` | `#6A3BD4` | Lila: die KI-Vorschau, nichts sonst |
+| `--ki-wash` / `--ki-deep` | `#E6DCFF` / `#2A1466` | KI-Plakette (Grund / Schrift) |
+| `--ki-on-turf` | `#DCCBFF` | KI auf der Bühne |
+| `--live` | `#1D4FD8` | Laufende Spiele, nichts sonst |
+| `--zone` | `--paper` | Hervorhebung einer Zeile (Hover, die beiden Mannschaften einer Begegnung) |
+
+Dunkel („Abendspiel", folgt `prefers-color-scheme`, siehe unten):
+`--chalk #0A1A10`, `--paper #11261A`, `--mow-a #0F2318`, `--mow-b #16301F`, `--turf-a #0E2F1B`,
+`--turf-b #123A22`, `--turf-ink #E8F0E4`, `--turf-soft #B9CCB4`, `--ink #E8F0E4`, `--ink-soft #A8BBA8`, `--ink-mute #9CB09C`, `--line #2C4A35`,
+`--win #5BC27E`, `--loss #FF7A63`, `--draw #8A988B`, `--ki #B49CFF`, `--ki-wash #2E2160`,
+`--ki-deep #E6DCFF`, `--ki-on-turf #C4B0FF`, `--live #8FB4FF`.
 
 Regeln:
 
-- **Grün und Rot sind Bedeutung, keine Dekoration**: Sieg/Niederlage, Tabellenzonen,
-  Fehlerzustände. Nirgends sonst.
-- **Messing (`--accent`) ist der einzige Schmuckton** und markiert ausschließlich die
-  KI-Vorschau: Schaltflächen zur Vorschau, aktive Markierung in der dunklen Navigation,
-  der Skill-Score. Nicht für Überschriften, nicht für Rahmen um Inhalte.
-- Heimsieg-Tendenz ist `--ink`, Auswärtssieg `--win`, Unentschieden `--ink-soft` —
-  so in Balken und Pillen. Die knappen KI-Vorschau-Marker in Paarungslisten (Richtwert
-  wie „2:1" statt Toto-Symbol) verzichten bewusst auf die Farbcodierung — bei einer
-  einzelnen Zahl in Fließtextgröße wäre sie kaum lesbar; Tendenz und Wahrscheinlichkeit
-  stehen stattdessen im Tooltip.
+- **Grün als Grund, Farbe als Bedeutung.** Die Rasen- und Mähtöne sind Grund. Sieg/Niederlage und
+  Tabellenzonen sind kleine gesättigte Marken (Buchstaben-Pillen, 2-px-Zonenmarker), nie die Füllung
+  einer ganzen Zeile.
+- **Lila (`--ki`) ist ausschließlich die KI-Vorschau** und steht immer zusammen mit dem Wort „KI"
+  (die Helligkeit liegt nahe an den Ergebnisfarben — in Graustufen trägt das Wort die Aussage).
+  Messing gibt es nicht mehr.
+- **Blau (`--live`) ist ausschließlich „läuft gerade".**
+- **Auswahl ist Tinte.** Gedrückte Segmente, aktive Reiter und Abzeichen sind `--ink` auf hellem Grund.
+- Heimsieg-Tendenz ist `--ink`, Auswärtssieg `--ink-soft`, Unentschieden `--draw` — so in Balken und
+  Pillen. Die knappen KI-Marker in Paarungslisten verzichten auf Farbcodierung; Tendenz und
+  Wahrscheinlichkeit stehen im Tooltip.
+
+## Darstellung hell/dunkel
+
+Die Seite folgt der Systemeinstellung (`prefers-color-scheme`). Ein kleines Menü „Darstellung" in
+der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt nur im Browser
+(`localStorage`), es gibt kein Konto. Sie wird im `<head>` vor dem ersten Zeichnen gesetzt, damit
+`hx-boost`-Seitenwechsel nicht aufblitzen.
 
 ## Typografie
 
-- **Display: Bricolage Grotesque** (variabel, `opsz`/`wght`) für Überschriften, Spieltagsziffer,
-  Ergebnisse, große Zahlen. Gewicht 700, enge Laufweite (−0,03 em bis −0,04 em bei
-  Großgrößen), optische Größe 96 für Hero-Ziffern.
-- **Text: IBM Plex Sans** für Fließtext, Tabellen, Beschriftungen. Gewichte 400/500/600.
+- **Eine Schriftfamilie in zwei Breiten, selbst gehostet** (`/fonts`, WOFF2, Latin-Teilmenge,
+  SIL Open Font License). Keine Verbindung zu Google oder einem anderen Schriftdienst.
+- **Display: Sofia Sans Extra Condensed** für Namen, Ergebnisse, Anstoßzeiten, Überschriften,
+  Tabellenpunkte. Gewicht 700 für Überschriften, 800 für Namen und Ergebnisse — die hohe, schmale
+  Form der Trikotnummern.
+- **Text: Sofia Sans** für Fließtext, Tabellen, Beschriftungen. Gewichte 400/600/700.
 - **Zahlen immer tabular** (`font-variant-numeric: tabular-nums`), damit Kolonnen stehen.
 - Keine Versalien als Beschriftung, keine Eyebrow-Labels, keine hervorgehobenen
   Einzelwörter in Überschriften.
@@ -74,20 +103,28 @@ Regeln:
 
 ## Bausteine
 
-- **Karten** (`.standings`, `.situation`, `.chart-block`, `.forecast` …): weiße Fläche,
-  Haarlinie `1px solid var(--line)`, Radius 12 px, Innenabstand ≥ 1,1 rem. Kein Schatten.
+- **Datenlisten auf Mähstreifen** (`.fixtures`, `.stream-slot`, `.standings`, `.stream-table`,
+  `.schedule`, `.scorers`, `.meetings`, `.group-table`, `.forecast-list`, `.leaderboard`): keine Karte,
+  kein Rahmen, keine Linie zwischen Zeilen — die Zeilen wechseln `--mow-a`/`--mow-b`, Radius 8 px am
+  Block, Zeilen mindestens 40 px hoch (Tippziel). Hover und hervorgehobene Zeilen (`--zone`) hellen
+  auf Kreide auf.
+- **Erklärkarten** (`.situation`, `.chart-block`, `.forecast`, `.role-card`, `.accuracy-card`, Bewerter):
+  Fläche `--paper`, Kreidelinie `1px solid var(--line)`, Radius 12 px, Innenabstand ≥ 1,1 rem. Kein
+  Schatten. Karten tragen Text und Diagramme, keine Datenzeilen.
+- **Abschnittsüberschriften** (`.stream-day-label`, `h2` in Datenblöcken): Display-Schrift 700, enden
+  in einer 2-px-Kreidelinie, die den Rest der Zeile füllt.
 - **Pillen** (`.pill`, `.score`): Radius 6 px, Display-Schrift 700. Endgültige Ergebnisse
   gefüllt (`--ink`, auf der Bühne weiß), vorläufige gestrichelt und ungefüllt, offene
   Spiele leise (`--ink-mute`, nur Rahmen). Läuft eine Begegnung gerade (`.score.is-live`,
-  Spec 1), steht „Läuft" in Text-Schrift im `--loss`-Rahmen ohne Füllung, solange die
+  Spec 1), steht „Läuft" in Text-Schrift im `--live`-Rahmen ohne Füllung, solange die
   Quelle noch keinen Zwischenstand liefert; danach der Zwischenstand selbst (`.has-score`)
-  in Display-Schrift, weiter nur gerahmt und rot — auffällig, aber erkennbar kein Ergebnis.
+  in Display-Schrift, weiter nur gerahmt und blau — auffällig, aber erkennbar kein Ergebnis.
 - **Navigation auf dem Telefon** (`.nav-links` unter 560 px): Marke oben, darunter alle
   Wettbewerbe in **einer** wischbaren Zeile mit vollem Namen, ohne sichtbaren Scrollbalken —
   kein Umbruch in mehrere Zeilen, die die mitlaufende Navigation dauerhaft stehen ließe.
   `nav.js` scrollt den aktiven Eintrag in die Mitte.
 - **Wettbewerbsabzeichen** (`.badge`): kleines Zeichen links am Navigationseintrag,
-  Display-Schrift 700, Haarrahmen; aktiv in Messing gefüllt. Ein einzelnes Zeichen
+  Display-Schrift 700, Haarrahmen; aktiv in `--ink` gefüllt. Ein einzelnes Zeichen
   (die Ligazahl „1", „2") ergibt eine runde Scheibe, ein Kürzel („CL", „DFB", „NL")
   eine mitwachsende Plakette — `min-width` statt fester Breite, Radius 999 px. Nur
   Ligen haben eine Zahl; Pokal und Nationenwettbewerb in ein Zahlenabzeichen zu
@@ -97,9 +134,11 @@ Regeln:
   gedämpft (60 % Deckkraft) = Relegation/Play-off.
 - **Wappen**: `object-fit: contain`, auf der Bühne auf einer weißen runden Scheibe
   (`.crest.large`), sonst ohne Teller. Größen: 1,1 rem (Tabelle), 1,4 rem (Paarungen),
-  2,4 rem (Anzeigetafel), 5,5 rem (Vereinsseite).
+  2,4 rem (Spielkopf), 5,5 rem (Vereinsseite).
 - **Schaltflächen**: `.button` (Aktion, gefüllt `--ink`), `.link-button` (Navigation,
-  Rahmen). Wege zur KI-Vorschau tragen den Messing-Rahmen (`.link-button.ai`).
+  Rahmen). Wege zur KI-Vorschau tragen den lila Rahmen (`.link-button.ai`).
+- **KI-Plakette** (`.ki-chip`): das Wort „KI" in `--ki-deep` auf `--ki-wash`, Radius 4 px, Text-Schrift
+  700. Steht vor jedem KI-Wert, der nicht schon in einem KI-Abschnitt steht.
 - **Bewegung** nur als Antwort auf eine Aktion (Hover, Fortschrittspunkt); kein
   Einblenden von Abschnitten. `prefers-reduced-motion` wird respektiert.
 - **Laufende Spiele aktualisieren sich selbst** (`#live-poller`): Zeigt eine Seite ein Spiel,
@@ -111,9 +150,9 @@ Regeln:
 - **Landingpage: Spieltags-Strom** (Spec 1). Kein Kopfbereich mit Schriftzug — die Marke steht
   in der Navigation. H1 „Bundesliga, 23.–25. Oktober", darunter beide Spieltage verlinkt.
   Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
-  (`.stream-slot`, weiße Karte, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
+  (`.stream-slot`, Mähstreifen, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
   trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):
-  Richtwert in Display-Schrift mit 2 px-Messinglinie, davor die Tendenz mit Wahrscheinlichkeit,
+  Richtwert in Display-Schrift in `--ki` mit 2 px-Linie in `--ki`, davor die Tendenz mit Wahrscheinlichkeit,
   danach das Urteil — „getroffen" in `--ink` 600 mit gefülltem `--win`-Punkt, „daneben" in
   `--ink-soft` mit leerem Ring, bei vorläufigem Ergebnis „· vorläufig". Darüber eine klebende
   Filterleiste (Segment Alle/Live/Beendet/Anstehend, Liga-Chips; `stream.js`, ohne Skript
@@ -123,10 +162,11 @@ Regeln:
 - **Radio-Umschalter ohne Skript** (Ansicht auf dem Telefon, Tabellen-Tabs): versteckte, aber
   fokussierbare Radio-Buttons mit Label, sichtbarer Zustand über `:checked` und den
   `~`-Geschwister-Selektor — native Radiogruppen-Semantik statt eines ARIA-Tablist-Musters.
-- **Spielseite: Urteil in der Anzeigetafel** (`.board-ai`, `.board-verdict`): unter dem Ergebnis
-  eine KI-Zeile auf der Bühne — Richtwert und Tendenz links, Wahrscheinlichkeitsbalken mit
-  Beschriftung in der Mitte, nach Abpfiff rechts das Urteil als Messing-Pille (gefüllt =
-  getroffen, Umriss = daneben). Darunter links die Begründung offen (drei Bewerter als Karten,
+- **Spielseite: der Spielkopf** (`.scoreboard`, `.board-ai`, `.board-verdict`): gestreifter Rasen
+  mit Seitenlinie und zwei Strafräumen als Rahmen; Wappen auf weißer Scheibe, Namen und Ergebnis in
+  Display-Schrift 800. Unter einer Kreidelinie eine KI-Zeile — KI-Plakette, Richtwert und Tendenz
+  links, Wahrscheinlichkeitsbalken mit Beschriftung in der Mitte, nach Abpfiff rechts das Urteil als
+  lila Pille (gefüllt = getroffen, Umriss = daneben). Darunter links die Begründung offen (drei Bewerter als Karten,
   Prognostiker und Prüfer in einer Karte), dann Form und Duelle; rechts die Tabelle vor dem
   Spieltag (`.match-rail`), die beiden Mannschaften der Begegnung auf `--zone` hervorgehoben.
   K.-o.-Spiele haben keine Tabelle und damit keine rechte Spalte.
@@ -141,7 +181,9 @@ Quoten, keine Wettsprache.
 
 ## Was wir bewusst nicht tun
 
-- Kein Dark Mode, keine Theme-Umschaltung.
-- Keine Karten-Kits mit identischen Kacheln und Schatten.
+- Keine Anzeigetafel-Optik: keine LED- oder Klappziffern, kein Sekunden-Countdown, keine Laufschrift.
+- Keine Karten-Kits mit identischen Kacheln und Schatten; Datenlisten stehen auf Mähstreifen.
 - Keine Emojis, keine Illustrationen, keine Stock-Fotos.
-- Keine Farbverläufe, keine Glaseffekte.
+- Keine weichen Farbverläufe, keine Glaseffekte. Erlaubt sind nur harte Bänder (Mähstreifen), auch
+  wenn sie technisch als `repeating-linear-gradient` gezeichnet werden.
+- Keine Schriften von fremden Servern.

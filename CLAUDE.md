@@ -120,10 +120,12 @@ Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
 ## Styleguide (`docs/styleguide.md`)
 
-Alle UI-Änderungen folgen `docs/styleguide.md`: heller Grund, genau eine dunkle Bühne
-(Top-Navigation und Anzeigetafel), Grün/Rot nur als Bedeutung, Messing (`--accent`) nur
-für die KI-Vorschau, Bricolage Grotesque für Display, IBM Plex Sans für Text. Neue Tokens
-oder Bausteine dort eintragen, bevor sie ins CSS kommen.
+Alle UI-Änderungen folgen `docs/styleguide.md` („Rasenschnitt"): heller Kreidegrund, Datenlisten
+auf Mähstreifen, genau eine grüne Bühne (der Spielkopf der Spielseite), keine Anzeigetafel-Optik,
+Grün/Rot nur als Bedeutung, Lila (`--ki`) nur für die KI-Vorschau und immer mit dem Wort „KI",
+Blau (`--live`) nur für laufende Spiele, hell/dunkel nach Systemeinstellung, Sofia Sans Extra
+Condensed für Display und Sofia Sans für Text, selbst gehostet. Neue Tokens oder Bausteine dort
+eintragen, bevor sie ins CSS kommen.
 
 ## Specs (`docs/specs/`)
 
