@@ -249,3 +249,57 @@ document.addEventListener('click', function (e) {
   document.addEventListener('DOMContentLoaded', apply);
   document.addEventListener('htmx:afterSettle', apply);
 })();
+
+// Story r099: glossary terms on the KI pages. A term is a link to its explanation on the explainer
+// page; here it becomes a button that opens the same sentence in a box right under the word. Tap
+// again, tap elsewhere or press Escape to close — focus goes back to the term.
+(function () {
+  var open = null, count = 0;
+  function close(focus) {
+    if (!open) return;
+    open.term.setAttribute('aria-expanded', 'false');
+    open.box.remove();
+    if (focus) open.term.focus();
+    open = null;
+  }
+  function show(term) {
+    var box = document.createElement('span');
+    box.className = 'term-box';
+    box.id = 'term-box-' + (++count);
+    box.setAttribute('role', 'note');
+    box.textContent = term.dataset.explain;
+    document.body.appendChild(box);
+    var r = term.getBoundingClientRect();
+    var width = Math.min(320, document.documentElement.clientWidth - 32);
+    box.style.width = width + 'px';
+    box.style.left = Math.max(16, Math.min(r.left, document.documentElement.clientWidth - width - 16)) + window.scrollX + 'px';
+    box.style.top = r.bottom + window.scrollY + 6 + 'px';
+    term.setAttribute('aria-expanded', 'true');
+    term.setAttribute('aria-controls', box.id);
+    open = { term: term, box: box };
+  }
+  function init() {
+    document.querySelectorAll('a.term:not([role])').forEach(function (t) {
+      t.setAttribute('role', 'button');
+      t.setAttribute('aria-expanded', 'false');
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var term = e.target.closest && e.target.closest('a.term[role="button"]');
+    if (open && open.box.contains(e.target)) return;
+    if (!term) { close(false); return; }
+    e.preventDefault();
+    var same = open && open.term === term;
+    close(false);
+    if (!same) show(term);
+  });
+  document.addEventListener('keydown', function (e) {
+    var term = e.target.closest && e.target.closest('a.term[role="button"]');
+    if (term && e.key === ' ') { e.preventDefault(); term.click(); }
+    if (e.key === 'Escape') close(true);
+  });
+  window.addEventListener('resize', function () { close(false); });
+  document.addEventListener('htmx:beforeSwap', function () { close(false); });
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('htmx:afterSettle', init);
+})();
