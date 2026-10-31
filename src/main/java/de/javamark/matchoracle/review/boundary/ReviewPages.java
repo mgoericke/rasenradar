@@ -60,7 +60,7 @@ public class ReviewPages {
         /** Spec 05, "Kalibrierung in Sätzen": plain-language reading of one confidence band. */
         public String sentence(int required) {
             if (hitRatePercent == null) {
-                return label + ": die Datenlage reicht noch nicht (" + evaluated + " von " + required + " bewerteten Vorschauen).";
+                return label + ": zu wenige Fälle für eine Aussage (n = " + evaluated + ").";
             }
             return "Wenn das System " + label + " ausweist, trifft die Tendenz in " + hitRatePercent + " von 100 Fällen.";
         }
@@ -94,6 +94,19 @@ public class ReviewPages {
         /** The comparison needs the oracle's rate and enough matches with a baseline. */
         public boolean comparable() {
             return hitRatePercent != null && yardsticks.stream().allMatch(y -> y.hitRatePercent() != null);
+        }
+
+        /**
+         * Story r018: the hit rates of the KI and of the baseline side by side, said as plainly when
+         * the KI is behind as when it is ahead.
+         */
+        public String hitVerdict() {
+            if (!comparable()) return "";
+            int oracle = yardsticks.get(0).hitRatePercent();
+            int baseline = yardsticks.get(1).hitRatePercent();
+            if (oracle > baseline) return "Die KI-Vorschau trifft öfter als die reine Statistik.";
+            if (oracle < baseline) return "Die reine Statistik trifft öfter als die KI-Vorschau.";
+            return "KI-Vorschau und reine Statistik treffen gleich oft.";
         }
 
         /** Worded for the page: ahead of, level with or behind plain statistics. */
