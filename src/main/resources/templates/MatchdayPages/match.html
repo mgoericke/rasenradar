@@ -60,17 +60,33 @@
           <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
         </div>
         <div class="h2h">
-          <h2>Direkte Duelle <span class="muted">aus Sicht von {page.homeTeam.shortName}</span></h2>
-          {#if page.headToHead.isEmpty}
-          <p class="muted">Keine früheren Begegnungen im Datenbestand.</p>
+          {#let h=page.headToHead}
+          <h2>Bisherige Duelle{#if h.since} <span class="muted">in OpenLigaDB seit {h.since}</span>{/if}</h2>
+          {#if h.recent.isEmpty}
+          <p class="muted">Noch keine gemeinsamen Spiele in den Daten.</p>
           {#else}
-          <p class="h2h-balance">{page.headToHeadBalance.wins} {#if page.headToHeadBalance.wins == 1}Sieg{#else}Siege{/if}, {page.headToHeadBalance.draws} Unentschieden, {page.headToHeadBalance.losses} {#if page.headToHeadBalance.losses == 1}Niederlage{#else}Niederlagen{/if}, Tore {page.headToHeadBalance.goals}</p>
+          {#if h.total > 0}
+          {! story r035: counts plus a bar in proportion; final results only !}
+          <p class="h2h-balance">{h.total} {#if h.total == 1}Spiel{#else}Spiele{/if}: {h.team} {h.wins} {#if h.wins == 1}Sieg{#else}Siege{/if}, {h.draws} Unentschieden, {h.opponent} {h.losses} {#if h.losses == 1}Sieg{#else}Siege{/if}</p>
+          <div class="h2h-bar" aria-hidden="true">
+            {#if h.wins > 0}<span class="win" style="flex-grow: {h.share(h.wins)}"></span>{/if}
+            {#if h.draws > 0}<span class="draw" style="flex-grow: {h.share(h.draws)}"></span>{/if}
+            {#if h.losses > 0}<span class="loss" style="flex-grow: {h.share(h.losses)}"></span>{/if}
+          </div>
+          <div class="h2h-legend" aria-hidden="true"><span>{h.team}</span><span>{h.opponent}</span></div>
+          {#if h.biggestWin}
+          <p class="h2h-biggest">Höchster Sieg: <a href="{h.biggestWin.link}">{h.biggestWin.winner} {h.biggestWin.score} gegen {h.biggestWin.loser}</a> ({h.biggestWin.year})</p>
+          {/if}
+          {/if}
+          <h3 class="h2h-recent">Letzte {#if h.recent.size == 1}Begegnung{#else}{h.recent.size} Begegnungen{/if} <span class="muted">neueste oben, Farben aus Sicht von {h.team}</span></h3>
           <ol class="meetings">
-            {#for r in page.headToHead}
-            <li><a href="{r.link}"><span class="date">{r.date}</span> <span class="venue">{#if r.home}Heim{#else}Auswärts{/if}</span> <span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span></a></li>
+            {#for r in h.recent}
+            <li><a href="{r.link}"><span class="date">{r.month}</span> <span class="venue">{r.homeTeam} – {r.awayTeam}</span> <span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span></a></li>
             {/for}
           </ol>
+          {#if h.recentProvisional}<p class="muted note">Vorläufige Ergebnisse sind markiert und zählen noch nicht zur Bilanz.</p>{/if}
           {/if}
+          {/let}
         </div>
       </section>
 

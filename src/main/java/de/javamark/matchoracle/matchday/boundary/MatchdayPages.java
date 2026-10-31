@@ -5,6 +5,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Countdown;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DataInfo;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.DayGroup;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.GoalRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.HeadToHeadSummary;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LiveScoresFragment;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchNotFoundPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingPage;
@@ -334,8 +335,7 @@ public class MatchdayPages {
                 MatchdayPageModels.dayLabel(match.kickoff), MatchRow.of(match, shortcut, Instant.now(), liveWindow), goals,
                 situation(match.homeTeam, matchday, standings, shortcut),
                 situation(match.awayTeam, matchday, standings, shortcut),
-                h2h.matches().stream().map(v -> ResultRow.of(v, shortcut)).toList(),
-                BalanceRow.of("Bilanz", h2h.balance()), h2h.includesProvisional(),
+                HeadToHeadSummary.of(h2h.team(), h2h.opponent(), h2h.matches(), Matchday.earliestSeason().orElse(null), shortcut),
                 positionChart(matchday, match.homeTeam, match.awayTeam),
                 standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), standings.includesProvisional(),
                 DataInfo.of(matchday, Instant.now()),
