@@ -145,22 +145,63 @@ public class ForecastPages {
      * played, or the way to create one. The assessors' reasoning travels along out of band into the
      * page body, so the match page only knows this fragment's URL.
      */
-    record SummaryFragment(String forecastLink, boolean played, boolean running, ForecastView forecast, StreamCell verdict) {
+    record SummaryFragment(String forecastLink, boolean played, boolean running, ForecastView forecast, StreamCell verdict,
+                           Settlement settlement) {
     }
 
     /**
      * One out-of-band marker per match of a matchday that already has a forecast, swapped into the
      * fixture list: the expected score, with the tendency and its probability as a tooltip.
      */
-    record MarkerView(long matchId, String expectedScore, String tendency, int probabilityPercent) {
+    record MarkerView(long matchId, String expectedScore, String tendency, int probabilityPercent, Boolean hit) {
         static MarkerView of(Forecast f) {
+            return of(f, null);
+        }
+
+        /**
+         * Story r012: with a FINAL score the marker settles the forecast — {@code hit} says whether the
+         * tendency was right. A provisional score settles nothing yet; it stays null like an open match.
+         */
+        static MarkerView of(Forecast f, MatchdayFacade.MatchScore score) {
             ForecastView v = ForecastView.of(f);
             int probability = switch (f.tendency()) {
                 case HOME_WIN -> v.homeWin();
                 case DRAW -> v.draw();
                 case AWAY_WIN -> v.awayWin();
             };
-            return new MarkerView(f.matchId, v.expectedScore(), v.tendency(), probability);
+            Boolean hit = score == null || score.provisional() ? null : f.tendency() == Outcome.of(score.homeGoals(), score.awayGoals());
+            return new MarkerView(f.matchId, v.expectedScore(), v.tendency(), probability, hit);
+        }
+
+        public boolean settled() {
+            return hit != null;
+        }
+    }
+
+    /**
+     * Story r012, "Abgerechnet" on the match page: a forecast against the FINAL score — the verdict in
+     * the terms of Spec 03 and which of the three assessors leaned the right way.
+     */
+    record Settlement(String finalScore, String expectedScore, boolean hit, boolean exact, List<String> rightAssessors) {
+        static Settlement of(Forecast f, MatchdayFacade.MatchScore score) {
+            if (score == null || score.provisional()) {
+                return null;
+            }
+            Outcome actual = Outcome.of(score.homeGoals(), score.awayGoals());
+            List<String> right = f.assessments.stream()
+                    .filter(a -> !a.failed && a.lean == actual)
+                    .sorted(java.util.Comparator.comparing(a -> a.kind.ordinal()))
+                    .map(a -> ForecastPages.title(a.kind)).toList();
+            return new Settlement(score.homeGoals() + ":" + score.awayGoals(), f.expectedHomeGoals + ":" + f.expectedAwayGoals,
+                    f.tendency() == actual, f.expectedHomeGoals == score.homeGoals() && f.expectedAwayGoals == score.awayGoals(), right);
+        }
+
+        /** "Recht hatte: Umfeld.", "Recht hatten: Form und Umfeld.", "Keiner der drei Bewerter lag richtig." */
+        public String assessorLine() {
+            if (rightAssessors.isEmpty()) return "Keiner der drei Bewerter lag richtig.";
+            if (rightAssessors.size() == 1) return "Recht hatte: " + rightAssessors.getFirst() + ".";
+            return "Recht hatten: " + String.join(", ", rightAssessors.subList(0, rightAssessors.size() - 1))
+                    + " und " + rightAssessors.getLast() + ".";
         }
     }
 
@@ -261,8 +302,11 @@ public class ForecastPages {
         String link = "/" + league(league) + "/matches/" + matchId + "/forecast";
         Optional<Forecast> forecast = Forecast.findLatestByMatch(matchId);
         ForecastView latest = forecast.map(ForecastView::of).orElse(null);
-        StreamCell verdict = StreamCell.of(matchId, forecast, matchday.scoresOf(List.of(matchId)).get(matchId));
-        return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest, verdict));
+        MatchdayFacade.MatchScore score = matchday.scoresOf(List.of(matchId)).get(matchId);
+        StreamCell verdict = StreamCell.of(matchId, forecast, score);
+        Settlement settlement = forecast.map(f -> Settlement.of(f, score)).orElse(null);
+        return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest, verdict,
+                settlement));
     }
 
     /**
@@ -295,7 +339,8 @@ public class ForecastPages {
     public TemplateInstance markersFragment(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
         Map<Long, Forecast> latest = Forecast.findByMatchday(league(league), season, number).stream()
                 .collect(Collectors.toMap(f -> f.matchId, Function.identity(), (a, b) -> a, LinkedHashMap::new));
-        return Templates.markers(latest.values().stream().map(MarkerView::of).toList());
+        Map<Long, MatchdayFacade.MatchScore> scores = matchday.scoresOf(List.copyOf(latest.keySet()));
+        return Templates.markers(latest.values().stream().map(f -> MarkerView.of(f, scores.get(f.matchId))).toList());
     }
 
     @GET

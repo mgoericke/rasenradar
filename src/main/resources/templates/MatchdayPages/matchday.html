@@ -34,7 +34,7 @@
           {#if m.awayIcon}<img class="crest" src="{m.awayIcon}" alt="" loading="lazy">{/if}
           <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
         </span>
-        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if !m.played && page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
     </li>
     {/for}
