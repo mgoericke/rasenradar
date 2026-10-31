@@ -459,6 +459,8 @@ h2 { font-size: 1.35rem; }
 
 .stream-filters { position: sticky; top: 3.6rem; z-index: 6; background: var(--ground); display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; padding: .55rem 0 .7rem; border-bottom: 1px solid var(--line); }
 .stream-filters[hidden] { display: none; }
+/* with script, stream.js shows the bar: hold its place from the first paint, so the stream below does not jump when it appears */
+.js .stream-filters[hidden] { display: flex; visibility: hidden; }
 .stream-leagues { display: flex; gap: .4rem; flex-wrap: wrap; }
 .view-switch { display: none; }
 /* the radios only switch the phone view; above 1000px all views show, so they leave the tab order and the a11y tree */
