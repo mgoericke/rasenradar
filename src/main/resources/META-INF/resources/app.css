@@ -759,10 +759,36 @@ h2 { font-size: 1.35rem; }
 .seasons { list-style: none; margin: .8rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .seasons a { display: inline-block; padding: .25rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: .9rem; }
 .seasons a:hover { border-color: var(--ink); }
-.club-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
-@media (max-width: 800px) { .club-body { grid-template-columns: 1fr; } .club-head { flex-direction: column; align-items: flex-start; } }
-.club-main { display: grid; gap: 1.5rem; }
-.club-side { display: grid; gap: 1.5rem; }
+@media (max-width: 800px) { .club-head { flex-direction: column; align-items: flex-start; } }
+/* story r024: form strip in the head, then "Als Nächstes" beside the scorers, then three tabs */
+.club-form { display: flex; align-items: center; gap: .6rem; margin: .6rem 0 0; font-size: .9rem; }
+.club-top { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; margin-bottom: 2rem; }
+.club-top h2, .club-panel h2 { font-size: 1.35rem; }
+.club-next-card { display: grid; gap: .35rem; margin-top: .6rem; padding: .9rem 1rem; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+.club-next-card:hover { border-color: var(--ink); }
+.club-next-when { color: var(--ink-soft); font-size: .9rem; }
+.club-next-match { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr) auto; gap: .6rem; align-items: center; }
+.club-next-match .venue { color: var(--ink-soft); font-size: .85rem; }
+.club-next-match .opponent { font: 700 1.3rem var(--display); }
+.club-next-match .opponent .crest { vertical-align: middle; }
+.club-next .muted { margin: .6rem 0 0; }
+.more-scorers summary { cursor: pointer; margin-top: .6rem; color: var(--ink-soft); font-size: .9rem; }
+.more-scorers summary:hover { color: var(--ink); }
+.club-tab-switch { margin-bottom: 1.2rem; }
+.club-tab-input:nth-of-type(1):checked ~ .club-tab-switch label:nth-of-type(1),
+.club-tab-input:nth-of-type(2):checked ~ .club-tab-switch label:nth-of-type(2),
+.club-tab-input:nth-of-type(3):checked ~ .club-tab-switch label:nth-of-type(3) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+.club-tab-input:focus-visible ~ .club-tab-switch { outline: 3px solid var(--ink); outline-offset: 2px; }
+.club-panel { display: none; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); align-items: start; }
+#club-tab-overview:checked ~ .club-panel-overview,
+#club-tab-season:checked ~ .club-panel-season,
+#club-tab-matches:checked ~ .club-panel-matches { display: grid; }
+@media (max-width: 800px) { .club-top { grid-template-columns: 1fr; } }
+@media print {
+  /* paper has no tabs: every panel, one after the other */
+  .club-tab-switch { display: none; }
+  .club-panel { display: grid !important; margin-bottom: 1.5rem; }
+}
 .schedule-block, .facts-block { min-width: 0; }
 .schedule { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .schedule a { display: grid; grid-template-columns: 2rem 6.5rem 3.2rem 1fr auto; gap: .6rem; align-items: center; min-height: 2.5rem; padding: .4rem .7rem; }

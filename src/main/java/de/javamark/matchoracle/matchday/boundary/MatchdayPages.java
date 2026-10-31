@@ -51,6 +51,7 @@ import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.entity.Form;
+import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.HeadToHead;
 import de.javamark.matchoracle.matchday.entity.Balance;
@@ -648,7 +649,15 @@ public class MatchdayPages {
                 DataInfo.of(reference, Instant.now()),
                 hasTable, cupRunOutcome(team, league, played), tierLabel(team, league, season),
                 MY_CLUB_LEAGUES.contains(league) ? MyClubChoice.of(team) : null,
-                currentSeason && nextMatchOf(team, Instant.now()) == null);
+                currentSeason && nextMatchOf(team, Instant.now()) == null,
+                clubForm(team, shortcut, played));
+    }
+
+    /** Story r024: the club's last final results, oldest first — provisional ones do not count as form. */
+    private static List<ResultRow> clubForm(Team team, String shortcut, List<Match> played) {
+        List<Match> settled = played.stream().filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        return settled.subList(Math.max(0, settled.size() - MatchdayPageModels.CLUB_FORM_LENGTH), settled.size()).stream()
+                .map(m -> ResultRow.of(m.viewedBy(team), shortcut)).toList();
     }
 
     /** Story r092: the match the next-match bar shows for a club, in any competition; null when none is left. */

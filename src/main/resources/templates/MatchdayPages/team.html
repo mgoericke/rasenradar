@@ -10,7 +10,7 @@
     {#crest src=page.icon size="hero" /}
     <div>
       <h1 class="club-name">{page.name}</h1>
-{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
+      <p class="club-season">{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
       <p class="club-standing {page.zone}">
         {#if page.hasTable}
         {#if page.position}<span class="place">Platz {page.position}</span> mit {page.total.points} Punkten aus {page.total.played} Spielen
@@ -24,12 +24,11 @@
         {#if page.total.played}· {page.total.wins} {#if page.total.wins == 1}Sieg{#else}Siege{/if}, {page.total.draws} Unentschieden, {page.total.losses} {#if page.total.losses == 1}Niederlage{#else}Niederlagen{/if} · Tore {page.total.goals}{/if}
         {/if}
       </p>
-      {#if page.otherSeasons}
-      <ul class="seasons" aria-label="Weitere Saisons">
-        {#for s in page.otherSeasons}
-        <li><a href="{s.link}">{s.season} <span class="muted">{s.league}</span>{#if s.position} · Platz {s.position}{/if}</a></li>
-        {/for}
-      </ul>
+      {#if page.form}
+      {! story r024: the form strip of the table (r013), oldest left — letters, so never colour alone !}
+      <div class="club-form"><span class="muted">Form</span>
+        <ol class="form-strip" aria-label="Form, letzte Spiele, ältestes links">{#for f in page.form}<li><a class="{f.result.toString.toLowerCase}" href="{f.link}" title="{f.description}" aria-label="{f.description}">{f.letter}</a></li>{/for}</ol>
+      </div>
       {/if}
       {#if page.myClub}
       {! story r003: one of the two buttons is shown by nav.js, depending on the choice in this browser !}
@@ -41,36 +40,58 @@
     </div>
   </header>
 
-  <div class="club-body">
-    <section class="club-main">
-      {#if page.hasTable}
-      <div class="chart-block">
-        <h2>Tabellenplatz im Saisonverlauf</h2>
-        <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
-      </div>
-      {/if}
+  {! story r024: the next match and the scorers first, everything else in three tabs below !}
+  <div class="club-top">
+    {#let r=page.next}
+    <section class="club-next" aria-labelledby="club-next-title">
+      <h2 id="club-next-title">{#if r.score}Zuletzt{#else}Als Nächstes{/if}</h2>
+      <a class="club-next-card" href="{r.link}">
+        <span class="club-next-when">{r.date}{#if !r.score} · {r.time} Uhr{/if} · {#if page.hasTable}{r.matchday}. Spieltag{#else}{r.section}{/if}</span>
+        <span class="club-next-match">
+          <span class="venue">{#if r.home}Heim{#else}Ausw.{/if}</span>
+          <span class="opponent">{#crest src=r.opponentIcon size="small" /} {r.opponent}</span>
+          {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>{/if}
+        </span>
+      </a>
+      {#if page.noMatchesLeft}<p class="muted">Keine Spiele mehr in dieser Saison.</p>{/if}
+    </section>
+    {/let}
 
-      <div class="schedule-block">
-        <h2>{#if page.hasTable}Spielplan{#else}Weg durch den Wettbewerb{/if}</h2>
-        {#if page.noMatchesLeft}<p class="muted">Keine Spiele mehr in dieser Saison.</p>{/if}
-        <ol class="schedule">
-          {#for r in page.schedule}
-          <li>
-            <a href="{r.link}" class="{#if r.result}{r.result.toString.toLowerCase}{#else}open{/if}">
-              <span class="md">{#if page.hasTable}{r.matchday}.{#else}{r.section}{/if}</span>
-              <span class="date">{r.date} <span class="muted">{r.time}</span></span>
-              <span class="venue">{#if r.home}Heim{#else}Ausw.{/if}</span>
-              <span class="opponent">{#crest src=r.opponentIcon size="small" lazy=true /} {r.opponent}</span>
-              {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>{#if r.decision}<span class="decision">{r.decision}</span>{/if}
-              {#else}<span class="pill open">–:–</span>{/if}
-            </a>
-          </li>
+    <section class="club-scorers" aria-labelledby="club-scorers-title">
+      <h2 id="club-scorers-title">Torschützen</h2>
+      {#if page.scorers.isEmpty}
+      <p class="muted">Noch kein Tor in dieser Saison.</p>
+      {#else}
+      <ol class="scorers">
+        {#for s in page.topScorers}
+        <li><span class="name">{s.name}</span><span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
+        {/for}
+      </ol>
+      {#if page.moreScorers}
+      <details class="more-scorers">
+        <summary>Alle {page.scorers.size} Torschützen</summary>
+        <ol class="scorers" start="{page.topScorers.size + 1}">
+          {#for s in page.moreScorers}
+          <li><span class="name">{s.name}</span><span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
           {/for}
         </ol>
-      </div>
+      </details>
+      {/if}
+      <p class="note">Eigentore des Gegners zählen für den Verein, nicht für den Schützen.</p>
+      {/if}
     </section>
+  </div>
 
-    <aside class="club-side">
+  {! tabs without script: one radio per tab, the checked one shows its panel (as on the start page) !}
+  <div class="club-tabs">
+    <input class="club-tab-input sr-only" type="radio" name="club-tab" id="club-tab-overview" checked>
+    <input class="club-tab-input sr-only" type="radio" name="club-tab" id="club-tab-season">
+    <input class="club-tab-input sr-only" type="radio" name="club-tab" id="club-tab-matches">
+    <div class="seg club-tab-switch" role="group" aria-label="Bereich">
+      <label for="club-tab-overview">Überblick</label><label for="club-tab-season">Saison</label><label for="club-tab-matches">Spiele</label>
+    </div>
+
+    <div class="club-panel club-panel-overview">
       <div class="facts-block">
         <h2>Bilanz</h2>
         <table class="balance">
@@ -81,7 +102,16 @@
           </tbody>
         </table>
       </div>
-
+      {#if page.otherSeasons}
+      <div class="facts-block">
+        <h2>Weitere Saisons</h2>
+        <ul class="seasons">
+          {#for s in page.otherSeasons}
+          <li><a href="{s.link}">{s.season} <span class="muted">{s.league}</span>{#if s.position} · Platz {s.position}{/if}</a></li>
+          {/for}
+        </ul>
+      </div>
+      {/if}
       {#if page.outlookLink}
       <div class="facts-block">
         <h2>Saisonaussicht</h2>
@@ -90,26 +120,39 @@
         </div>
       </div>
       {/if}
+    </div>
 
-      <div class="facts-block">
-        <h2>Torschützen</h2>
-        {#if page.scorers.isEmpty}
-        <p class="muted">Noch kein Tor in dieser Saison.</p>
-        {#else}
-        <ol class="scorers">
-          {#for s in page.scorers}
-          <li><span class="name">{s.name}</span><span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
-          {/for}
-        </ol>
-        <p class="note">Eigentore des Gegners zählen für den Verein, nicht für den Schützen.</p>
-        {/if}
+    <div class="club-panel club-panel-season">
+      {#if page.hasTable}
+      <div class="chart-block">
+        <h2>Tabellenplatz im Saisonverlauf</h2>
+        <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
       </div>
-
-      <div class="facts-block">
+      {/if}
+      <div class="chart-block">
         <h2>Torzeitpunkte</h2>
         <div class="chart"><canvas id="goal-timing" aria-label="Erzielte und kassierte Tore je 15-Minuten-Fenster"></canvas></div>
       </div>
-    </aside>
+    </div>
+
+    <div class="club-panel club-panel-matches">
+      {#if page.upcoming}
+      <div class="schedule-block">
+        <h2>{#if page.hasTable}Kommende Spiele{#else}Nächste Runde{/if}</h2>
+        <ol class="schedule">
+          {#for r in page.upcoming}{#include MatchdayPages/scheduleRow r=r hasTable=page.hasTable /}{/for}
+        </ol>
+      </div>
+      {/if}
+      {#if page.results}
+      <div class="schedule-block">
+        <h2>Ergebnisse <small class="muted">neueste zuerst</small></h2>
+        <ol class="schedule">
+          {#for r in page.results}{#include MatchdayPages/scheduleRow r=r hasTable=page.hasTable /}{/for}
+        </ol>
+      </div>
+      {/if}
+    </div>
   </div>
 </article>
 {/body}
@@ -118,5 +161,13 @@
 <script id="goal-timing-data" type="application/json">{page.goalTimingJson.raw}</script>
 <script src="/vendor/chart-4.5.1.umd.min.js"></script>
 <script src="/match.js?v={assetVersion}"></script>
+<script>
+  // story r024: a chart drawn in a hidden tab has no size; measure again once its tab shows
+  document.querySelectorAll('.club-tab-input').forEach(function (input) {
+    input.addEventListener('change', function () {
+      if (window.Chart) Object.values(Chart.instances).forEach(function (c) { c.resize(); });
+    });
+  });
+</script>
 {/scripts}
 {/include}

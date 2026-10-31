@@ -1,0 +1,11 @@
+{! One match of a club's schedule (story r024 lists open matches and results apart). !}
+<li>
+  <a href="{r.link}" class="{#if r.result}{r.result.toString.toLowerCase}{#else}open{/if}">
+    <span class="md">{#if hasTable}{r.matchday}.{#else}{r.section}{/if}</span>
+    <span class="date">{r.date} <span class="muted">{r.time}</span></span>
+    <span class="venue">{#if r.home}Heim{#else}Ausw.{/if}</span>
+    <span class="opponent">{#crest src=r.opponentIcon size="small" lazy=true /} {r.opponent}</span>
+    {#if r.score}<span class="pill {r.result.toString.toLowerCase} {#if r.provisional}is-provisional{/if}">{r.score}</span>{#if r.decision}<span class="decision">{r.decision}</span>{/if}
+    {#else}<span class="pill open">–:–</span>{/if}
+  </a>
+</li>
