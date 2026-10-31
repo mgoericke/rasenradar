@@ -356,7 +356,12 @@ public final class MatchdayPageModels {
     /** {@code rounds} carries a competition's knockout phase — empty where it has none. */
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
-                        List<RoundSection> rounds, String dateRange, boolean current) {
+                        List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes) {
+
+        /** Story r070: the "Es geht um" line of an open match, or null. */
+        public String stakeOf(long matchId) {
+            return stakes.get(matchId);
+        }
 
         /**
          * Story r078: the table as "teamId:place,…" for nav.js, which works out in the browser which

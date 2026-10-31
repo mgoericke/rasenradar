@@ -115,6 +115,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Erklärseite „So entsteht eine Prognose" | `HowItWorksPage` |
 | „Was das System nicht weiß" | `KnownBlindSpots` |
 | Mindestanzahl (Schwelle für Bilanzen) | `minimumSampleSize` (bereits Spec 3) |
+| „Es geht um" (Tabellenlage eines offenen Spiels: Spitzenspiel, Kellerduell, Platz nach einem Sieg) | `Stakes` |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
