@@ -454,6 +454,8 @@ h2 { font-size: 1.35rem; }
 .stream-filters[hidden] { display: none; }
 .stream-leagues { display: flex; gap: .4rem; flex-wrap: wrap; }
 .view-switch { display: none; }
+/* the radios only switch the phone view; above 1000px all views show, so they leave the tab order and the a11y tree */
+@media (min-width: 1001px) { .view-input { display: none; } }
 
 .landing-layout { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 2.2rem; align-items: start; margin-top: 1.2rem; }
 
