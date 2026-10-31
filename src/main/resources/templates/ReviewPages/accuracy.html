@@ -23,6 +23,19 @@
       <p class="muted">Noch keine bewertete Vorschau.</p>
       {/if}
 
+      {! story r018: the tendency hit rate of KI and baseline as "x von 100", the same weight either way !}
+      {#if l.comparable}
+      <div class="hundreds">
+        {#for y in l.yardsticks}
+        <figure class="hundred-figure{#if y.oracle} is-oracle{/if}">
+          {#hundred n=y.hitRatePercent /}
+          <figcaption><b>{y.label}</b> trifft die Tendenz in {y.hitRatePercent} von 100 Spielen</figcaption>
+        </figure>
+        {/for}
+      </div>
+      <p class="hundred-verdict">{l.hitVerdict}</p>
+      {/if}
+
       <details class="accuracy-details">
         <summary>Im Detail: Trefferanteil und Vergleich mit der Basisprognose</summary>
         {#if l.hitRatePercent}
@@ -37,7 +50,7 @@
         {/if}
         <ul class="calibration-sentences">
           {#for c in l.calibrationGroups}
-          <li>{c.sentence(l.required)}</li>
+          <li>{#if c.hitRatePercent != null}{#hundred n=c.hitRatePercent /}{/if}<span>{c.sentence(l.required)}</span></li>
           {/for}
         </ul>
         <p class="mut-bilanz">

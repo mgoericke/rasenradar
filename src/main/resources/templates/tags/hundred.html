@@ -1,0 +1,4 @@
+{! Story r018: a share as 100 dots, ten by ten, the first {n} filled — ink only, no meaning by colour.
+   Decoration for the eye; the sentence beside it carries the figure, so the dots stay hidden from
+   screen readers. !}
+<span class="hundred" aria-hidden="true">{#for i in 100}<i{#if i <= n} class="on"{/if}></i>{/for}</span>
