@@ -25,7 +25,6 @@
     var menu = document.querySelector('.theme-menu');
     if (!menu || menu.dataset.ready) return;
     menu.dataset.ready = '1';
-    menu.hidden = false;
     var buttons = menu.querySelectorAll('[data-theme-choice]');
     function mark() {
       var current = stored();

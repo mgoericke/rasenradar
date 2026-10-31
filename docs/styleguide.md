@@ -131,7 +131,7 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   zwingen wäre eine falsche Aussage. **Keine Wettbewerbslogos**: die Datenquelle
   liefert keine, und die echten sind Marken.
 - **Tabellenzonen**: 2 px-Marker links an der Platzziffer, durchgezogen = direkt,
-  gedämpft (60 % Deckkraft) = Relegation/Play-off.
+  gedämpfter Marker (55 % Deckkraft, nur der Marker, nie die Ziffer) = Relegation/Play-off.
 - **Wappen**: `object-fit: contain`, auf der Bühne auf einer weißen runden Scheibe
   (`.crest.large`), sonst ohne Teller. Größen: 1,1 rem (Tabelle), 1,4 rem (Paarungen),
   2,4 rem (Spielkopf), 5,5 rem (Vereinsseite).

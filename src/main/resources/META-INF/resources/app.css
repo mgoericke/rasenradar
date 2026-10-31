@@ -713,9 +713,9 @@ h2 { font-size: 1.35rem; }
 
 /* table zones: thin marker at the position, full = direct, dimmed = play-off */
 .standings tr.zone-top td.pos, .stream-table tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
-.standings tr.zone-top-playoff td.pos, .stream-table tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 var(--win); opacity: .6; }
+.standings tr.zone-top-playoff td.pos, .stream-table tr.zone-top-playoff td.pos { box-shadow: inset 2px 0 0 color-mix(in srgb, var(--win) 55%, transparent); }
 .standings tr.zone-bottom td.pos, .stream-table tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
-.standings tr.zone-bottom-playoff td.pos, .stream-table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 var(--loss); opacity: .6; }
+.standings tr.zone-bottom-playoff td.pos, .stream-table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 color-mix(in srgb, var(--loss) 55%, transparent); }
 
 /* retrospective on the forecast page */
 .retrospective { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; background: var(--ground); font-size: .92rem; }
@@ -883,8 +883,10 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 .fixture:hover, .forecast-row:hover, .schedule a:hover { background: var(--zone); }
 
 /* the "Darstellung" menu: system, light or dark, remembered in this browser only.
-   Hidden until nav.js runs — without a script there is nothing to switch. */
+   Invisible until nav.js runs (without a script there is nothing to switch), but it keeps its
+   place from the first paint, so the navigation never shifts when it appears. */
 .theme-menu { position: relative; order: 3; }
+.theme-menu:not([data-ready]) { visibility: hidden; }
 .theme-menu > summary {
   list-style: none; display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; cursor: pointer;
   border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
