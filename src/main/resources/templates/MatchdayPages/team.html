@@ -132,8 +132,17 @@
       </div>
       {/if}
       <div class="chart-block">
-        <h2>Torzeitpunkte</h2>
-        <div class="chart"><canvas id="goal-timing" aria-label="Erzielte und kassierte Tore je 15-Minuten-Fenster"></canvas></div>
+        <h2>Wann fallen die Tore?</h2>
+        {! story r016: the finding in words above the chart, the numbers as a table for screen readers !}
+        <p class="timing-sentence">{page.goalTiming.sentence}</p>
+        {#if !page.goalTiming.empty}
+        <div class="chart"><canvas id="goal-timing" aria-hidden="true"></canvas></div>
+        <table class="sr-only">
+          <caption>Tore je 15-Minuten-Abschnitt, nur endgültige Ergebnisse</caption>
+          <thead><tr><th scope="col">Minuten</th><th scope="col">Erzielt</th><th scope="col">Kassiert</th></tr></thead>
+          <tbody>{#for r in page.goalTiming.rows}<tr><th scope="row">{r.label}</th><td>{r.scored}</td><td>{r.conceded}</td></tr>{/for}</tbody>
+        </table>
+        {/if}
       </div>
     </div>
 

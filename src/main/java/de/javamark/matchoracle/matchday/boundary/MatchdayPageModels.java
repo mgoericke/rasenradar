@@ -706,7 +706,7 @@ public final class MatchdayPageModels {
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
-                      ReachView reach, RunInView runIn) {
+                      ReachView reach, RunInView runIn, GoalTimingView goalTiming) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -1027,6 +1027,58 @@ public final class MatchdayPageModels {
         }
     }
 
+    /** Story r016: below this many goals no sentence names a strongest phase — decided 31 Oct 2026. */
+    static final int GOAL_TIMING_MINIMUM = 5;
+
+    /**
+     * Story r016 "Wann fallen die Tore?": the sentence over the chart and the numbers as rows — for a
+     * club (scored and conceded) or for a whole league (all goals, {@code conceded} unused).
+     */
+    record GoalTimingView(String sentence, boolean empty, List<GoalTimingRow> rows) {
+
+        static GoalTimingView ofTeam(String team, List<GoalTiming> timings) {
+            return of(timings, (phase, count, total, tie) ->
+                    team + " trifft am häufigsten " + phase + " (" + (tie ? "je " : "") + count + " von " + total + " Toren).");
+        }
+
+        static GoalTimingView ofLeague(List<GoalTiming> timings) {
+            return of(timings, (phase, count, total, tie) ->
+                    "Die meisten Tore fallen " + phase + " (" + (tie ? "je " : "") + count + " von " + total + ").");
+        }
+
+        private interface Sentence {
+            String of(String phase, int count, int total, boolean tie);
+        }
+
+        private static GoalTimingView of(List<GoalTiming> timings, Sentence sentence) {
+            int total = timings.stream().mapToInt(GoalTiming::scored).sum();
+            int max = timings.stream().mapToInt(t -> Math.max(t.scored(), t.conceded())).max().orElse(0);
+            List<GoalTimingRow> rows = timings.stream().map(t -> new GoalTimingRow(t.label().replace("-", "–"), t.scored(), t.conceded(),
+                    max == 0 ? 0 : (int) Math.round(100.0 * t.scored() / max),
+                    max == 0 ? 0 : (int) Math.round(100.0 * t.conceded() / max))).toList();
+            if (total == 0) {
+                return new GoalTimingView("Noch kein Tor in dieser Saison.", true, rows);
+            }
+            if (total < GOAL_TIMING_MINIMUM) {
+                return new GoalTimingView("Noch zu wenig Tore für eine Aussage.", false, rows);
+            }
+            int best = timings.stream().mapToInt(GoalTiming::scored).max().orElse(0);
+            List<String> phases = timings.stream().filter(t -> t.scored() == best).map(t -> phase(t.label())).toList();
+            String phase = phases.size() == 1 ? phases.getFirst()
+                    : String.join(", ", phases.subList(0, phases.size() - 1)) + " sowie " + phases.getLast();
+            return new GoalTimingView(sentence.of(phase, best, total, phases.size() > 1), false, rows);
+        }
+
+        /** "76.-90." → "zwischen der 76. und der 90. Minute". */
+        static String phase(String label) {
+            String[] p = label.split("-");
+            return "zwischen der " + p[0] + " und der " + p[1] + " Minute";
+        }
+    }
+
+    record GoalTimingRow(String label, int scored, int conceded, int scoredWidth, int concededWidth) {
+    }
+
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
     static String decimal(double value) {
         return String.format(Locale.GERMAN, "%.1f", value);
@@ -1165,7 +1217,7 @@ public final class MatchdayPageModels {
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
-                    boolean noMatchesLeft, List<ResultRow> form, String calendarLink) {
+                    boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming) {
 
         public List<BalanceRow> balances() {
             return List.of(home, away);

@@ -487,7 +487,8 @@ public class MatchdayPages {
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
                 crossTable(l, season, shortcut, homeAdvantage),
                 reach(l, season, settled, shortcut),
-                runIn(l, season, settled, shortcut)));
+                runIn(l, season, settled, shortcut),
+                MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.league(settled))));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */
@@ -936,6 +937,7 @@ public class MatchdayPages {
                 : positionChart(league, season, lastPlayedMatchday, List.of(team));
 
         Matchday reference = (played.isEmpty() ? schedule.get(0) : played.get(played.size() - 1)).matchday;
+        List<de.javamark.matchoracle.matchday.entity.GoalTiming> timing = goalTimingCalculator.timingFor(team, league, season);
         return new TeamPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, currentSeason, team.name, MatchdayPageModels.crestLink(team),
                 standing.map(p -> p.position()).orElse(null),
                 standing.map(p -> MatchdayPageModels.zone(league, p.position())).orElse(""),
@@ -945,7 +947,7 @@ public class MatchdayPages {
                 BalanceRow.of("Heim", Balance.of(team, played.stream().filter(m -> m.homeTeam.equals(team)).toList())),
                 BalanceRow.of("Auswärts", Balance.of(team, played.stream().filter(m -> m.awayTeam.equals(team)).toList())),
                 scorerCalculator.scorersFor(team, league, season).stream().map(ScorerRow::of).toList(),
-                MatchdayPageModels.goalTimingJson(goalTimingCalculator.timingFor(team, league, season)),
+                MatchdayPageModels.goalTimingJson(timing),
                 positionChartJson,
                 hasTable ? MatchdayPageModels.outlookLink(shortcut, season, team.id) : null,
                 DataInfo.of(reference, Instant.now()),
@@ -954,7 +956,8 @@ public class MatchdayPages {
                 currentSeason && nextMatchOf(team, Instant.now()) == null,
                 clubForm(team, shortcut, played),
                 currentSeason && !openMatches(schedule, Instant.now()).isEmpty()
-                        ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null);
+                        ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null,
+                MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing));
     }
 
     /** Story r024: the club's last final results, oldest first — provisional ones do not count as form. */
