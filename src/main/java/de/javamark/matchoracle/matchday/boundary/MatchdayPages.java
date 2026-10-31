@@ -350,7 +350,8 @@ public class MatchdayPages {
                 roundSections(matchday.league, matchday.season, shortcut, now),
                 matches.isEmpty() ? null : MatchdayPageModels.dateRange(
                         matches.getFirst().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate(),
-                        matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()));
+                        matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
+                Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false));
     }
 
     /**

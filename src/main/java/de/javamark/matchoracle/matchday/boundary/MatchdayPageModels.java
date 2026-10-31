@@ -32,6 +32,7 @@ public final class MatchdayPageModels {
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEEE, d. MMMM", Locale.GERMAN);
     private static final DateTimeFormatter DAY_SHORT = DateTimeFormatter.ofPattern("d.M.yy", Locale.GERMAN);
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", Locale.GERMAN);
+    private static final DateTimeFormatter WEEKDAY = DateTimeFormatter.ofPattern("EE", Locale.GERMAN);
 
     private MatchdayPageModels() {
     }
@@ -191,7 +192,7 @@ public final class MatchdayPageModels {
                     String homeIcon, String awayIcon,
                     String score, String halfTime, boolean played, boolean provisional, boolean live,
                     String liveScore, boolean watched, String decision, String homeTier, String awayTier,
-                    long homeId, long awayId) {
+                    long homeId, long awayId, String weekday) {
         static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
             return of(m, leagueShortcut, now, liveWindow, null, null);
         }
@@ -209,7 +210,7 @@ public final class MatchdayPageModels {
                     m.liveScore == null ? null : m.liveScore.home + ":" + m.liveScore.away,
                     isWatched(m.kickoff, m.isPlayed(), now, liveWindow),
                     decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier,
-                    m.homeTeam.id, m.awayTeam.id);
+                    m.homeTeam.id, m.awayTeam.id, WEEKDAY.format(m.kickoff.atZone(DISPLAY_ZONE)));
         }
     }
 
@@ -355,12 +356,25 @@ public final class MatchdayPageModels {
     /** {@code rounds} carries a competition's knockout phase — empty where it has none. */
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
-                        List<RoundSection> rounds, String dateRange) {
+                        List<RoundSection> rounds, String dateRange, boolean current) {
+
+        /**
+         * Story r078: the table as "teamId:place,…" for nav.js, which works out in the browser which
+         * open match helps "Mein Verein" — the club itself is never sent to the server.
+         */
+        public String placesByTeam() {
+            return standings.stream().map(r -> r.teamId() + ":" + r.position()).collect(java.util.stream.Collectors.joining(","));
+        }
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
                     days.stream().flatMap(d -> d.matches().stream()),
                     rounds.stream().flatMap(r -> r.matches().stream())), false);
+        }
+
+        /** Story r096: once every match of the matchday is played, starred matches go back to their day. */
+        public boolean over() {
+            return days.stream().flatMap(d -> d.matches().stream()).allMatch(MatchRow::played);
         }
     }
 

@@ -147,3 +147,102 @@ document.addEventListener('click', function (e) {
   document.addEventListener('DOMContentLoaded', render);
   document.addEventListener('htmx:afterSettle', render);
 })();
+
+// Story r096: star single open matches on a matchday page; starred ones move up into the block
+// "Beobachtet" until the matchday is over. The ids live in this browser only (at most 30, the
+// oldest dropped first). The star only pins — no notifications, no permission prompts.
+(function () {
+  var KEY = 'rr-stars', MAX = 30;
+  function read() {
+    try {
+      var a = JSON.parse(localStorage.getItem(KEY) || '[]');
+      return Array.isArray(a) ? a.map(String).filter(function (x) { return /^\d+$/.test(x); }) : [];
+    } catch (e) { return []; }
+  }
+  function write(a) { try { localStorage.setItem(KEY, JSON.stringify(a.slice(-MAX))); } catch (e) {} }
+  function apply() {
+    var root = document.querySelector('[data-watch-root]');
+    var block = document.querySelector('[data-watch-block]');
+    if (!root || !block) return;
+    var list = block.querySelector('ol');
+    var stars = read();
+    var over = root.dataset.watchOver === 'true';
+    document.querySelectorAll('li[data-watch]').forEach(function (li) {
+      var id = li.dataset.watch;
+      var on = !over && stars.indexOf(id) >= 0;
+      var star = li.querySelector('[data-star]');
+      if (star) {
+        star.hidden = false;
+        star.setAttribute('aria-pressed', on ? 'true' : 'false');
+        star.title = on ? 'Nicht mehr beobachten' : 'Beobachten';
+      }
+      var pinned = list.contains(li);
+      if (on && !pinned) {
+        // a hidden placeholder keeps the place in the day group for the way back
+        var slot = document.createElement('li');
+        slot.hidden = true;
+        slot.dataset.watchSlot = id;
+        li.before(slot);
+        list.append(li);
+      } else if (!on && pinned) {
+        var back = root.querySelector('[data-watch-slot="' + id + '"]');
+        if (back) back.replaceWith(li);
+      }
+    });
+    // pinned matches keep the order of the day groups, i.e. by kickoff
+    Array.prototype.slice.call(list.children).sort(function (a, b) {
+      var sa = root.querySelector('[data-watch-slot="' + a.dataset.watch + '"]');
+      var sb = root.querySelector('[data-watch-slot="' + b.dataset.watch + '"]');
+      return sa && sb && (sa.compareDocumentPosition(sb) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+    }).forEach(function (li) { list.append(li); });
+    block.hidden = list.children.length === 0;
+  }
+  document.addEventListener('click', function (e) {
+    var star = e.target.closest && e.target.closest('[data-star]');
+    if (!star) return;
+    var id = star.dataset.star;
+    var stars = read().filter(function (x) { return x !== id; });
+    if (star.getAttribute('aria-pressed') !== 'true') stars.push(id);
+    write(stars);
+    apply();
+    star.focus();
+  });
+  document.addEventListener('DOMContentLoaded', apply);
+  document.addEventListener('htmx:afterSettle', apply);
+})();
+
+// Story r078: on the current matchday, an open match of a table neighbour of "Mein Verein" (up to
+// three places away) says which result helps the club — from the table alone, never from a
+// forecast. One neighbour: that neighbour should lose; two neighbours: a draw. The club stays in
+// the browser; the page only carries the places ("teamId:place,…").
+(function () {
+  function club() {
+    try {
+      var c = JSON.parse(localStorage.getItem('rr-club') || 'null');
+      return c && /^\d+$/.test(String(c.id)) ? c : null;
+    } catch (e) { return null; }
+  }
+  function apply() {
+    document.querySelectorAll('.good-for').forEach(function (p) { p.hidden = true; p.textContent = ''; });
+    var root = document.querySelector('[data-places]');
+    var c = club();
+    if (!root || !c) return;
+    var places = {};
+    root.dataset.places.split(',').forEach(function (pair) { var kv = pair.split(':'); places[kv[0]] = Number(kv[1]); });
+    var id = String(c.id), mine = places[id];
+    if (!mine) return;
+    function neighbour(team) { return team !== id && places[team] > 0 && Math.abs(places[team] - mine) <= 3; }
+    document.querySelectorAll('li[data-good-for]').forEach(function (li) {
+      var teams = li.dataset.goodFor.split(' ');
+      if (teams.indexOf(id) >= 0) return;
+      var home = neighbour(teams[0]), away = neighbour(teams[1]);
+      var good = home && away ? 'Remis' : home ? 'Sieg ' + li.dataset.awayName : away ? 'Sieg ' + li.dataset.homeName : null;
+      var p = li.querySelector('.good-for');
+      if (!good || !p) return;
+      p.textContent = 'Gut für ' + c.short + ': ' + good;
+      p.hidden = false;
+    });
+  }
+  document.addEventListener('DOMContentLoaded', apply);
+  document.addEventListener('htmx:afterSettle', apply);
+})();

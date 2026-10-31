@@ -809,6 +809,29 @@ h2 { font-size: 1.35rem; }
 .my-club-option:hover { border-color: var(--ink); }
 .my-club-option[aria-pressed="true"] { background: var(--zone); border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); font-weight: 700; }
 .my-club-option:focus-visible, .js .my-club-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+/* story r096: the star beside an open match (script only) and the block "Beobachtet" on top —
+   ink and hairline, no brass edge. The weekday shows only up there, away from its day group. */
+.fixtures > li[data-watch] { display: flex; align-items: center; }
+.fixtures > li[data-watch] > .fixture { flex: 1; min-width: 0; }
+.star:not([hidden]) {
+  display: inline-grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; margin-right: .25rem;
+  background: none; border: 0; border-radius: 8px; color: var(--ink-mute); cursor: pointer;
+}
+.star svg { fill: none; }
+.star:hover { color: var(--ink); }
+.star[aria-pressed="true"] { color: var(--ink); }
+.star[aria-pressed="true"] svg { fill: currentColor; }
+.star:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+.watched .fixtures { border: 1px solid var(--line); }
+.watch-day { display: none; }
+.watched .watch-day { display: block; }
+@media print { .star { display: none !important; } }
+/* story r078: "Gut für <Verein>: …" under an open match — plain ink, no brass, no green or red */
+.fixtures > li[data-good-for] { flex-wrap: wrap; }
+.good-for { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; color: var(--ink-soft); font-size: .85rem; }
+.good-for[hidden] { display: none; }
+@media (max-width: 560px) { .good-for { padding-left: .9rem; } }
+@media print { .good-for { display: none !important; } }
 /* story r092: the next match of "Mein Verein" — flat (hairline, surface, no shadow), fixed in the
    corner on desktop and along the bottom on phones, where the page gets room so nothing is covered.
    Fixed, so it moves nothing when it arrives. */
