@@ -2,11 +2,14 @@ package de.javamark.matchoracle.matchday.boundary;
 
 import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.League;
+import de.javamark.matchoracle.matchday.entity.LeagueScorer;
 import de.javamark.matchoracle.matchday.entity.Score;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -165,5 +168,33 @@ class MatchdayPageModelsTest {
         assertEquals(NOW.getEpochSecond(), c.now());
         assertEquals(NOW.getEpochSecond() + 600, c.kickoff());
         assertEquals("Anstoß in 10 Min.", c.label());
+    }
+
+    @Test
+    void topScorersShareRanksAndKeepEveryoneTiedOnTheLastPlace() {
+        List<LeagueScorer> all = List.of(
+                new LeagueScorer("H. Kane", "Bayern", 9, 2),
+                new LeagueScorer("N. Füllkrug", "Bremen", 9, 3),
+                new LeagueScorer("P. Schick", "Leverkusen", 7, 0),
+                new LeagueScorer("M. Olise", "Bayern", 5, 0),
+                new LeagueScorer("Luis Díaz", "Bayern", 5, 0),
+                new LeagueScorer("A. Zweiter", "Mainz", 1, 0));
+
+        var rows = MatchdayPageModels.topScorers(all, 4, Map.of(
+                "Bremen", new MatchdayPageModels.ClubLook("Werder", "/crests/1/a.png")));
+
+        assertEquals(List.of("N. Füllkrug", "H. Kane", "P. Schick", "Luis Díaz", "M. Olise"),
+                rows.stream().map(MatchdayPageModels.LeagueScorerRow::name).toList());
+        assertEquals(List.of(1, 1, 3, 4, 4), rows.stream().map(MatchdayPageModels.LeagueScorerRow::rank).toList());
+        assertEquals("Werder", rows.getFirst().teamShort());
+        assertEquals("/crests/1/a.png", rows.getFirst().crest());
+        assertEquals("Bayern", rows.get(1).teamShort());
+    }
+
+    @Test
+    void surnameIsTheLastWord() {
+        assertEquals("Füllkrug", MatchdayPageModels.surname("N. Füllkrug"));
+        assertEquals("Ebnoutalib", MatchdayPageModels.surname("Younes Ebnoutalib"));
+        assertEquals("Kane", MatchdayPageModels.surname("Kane"));
     }
 }

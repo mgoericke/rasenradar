@@ -272,6 +272,13 @@ h2 { font-size: 1.35rem; }
   .form-strip a { width: 1.05rem; }
 }
 .note { color: var(--ink-mute); font-size: .85rem; margin: .75rem 0 0; }
+/* story r014: league scorers — a plain table, the two Bundesligas one tap apart */
+.scorers-page .standings { max-width: 46rem; }
+.scorers-page td { font-variant-numeric: tabular-nums; }
+.scorers-page td.club { white-space: nowrap; }
+.scorer-switch { display: flex; gap: .4rem; margin: 1rem 0 .4rem; flex-wrap: wrap; }
+.scorer-switch a { padding: .35rem .8rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); }
+.scorer-switch a.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
 /* match page */
 .match { grid-column: 1 / -1; }
