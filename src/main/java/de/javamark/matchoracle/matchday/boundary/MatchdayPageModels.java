@@ -5,6 +5,7 @@ import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.GoalTiming;
 import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.League;
+import de.javamark.matchoracle.matchday.entity.LeagueScorer;
 import de.javamark.matchoracle.matchday.entity.Score;
 import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /** View models for the HTML pages: everything pre-formatted so templates stay logic-free. */
 public final class MatchdayPageModels {
@@ -519,10 +521,49 @@ public final class MatchdayPageModels {
         }
     }
 
-    record LeagueScorerRow(int rank, String name, String team, int goals, int penalties) {
+    record LeagueScorerRow(int rank, String name, String team, String teamShort, String crest, int goals, int penalties) {
     }
 
-    record LeagueScorersPage(Nav nav, String season, List<LeagueScorerRow> scorers) {
+    /** How a club appears beside its scorers: short name for narrow tables, crest link or null. */
+    record ClubLook(String shortName, String crest) {
+    }
+
+    /** {@code leagues}: the switch between the two Bundesligas, empty for other competitions. */
+    record LeagueScorersPage(Nav nav, String season, List<LeagueScorerRow> scorers, List<NavLeague> leagues) {
+    }
+
+    /** Story r014: how many places the league scorer list shows; everyone tied on the last place comes along. */
+    static final int TOP_SCORER_PLACES = 10;
+
+    /**
+     * Story r014: the top of the league scorer list. Equal goals share a rank (1, 1, 3) and are ordered
+     * by surname; the list ends after {@code places} places, keeping every player tied on the last one.
+     */
+    static List<LeagueScorerRow> topScorers(List<LeagueScorer> all, int places, Map<String, ClubLook> clubs) {
+        List<LeagueScorer> sorted = all.stream()
+                .sorted(java.util.Comparator.comparingInt(LeagueScorer::goals).reversed()
+                        .thenComparing(sc -> surname(sc.name()), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(LeagueScorer::name).thenComparing(LeagueScorer::team))
+                .toList();
+        List<LeagueScorerRow> rows = new java.util.ArrayList<>();
+        int rank = 0;
+        for (int i = 0; i < sorted.size(); i++) {
+            LeagueScorer sc = sorted.get(i);
+            if (i == 0 || sc.goals() != sorted.get(i - 1).goals()) {
+                rank = i + 1;
+                if (rank > places) break;
+            }
+            ClubLook club = clubs.getOrDefault(sc.team(), new ClubLook(sc.team(), null));
+            rows.add(new LeagueScorerRow(rank, sc.name(), sc.team(), club.shortName(), club.crest(), sc.goals(), sc.penalties()));
+        }
+        return rows;
+    }
+
+    /** "N. Füllkrug" → "Füllkrug", "Kane" → "Kane": the source gives one name field, the last word is the surname. */
+    static String surname(String name) {
+        String trimmed = name.strip();
+        int space = trimmed.lastIndexOf(' ');
+        return space < 0 ? trimmed : trimmed.substring(space + 1);
     }
 
     /** Chart.js data for the goal-timing bar chart: labels plus a scored/conceded series, as JSON. */

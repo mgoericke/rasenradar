@@ -16,7 +16,9 @@ import de.javamark.matchoracle.matchday.control.MatchdayStream;
 import de.javamark.matchoracle.matchday.control.MatchdayStream.StreamDay;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorerRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LeagueScorersPage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.ClubLook;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchPage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.NavLeague;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.Nav;
@@ -78,6 +80,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.Optional;
@@ -244,12 +247,19 @@ public class MatchdayPages {
     public TemplateInstance leagueScorers(@PathParam("league") String league) {
         League l = league(league);
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
-        List<LeagueScorerRow> rows = new ArrayList<>();
-        int rank = 0;
-        for (var s : scorerCalculator.leagueScorersFor(l, season)) {
-            rows.add(new LeagueScorerRow(++rank, s.name(), s.team(), s.goals(), s.penalties()));
-        }
-        return Templates.leagueScorers(new LeagueScorersPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), rows));
+        var scorers = scorerCalculator.leagueScorersFor(l, season);
+        Map<String, ClubLook> clubs = new HashMap<>();
+        Match.findPlayedBefore(l, season, Integer.MAX_VALUE).forEach(m -> {
+            for (Team t : List.of(m.homeTeam, m.awayTeam)) {
+                clubs.putIfAbsent(t.name, new ClubLook(t.shortName == null ? t.name : t.shortName, MatchdayPageModels.crestLink(t)));
+            }
+        });
+        List<LeagueScorerRow> rows = MatchdayPageModels.topScorers(scorers, MatchdayPageModels.TOP_SCORER_PLACES, clubs);
+        // story r014: switch between the two Bundesligas; the address carries the league
+        List<NavLeague> switcher = l == League.BUNDESLIGA_1 || l == League.BUNDESLIGA_2
+                ? Nav.of(l).leagues().stream().filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList()
+                : List.of();
+        return Templates.leagueScorers(new LeagueScorersPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), rows, switcher));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {

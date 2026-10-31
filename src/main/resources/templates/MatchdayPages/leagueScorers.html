@@ -2,24 +2,30 @@
 {#title}Torschützen – {page.nav.leagueName}{/title}
 {#description}Die Torschützenliste der {page.nav.leagueName} {page.season}: alle Tore und Elfmeter im Überblick.{/description}
 {#body}
-<section class="forecast-page">
+<section class="forecast-page scorers-page">
   <h1 class="page-title">Torschützen</h1>
-  <p class="muted">{page.nav.leagueName} {page.season}</p>
+  <p class="muted">{page.nav.leagueName} {page.season}: die ersten zehn Plätze, Eigentore zählen nicht</p>
+  {#if page.leagues}
+  {! story r014: the two Bundesligas side by side; each is its own address !}
+  <nav class="scorer-switch" aria-label="Liga">
+    {#for l in page.leagues}<a href="/{l.shortcut}/torschuetzen"{#if l.active} aria-current="page" class="is-active"{/if}>{l.name}</a>{/for}
+  </nav>
+  {/if}
 
-  <div class="standings">
+  <div class="standings scorers-list">
     {#if page.scorers.isEmpty}
     <p class="muted">Noch kein Tor in dieser Saison.</p>
     {#else}
     <table>
       <thead>
-      <tr><th class="pos"></th><th class="team">Name</th><th class="team">Verein</th><th>Tore</th><th>davon Elfm.</th></tr>
+      <tr><th class="pos">Platz</th><th class="team">Name</th><th class="team">Verein</th><th>Tore</th><th>davon Elfm.</th></tr>
       </thead>
       <tbody>
       {#for s in page.scorers}
       <tr>
         <td class="pos">{s.rank}.</td>
         <td class="team">{s.name}</td>
-        <td class="team">{s.team}</td>
+        <td class="team club">{#if s.crest}<img class="crest small" src="{s.crest}" alt="" loading="lazy"> {/if}<span class="name-long">{s.team}</span><span class="name-short">{s.teamShort}</span></td>
         <td class="points">{s.goals}</td>
         <td>{#if s.penalties > 0}{s.penalties}{#else}–{/if}</td>
       </tr>
