@@ -463,6 +463,10 @@ public final class MatchdayPageModels {
         }
     }
 
+    /** Story r005: the page for a match link that leads nowhere, with the way to the league's current matchday. */
+    record MatchNotFoundPage(Nav nav, String currentLink) {
+    }
+
     record MatchPage(Nav nav, String season, int number, String matchdayLink, String forecastLink, String day, MatchRow match,
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
                      List<ResultRow> headToHead, BalanceRow headToHeadBalance, boolean headToHeadProvisional,

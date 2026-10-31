@@ -277,6 +277,15 @@ h2 { font-size: 1.35rem; }
 .match { grid-column: 1 / -1; }
 .breadcrumb { color: var(--ink-soft); margin: 0 0 1rem; }
 .breadcrumb a { border-bottom: 1px solid var(--line); }
+/* story r005: "Link teilen" beside the breadcrumb; shown only with script, which sets .js before the first paint */
+.match-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 1rem; margin: 0 0 1rem; }
+.match-top .breadcrumb { margin: 0; }
+.share { display: none; margin: 0; }
+.js .share { display: block; }
+.share-link { font: inherit; color: var(--ink-soft); background: none; border: 0; padding: 0; min-height: 24px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.share-link:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.share-status { color: var(--ink-soft); font-size: .9rem; }
+.not-found { max-width: 40rem; padding: 2rem 0 3rem; }
 /* the match head is the one stage: the mown pitch, framed by the touchline and two penalty boxes.
    The facts are the large type; the KI is one marked line under a chalk line. No scoreboard look. */
 .scoreboard {
