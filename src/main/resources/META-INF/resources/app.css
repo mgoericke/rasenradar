@@ -434,7 +434,7 @@ h2 { font-size: 1.35rem; }
 .button:hover { background: var(--turf-a); color: var(--turf-ink); }
 .link-button { display: inline-block; font-weight: 500; border: 1px solid var(--line); border-radius: 8px; padding: .4rem .8rem; background: var(--surface); }
 .link-button:hover { border-color: var(--ink); }
-/* the way to the forecast carries the brass accent — nothing else does */
+/* the way to the forecast carries the KI lilac — nothing else does */
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--ki); border-color: var(--ki); color: var(--on-ink); }
 
@@ -486,7 +486,7 @@ h2 { font-size: 1.35rem; }
 .stream-empty { padding: 1.2rem; color: var(--ink-soft); background: var(--mow-a); border-radius: 8px; margin-top: 1rem; }
 .stream-empty[hidden] { display: none; }
 
-/* the KI cell sits beside the link: guide value with the brass line, then tendency or verdict */
+/* the KI cell sits beside the link: guide value with the lilac line, then tendency or verdict */
 .stream-ki { display: flex; flex-direction: column; align-items: flex-start; gap: .1rem; font-size: .82rem; line-height: 1.25; min-height: 1.3em; }
 .stream-ki-value { font-weight: 500; color: var(--ink-soft); font-size: .78rem; }
 .stream-ki-score { font: 800 1.1rem var(--display); color: var(--ki); border-bottom: 2px solid var(--accent); font-variant-numeric: tabular-nums; }
@@ -779,7 +779,7 @@ h2 { font-size: 1.35rem; }
 
 /* --- Spec 06: K.-o.-Wettbewerb ------------------------------------------------------
    Rundenband statt Turnierbaum — der Pokal wird nach jeder Runde neu ausgelost, ein Baum
-   würde Pfade behaupten, die es nicht gibt. Kein Messing hier: es gibt keine KI-Vorschau. */
+   würde Pfade behaupten, die es nicht gibt. Kein KI-Lila hier: es gibt keine KI-Vorschau. */
 .round { margin-top: 2rem; }
 .round-name { font-family: var(--display); font-weight: 700; font-size: 1.6rem; letter-spacing: 0; }
 .round-meta { color: var(--ink-mute); font-size: .85rem; margin: .15rem 0 .6rem; }
@@ -845,7 +845,7 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 
 /* --- Trichter: wie sich ein K.-o.-Feld ausduennt -------------------------------------
    Die Breite traegt die Aussage. Die vier Spielklassen werden allein ueber Abstufungen
-   der Tinte unterschieden — Gruen und Rot bleiben Ergebnissen vorbehalten, Messing der
+   der Tinte unterschieden — Gruen und Rot bleiben Ergebnissen vorbehalten, Lila der
    KI-Vorschau (siehe docs/styleguide.md). */
 .funnel-block { margin-top: 2.5rem; }
 .funnel { list-style: none; padding: 0; margin: .8rem 0 0; display: grid; gap: .3rem; }
