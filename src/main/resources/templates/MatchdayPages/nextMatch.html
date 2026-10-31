@@ -1,0 +1,11 @@
+{! Story r092: the next match of "Mein Verein", loaded into the bar in base.html by nav.js.
+   No live region: the minute updates are not announced to screen readers. !}
+<a class="next-match-link" href="{bar.link}">
+  {#crest src=bar.opponentCrest /}
+  <span class="next-match-text">
+    <span class="next-match-title">{bar.title}</span>
+    <span class="next-match-when">{bar.when}{#if bar.countdown} · {bar.countdown}{/if}</span>
+  </span>
+  {#if bar.live}<span class="next-match-score is-live">Live{#if bar.score} {bar.score}{/if}</span>
+  {#else if bar.score}<span class="next-match-score{#if bar.provisional} is-provisional{/if}">{bar.score}{#if bar.provisional} <span class="note">vorläufig</span>{/if}</span>{/if}
+</a>

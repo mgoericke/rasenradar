@@ -52,6 +52,7 @@
 
       <div class="schedule-block">
         <h2>{#if page.hasTable}Spielplan{#else}Weg durch den Wettbewerb{/if}</h2>
+        {#if page.noMatchesLeft}<p class="muted">Keine Spiele mehr in dieser Saison.</p>{/if}
         <ol class="schedule">
           {#for r in page.schedule}
           <li>

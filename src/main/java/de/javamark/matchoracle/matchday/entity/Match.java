@@ -190,6 +190,11 @@ public class Match extends PanacheEntity {
                 .getResultList();
     }
 
+    /** All matches of a team, in any competition, kicking off at or after {@code since}, earliest first. */
+    public static List<Match> findOfTeamFrom(Team team, Instant since) {
+        return list("(homeTeam = ?1 or awayTeam = ?1) and kickoff >= ?2 order by kickoff", team, since);
+    }
+
     /** Played meetings of two teams in any league and season before the given kickoff, newest first. */
     public static List<Match> findPlayedBetweenBefore(Team a, Team b, Instant kickoff) {
         return list("((homeTeam = ?1 and awayTeam = ?2) or (homeTeam = ?2 and awayTeam = ?1))"

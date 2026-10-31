@@ -13,6 +13,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.LandingLeagu
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubChoice;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubLeague;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubPage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.NextMatchBar;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
@@ -108,6 +109,7 @@ public class MatchdayPages {
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
         static native TemplateInstance myClub(MyClubPage page);
+        static native TemplateInstance nextMatch(NextMatchBar bar);
     }
 
     @Inject
@@ -274,6 +276,27 @@ public class MatchdayPages {
                         .map(ls -> MatchdayPageModels.teamLink(team, ls.league().sourceShortcut())))
                 .orElse("/mein-verein?nicht-gefunden=" + id);
         return Response.seeOther(URI.create(target)).build();
+    }
+
+    /**
+     * Story r092: the next-match bar for "Mein Verein", fetched by nav.js every minute (htmx only).
+     * Empty when the club has no match left; the club id comes from the visitor's browser.
+     */
+    @GET
+    @Path("/mein-verein/{id}/naechstes-spiel")
+    public Response nextMatch(@PathParam("id") long id, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/mein-verein/" + id)).build();
+        }
+        Instant now = Instant.now();
+        NextMatchBar bar = Team.<Team>findByIdOptional(id)
+                .map(team -> {
+                    Match next = nextMatchOf(team, now);
+                    return next == null ? null : NextMatchBar.of(next, team, now, liveWindow);
+                })
+                .orElse(null);
+        return Response.ok(bar == null ? "" : Templates.nextMatch(bar).render())
+                .header("Cache-Control", "no-store").build();
     }
 
     /** Liga-Torschützenliste: current season, every club. */
@@ -623,7 +646,13 @@ public class MatchdayPages {
                 hasTable ? MatchdayPageModels.outlookLink(shortcut, season, team.id) : null,
                 DataInfo.of(reference, Instant.now()),
                 hasTable, cupRunOutcome(team, league, played), tierLabel(team, league, season),
-                MY_CLUB_LEAGUES.contains(league) ? MyClubChoice.of(team) : null);
+                MY_CLUB_LEAGUES.contains(league) ? MyClubChoice.of(team) : null,
+                currentSeason && nextMatchOf(team, Instant.now()) == null);
+    }
+
+    /** Story r092: the match the next-match bar shows for a club, in any competition; null when none is left. */
+    private Match nextMatchOf(Team team, Instant now) {
+        return NextMatchBar.pick(Match.findOfTeamFrom(team, now.minus(liveWindow)), now, liveWindow);
     }
 
     /** Spec 06: how a club's cup run ended — empty while it is still in, or outside a cup. */
