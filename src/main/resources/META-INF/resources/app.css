@@ -543,7 +543,9 @@ h2 { font-size: 1.35rem; }
   .stream-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .45rem; padding: .55rem .7rem .2rem; }
   .stream-row .badge, .stream-row .crest { display: none; }
   .stream-ki { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .1rem .7rem; padding: 0 .7rem .55rem; }
-  .stream-ki:empty { display: none; }
+  /* the KI cells arrive after the page: hold their height (one line) while they are pending, so the rows below do not jump */
+  .stream-ki { min-height: 1.875rem; }
+  .stream-ki:empty:not(.is-pending) { display: none; }
 }
 
 /* --- forecast pages --------------------------------------------------------------- */
