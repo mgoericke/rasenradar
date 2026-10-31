@@ -54,6 +54,7 @@ import de.javamark.matchoracle.matchday.entity.Match;
 import de.javamark.matchoracle.matchday.entity.Matchday;
 import de.javamark.matchoracle.matchday.entity.Standings;
 import de.javamark.matchoracle.matchday.entity.Team;
+import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
@@ -257,8 +258,11 @@ public class MatchdayPages {
         List<DayGroup> days = byDay.entrySet().stream().map(e -> new DayGroup(e.getKey(), e.getValue())).toList();
 
         // table after this matchday (everything played up to and including it)
-        Standings standings = standingsCalculator.standingsBefore(matchday.league, matchday.season, matchday.number + 1);
-        List<StandingRow> rows = standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList();
+        List<Match> playedSoFar = Match.findPlayedBefore(matchday.league, matchday.season, matchday.number + 1);
+        Standings standings = standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, playedSoFar);
+        Map<Team, List<TeamMatchView>> form = formCalculator.finalFormOf(playedSoFar);
+        List<StandingRow> rows = standings.positions().stream()
+                .map(p -> StandingRow.of(p, matchday.league, form.getOrDefault(p.team(), List.of()))).toList();
 
         String base = "/" + shortcut + "/" + matchday.season + "/";
         String prev = matchday.number > 1 ? base + (matchday.number - 1) : null;

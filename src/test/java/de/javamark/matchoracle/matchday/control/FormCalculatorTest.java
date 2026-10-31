@@ -84,6 +84,24 @@ class FormCalculatorTest {
         assertTrue(calculator.form(mainz, season).includesProvisional());
     }
 
+    @Test
+    void standingsFormIsTheLastFiveFinalResultsOldestFirstPerTeam() {
+        List<Match> season = List.of(
+                played(1, mainz, 2, leipzig, 0),   // win, drops out: six final matches
+                played(2, koeln, 1, mainz, 1),     // draw
+                played(3, mainz, 0, leipzig, 3),   // loss
+                played(4, koeln, 0, mainz, 2),     // win
+                played(5, mainz, 1, koeln, 1),     // draw
+                played(6, leipzig, 2, mainz, 1),   // loss
+                provisional(7, mainz, 3, koeln, 0)); // not final yet
+
+        var form = calculator.finalFormOf(season);
+
+        assertEquals(List.of(DRAW, LOSS, WIN, DRAW, LOSS),
+                form.get(mainz).stream().map(v -> v.result()).toList());
+        assertEquals(List.of(LOSS, WIN, WIN), form.get(leipzig).stream().map(v -> v.result()).toList());
+    }
+
     private static List<Match> newestFirst(Match... matches) {
         return List.of(matches).stream().sorted(Comparator.comparing((Match m) -> m.kickoff).reversed()).toList();
     }
