@@ -373,6 +373,12 @@ h2 { font-size: 1.35rem; }
 .ki-reviewer strong { color: var(--ink); }
 .match-main > .situations:first-child { margin-top: 0; }
 .ki-reasoning { margin-top: 2.6rem; }
+/* story r012: "Abgerechnet" opens the KI section once the result is final; a miss looks like a hit */
+.settlement { margin-bottom: 2rem; padding-left: 1rem; border-left: 4px solid var(--ink-mute); }
+.settlement.is-hit { border-left-color: var(--win); }
+.settlement h2 { font-size: 1.6rem; margin-bottom: .3rem; }
+.settlement p { margin: .2rem 0; max-width: 62ch; }
+.settlement-verdict { font-weight: 600; }
 /* story N01: the AI record of both clubs, a few plain lines after the data */
 .club-records { margin-top: 2.6rem; }
 .club-records h2 { font-size: 1.6rem; margin-bottom: .5rem; }
@@ -706,6 +712,9 @@ h2 { font-size: 1.35rem; }
   border-bottom: 1px dotted var(--ink-mute); cursor: help;
 }
 .forecast-marker.is-empty { display: none; }
+/* story r012: settled, the marker is only a dot — filled when the tendency was right, an empty ring when not */
+.forecast-marker.is-settled { border: 0; width: .55rem; height: .55rem; border-radius: 50%; border: 1.5px solid var(--ink-mute); vertical-align: middle; margin-left: .3rem; }
+.forecast-marker.is-settled.is-hit { background: var(--win); border-color: var(--win); }
 .fixture:hover .forecast-marker, .fixture:focus-visible .forecast-marker { color: var(--ink); border-color: var(--ink); }
 
 /* club page */

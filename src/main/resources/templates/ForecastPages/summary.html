@@ -17,6 +17,16 @@
 <a class="link-button ai" href="{fragment.forecastLink}">Ganze KI-Vorschau mit Rückschau</a>
 
 <section id="ki-reasoning" hx-swap-oob="true" class="ki-reasoning" aria-labelledby="ki-reasoning-title">
+  {#if fragment.settlement}
+  {#let st=fragment.settlement}
+  {! story r012: the forecast against the final score, a hit and a miss alike in size !}
+  <div class="settlement{#if st.hit} is-hit{/if}">
+    <h2>Abgerechnet</h2>
+    <p class="settlement-verdict">Endstand {st.finalScore}, KI-Richtwert {st.expectedScore}: {#if st.hit}Tendenz getroffen{#else}Tendenz daneben{/if}, {#if st.exact}genaues Ergebnis{#else}kein genaues Ergebnis{/if}.</p>
+    <p class="settlement-assessors">{st.assessorLine}</p>
+  </div>
+  {/let}
+  {/if}
   <h2 id="ki-reasoning-title">So kam die KI zu ihrer Einschätzung</h2>
   <p class="section-sub">Drei Bewerter schauen unabhängig auf die Begegnung, ein Prognostiker fasst zusammen, ein Prüfer kann einmal widersprechen.</p>
   <div class="assessments">

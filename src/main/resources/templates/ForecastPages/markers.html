@@ -2,6 +2,12 @@
    so it must not be focusable itself; the meaning travels as text for screen readers and as a
    tooltip for the mouse. !}
 {#for m in markers}
+{#if m.settled}
+{! story r012: a finished match only says whether the KI-Vorschau got the tendency — a filled dot or an empty ring !}
+<span id="forecast-marker-{m.matchId}" hx-swap-oob="true" class="forecast-marker is-settled{#if m.hit} is-hit{/if}"
+      title="KI-Richtwert {m.expectedScore}: {#if m.hit}Tendenz getroffen{#else}Tendenz daneben{/if}"><span class="sr-only">KI-Vorschau: {#if m.hit}Tendenz getroffen{#else}Tendenz daneben{/if}</span></span>
+{#else}
 <span id="forecast-marker-{m.matchId}" hx-swap-oob="true" class="forecast-marker"
       title="KI-Richtwert {m.expectedScore}: Tendenz zum {m.tendency}, Wahrscheinlichkeit {m.probabilityPercent} %"><span class="sr-only">KI-Richtwert </span>{m.expectedScore}<span class="sr-only">, Tendenz zum {m.tendency}, {m.probabilityPercent} %</span></span>
+{/if}
 {/for}
