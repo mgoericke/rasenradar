@@ -85,6 +85,13 @@ public class Matchday extends PanacheEntity {
                 league, season, groupName, number).firstResultOptional();
     }
 
+    /** Earliest season we keep data for, across all competitions. */
+    public static Optional<Integer> earliestSeason() {
+        return Optional.ofNullable(getEntityManager()
+                .createQuery("select min(m.season) from Matchday m", Integer.class)
+                .getSingleResult());
+    }
+
     /** Latest known season of a league. */
     public static Optional<Integer> latestSeason(League league) {
         Integer season = getEntityManager()

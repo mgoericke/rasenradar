@@ -443,6 +443,86 @@ public final class MatchdayPageModels {
         }
     }
 
+    /** Story r035: how many meetings to list on the match page; the totals count all of them. */
+    static final int RECENT_MEETINGS = 5;
+    private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MMM yyyy", Locale.GERMAN);
+
+    /**
+     * Story r035: the all-time head-to-head of a match's two clubs. Totals and the biggest win
+     * count final results only; the recent list shows provisional ones too, marked as such.
+     */
+    record HeadToHeadSummary(String team, String opponent, String since, int wins, int draws, int losses,
+                             List<Meeting> recent, BiggestWin biggestWin, boolean recentProvisional) {
+
+        static HeadToHeadSummary of(Team team, Team opponent, List<TeamMatchView> meetingsNewestFirst,
+                                    Integer earliestSeason, String leagueShortcut) {
+            List<TeamMatchView> settled = meetingsNewestFirst.stream()
+                    .filter(v -> v.match().resultStatus != ResultStatus.PROVISIONAL).toList();
+            Balance balance = Balance.EMPTY;
+            for (TeamMatchView v : settled) {
+                balance = balance.plus(v);
+            }
+            List<Meeting> recent = meetingsNewestFirst.stream().limit(RECENT_MEETINGS)
+                    .map(v -> Meeting.of(v, leagueShortcut)).toList();
+            return new HeadToHeadSummary(team.shortName, opponent.shortName,
+                    earliestSeason == null ? null : seasonLabel(earliestSeason),
+                    balance.wins(), balance.draws(), balance.losses(), recent, BiggestWin.of(settled),
+                    recent.stream().anyMatch(Meeting::provisional));
+        }
+
+        public int total() {
+            return wins + draws + losses;
+        }
+
+        /** Share of a count in the totals, for the bar's segment widths. */
+        public double share(int count) {
+            return total() == 0 ? 0 : Math.round(count * 1000.0 / total()) / 10.0;
+        }
+    }
+
+    /** One meeting in the head-to-head list: month and year, who was at home, the score as played. */
+    record Meeting(String month, String homeTeam, String awayTeam, String score, TeamResult result,
+                   boolean provisional, String link) {
+        static Meeting of(TeamMatchView v, String leagueShortcut) {
+            Match m = v.match();
+            return new Meeting(MONTH_YEAR.format(m.kickoff.atZone(DISPLAY_ZONE)), m.homeTeam.shortName, m.awayTeam.shortName,
+                    m.fullTimeScore.home + ":" + m.fullTimeScore.away, v.result(),
+                    m.resultStatus == ResultStatus.PROVISIONAL, "/" + leagueShortcut + "/matches/" + m.id);
+        }
+    }
+
+    /**
+     * The widest winning margin between the two clubs; on a tie the one with more goals for
+     * the winner, then the more recent one. {@code null} when every meeting was a draw.
+     */
+    record BiggestWin(String winner, String loser, String score, int year, String link) {
+        static BiggestWin of(List<TeamMatchView> settledNewestFirst) {
+            TeamMatchView best = null;
+            for (TeamMatchView v : settledNewestFirst) {
+                int margin = Math.abs(v.goalsFor() - v.goalsAgainst());
+                if (margin == 0) {
+                    continue;
+                }
+                if (best == null || margin > Math.abs(best.goalsFor() - best.goalsAgainst())
+                        || margin == Math.abs(best.goalsFor() - best.goalsAgainst())
+                        && Math.max(v.goalsFor(), v.goalsAgainst()) > Math.max(best.goalsFor(), best.goalsAgainst())) {
+                    best = v;
+                }
+            }
+            if (best == null) {
+                return null;
+            }
+            Match m = best.match();
+            boolean homeWon = m.fullTimeScore.home > m.fullTimeScore.away;
+            Team winner = homeWon ? m.homeTeam : m.awayTeam;
+            Team loser = homeWon ? m.awayTeam : m.homeTeam;
+            int high = Math.max(m.fullTimeScore.home, m.fullTimeScore.away);
+            int low = Math.min(m.fullTimeScore.home, m.fullTimeScore.away);
+            return new BiggestWin(winner.shortName, loser.shortName, high + ":" + low,
+                    m.kickoff.atZone(DISPLAY_ZONE).getYear(), "/" + m.matchday.league.sourceShortcut() + "/matches/" + m.id);
+        }
+    }
+
     record BalanceRow(String label, int played, int wins, int draws, int losses, String goals, int points) {
         static BalanceRow of(String label, Balance b) {
             return new BalanceRow(label, b.played(), b.wins(), b.draws(), b.losses(), b.goalsFor() + ":" + b.goalsAgainst(), b.points());
@@ -471,7 +551,7 @@ public final class MatchdayPageModels {
 
     record MatchPage(Nav nav, String season, int number, String matchdayLink, String forecastLink, String day, MatchRow match,
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
-                     List<ResultRow> headToHead, BalanceRow headToHeadBalance, boolean headToHeadProvisional,
+                     HeadToHeadSummary headToHead,
                      String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data,
                      Countdown countdown) {
         public List<TeamSituation> teams() {

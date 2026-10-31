@@ -425,8 +425,18 @@ h2 { font-size: 1.35rem; }
 .chart-block { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; }
 .chart { position: relative; height: 240px; margin-top: .75rem; }
 .h2h-balance { color: var(--ink-soft); margin: .3rem 0 .8rem; }
+/* story r035: the all-time balance as a bar in proportion, the team of this page's home side on the left */
+.h2h-bar { display: flex; gap: 2px; height: .7rem; margin: 0 0 .3rem; }
+.h2h-bar span { border-radius: 4px; min-width: 4px; }
+.h2h-bar .win { background: var(--win); }
+.h2h-bar .draw { background: var(--draw); }
+.h2h-bar .loss { background: var(--loss); }
+.h2h-legend { display: flex; justify-content: space-between; color: var(--ink-mute); font-size: .85rem; margin-bottom: .8rem; }
+.h2h-biggest { margin: 0 0 1rem; }
+.h2h-recent { font-size: 1rem; margin: 0 0 .5rem; }
+.meetings + .note { margin-top: .5rem; font-size: .85rem; }
 .meetings { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
-.meetings a { display: grid; grid-template-columns: 5rem 1fr auto; gap: .75rem; align-items: center; min-height: 2.5rem; padding: .45rem .75rem; }
+.meetings a { display: grid; grid-template-columns: 6rem 1fr auto; gap: .75rem; align-items: center; min-height: 2.5rem; padding: .45rem .75rem; }
 .meetings a:hover { background: var(--zone); }
 .meetings .date { color: var(--ink-mute); font-size: .9rem; }
 .meetings .venue { color: var(--ink-soft); }
