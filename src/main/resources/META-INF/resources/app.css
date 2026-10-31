@@ -389,6 +389,24 @@ h2 { font-size: 1.35rem; }
   .comebacks li { grid-template-columns: minmax(0, 1fr) auto; }
   .comeback-bar { grid-column: 1 / -1; grid-row: 2; }
 }
+/* story r072: the cross table — filled = home win, grey = draw, outlined = away win, hatched = open */
+.cross-scroll { overflow-x: auto; max-width: 100%; border-radius: 8px; }
+.cross-table { border-collapse: separate; border-spacing: 2px; font-variant-numeric: tabular-nums; font-size: .85rem; }
+.cross-table th { font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.cross-table th[scope="row"] { position: sticky; left: 0; z-index: 1; background: var(--chalk); text-align: left; padding: 0 .5rem 0 0; }
+.cross-table .away-head { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; padding: .3rem 0; height: 6.5rem; vertical-align: bottom; }
+.cross-table abbr { text-decoration: none; }
+.cross-table td { width: 2.4rem; min-width: 2.4rem; height: 2rem; padding: 0; text-align: center; border-radius: 4px; }
+.cross-table td a, .cross-table td span { display: grid; place-items: center; width: 100%; height: 100%; min-height: 2rem; font-family: var(--display); font-weight: 700; }
+.cross-table td.home { background: var(--ink); }
+.cross-table td.home a { color: var(--paper); }
+.cross-table td.draw { background: var(--draw); }
+.cross-table td.draw a { color: var(--on-result); }
+.cross-table td.away { box-shadow: inset 0 0 0 2px var(--ink); }
+.cross-table td.away a { color: var(--ink); }
+.cross-table td.open { background: repeating-linear-gradient(135deg, var(--mow-a) 0 4px, var(--mow-b) 4px 8px); }
+.cross-table td.self { background: transparent; }
+.cross-table td.is-provisional { outline: 2px dashed var(--ink-mute); outline-offset: -2px; }
 
 /* match page */
 .match { grid-column: 1 / -1; }

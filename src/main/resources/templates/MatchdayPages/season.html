@@ -118,6 +118,33 @@
     {/let}
   </section>
 
+  {! story r072: home teams down, away teams across, both in table order; scrolls sideways inside its own box !}
+  <section class="season-block" id="kreuztabelle" aria-labelledby="kreuztabelle-title">
+    <h2 id="kreuztabelle-title">Kreuztabelle</h2>
+    {#let x=page.crossTable}
+    {#if x.lead}<p class="season-lead">{x.lead}</p>{/if}
+    <div class="cross-scroll" tabindex="0" role="region" aria-labelledby="kreuztabelle-title">
+      <table class="cross-table">
+        <caption class="sr-only">Heimmannschaft in den Zeilen, Gast in den Spalten</caption>
+        <thead><tr><th scope="col"><span class="sr-only">Heim \ Gast</span></th>{#for t in x.teams}<th scope="col" class="away-head"><abbr title="{t.name}">{t.shortName}</abbr></th>{/for}</tr></thead>
+        <tbody>
+          {#for row in x.rows}
+          {#let t=x.teams.get(row_index)}
+          <tr>
+            <th scope="row"><a href="{t.link}">{t.shortName}</a></th>
+            {#for c in row}
+            <td class="{c.kind}{#if c.provisional} is-provisional{/if}">{#if c.kind == 'self'}{#else if c.link}<a href="{c.link}" aria-label="{c.label}">{#if c.score}{c.score}{/if}</a>{#else}<span aria-label="{c.label}"></span>{/if}</td>
+            {/for}
+          </tr>
+          {/let}
+          {/for}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Gefüllt: Heimsieg · grau: Remis · umrandet: Auswärtssieg · schraffiert: noch offen · gestrichelt: vorläufig, zählt im Satz oben nicht mit.</p>
+    {/let}
+  </section>
+
   {! story r098: how much the home side really gains — the league as a whole, then the clubs !}
   <section class="season-block" id="heimvorteil" aria-labelledby="heimvorteil-title">
     <h2 id="heimvorteil-title">Heimvorteil</h2>
