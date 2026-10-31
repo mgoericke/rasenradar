@@ -472,11 +472,14 @@ public class MatchdayPages {
         List<Match> settled = Match.findPlayedBefore(l, season, Integer.MAX_VALUE).stream()
                 .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
         String shortcut = l.sourceShortcut();
+        var streaks = de.javamark.matchoracle.matchday.control.StreakCalculator.of(settled);
         List<NavLeague> switcher = Nav.of(l).leagues().stream()
                 .filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList();
         return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), switcher,
                 settled.size(),
-                MatchdayPageModels.HomeAdvantageView.of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled), shortcut)));
+                MatchdayPageModels.HomeAdvantageView.of(de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled), shortcut),
+                streaks.going().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
+                streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList()));
     }
 
     private MatchdayPage matchdayPage(Matchday matchday) {

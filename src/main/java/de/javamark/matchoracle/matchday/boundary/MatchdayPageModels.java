@@ -703,7 +703,8 @@ public final class MatchdayPageModels {
      * The season page of a Bundesliga: figures of the whole season so far, from final results only.
      * {@code basedOn} counts the final matches, {@code leagues} is the switch between the two Bundesligas.
      */
-    record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage) {
+    record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
+                      List<StreakRow> streaksGoing, List<StreakRow> streaksStuck) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -733,6 +734,41 @@ public final class MatchdayPageModels {
                     (int) Math.round(c.homePerGame() / 3 * 100), (int) Math.round(c.awayPerGame() / 3 * 100),
                     c.homeGames(), c.awayGames());
         }
+    }
+
+    /** Story r068: one running streak — the club, the sentence and its results, oldest first. */
+    record StreakRow(String team, String teamLink, String icon, String sentence, List<ResultRow> results) {
+        static StreakRow of(de.javamark.matchoracle.matchday.control.StreakCalculator.Streak s, String shortcut) {
+            Team t = s.team();
+            return new StreakRow(t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName,
+                    MatchdayPageModels.teamLink(t, shortcut), MatchdayPageModels.crestLink(t),
+                    streakSentence(s.kind(), s.length(), s.wholeSeason()),
+                    s.matches().stream().map(v -> ResultRow.of(v, shortcut)).toList());
+        }
+    }
+
+    /** "3 Siege in Folge", "in allen 7 Saisonspielen ungeschlagen" — the number always in the sentence. */
+    static String streakSentence(de.javamark.matchoracle.matchday.control.StreakCalculator.Kind kind, int n, boolean wholeSeason) {
+        if (wholeSeason) {
+            return switch (kind) {
+                case WINS -> "alle " + n + " Saisonspiele gewonnen";
+                case UNBEATEN -> "in allen " + n + " Saisonspielen ungeschlagen";
+                case CLEAN_SHEETS -> "in allen " + n + " Saisonspielen ohne Gegentor";
+                case SCORING -> "in allen " + n + " Saisonspielen getroffen";
+                case LOSSES -> "alle " + n + " Saisonspiele verloren";
+                case WINLESS -> "in allen " + n + " Saisonspielen ohne Sieg";
+                case GOALLESS -> "in allen " + n + " Saisonspielen ohne eigenes Tor";
+            };
+        }
+        return switch (kind) {
+            case WINS -> n + " Siege in Folge";
+            case UNBEATEN -> "seit " + n + " Spielen ungeschlagen";
+            case CLEAN_SHEETS -> "seit " + n + " Spielen ohne Gegentor";
+            case SCORING -> "seit " + n + " Spielen mit eigenem Tor";
+            case LOSSES -> n + " Niederlagen in Folge";
+            case WINLESS -> "seit " + n + " Spielen ohne Sieg";
+            case GOALLESS -> "seit " + n + " Spielen ohne eigenes Tor";
+        };
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */

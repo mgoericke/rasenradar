@@ -118,6 +118,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | „Es geht um" (Tabellenlage eines offenen Spiels: Spitzenspiel, Kellerduell, Platz nach einem Sieg) | `Stakes` |
 | Begriffe (Glossar der KI-Seiten: Tendenz, Sicherheit, Trefferquote …) | `Glossary` |
 | Saisonseite einer Bundesliga („Saison in Zahlen“: Auswertungen der ganzen Saison) | `SeasonPage` (in `matchday`, nicht `season`) |
+| Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
