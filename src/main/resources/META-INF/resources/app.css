@@ -373,6 +373,22 @@ h2 { font-size: 1.35rem; }
 .my-club-only { display: none; }
 .special-latest { margin: .6rem 0 0; font-size: .9rem; }
 .special-latest a { color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+/* story r091: dropped points to the left in --loss, points won after trailing to the right in --win */
+.season-lead-link { border-bottom: 1px solid var(--line); }
+.comebacks { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
+.comebacks li { display: grid; grid-template-columns: minmax(6rem, 10rem) minmax(8rem, 1fr) auto; align-items: center; gap: .2rem .8rem; padding: .35rem .7rem; min-height: 40px; background: var(--mow-a); }
+.comebacks li:nth-child(even) { background: var(--mow-b); }
+.comebacks .team { display: flex; align-items: center; gap: .4rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.comebacks .figures { color: var(--ink-soft); font-size: .9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.comeback-bar { display: flex; height: .7rem; }
+.comeback-bar > span { flex: 1; display: flex; }
+.comeback-bar .dropped { justify-content: flex-end; border-right: 1px solid var(--ink-mute); }
+.comeback-bar .dropped span { background: var(--loss); border-radius: 3px 0 0 3px; }
+.comeback-bar .won span { background: var(--win); border-radius: 0 3px 3px 0; }
+@media (max-width: 560px) {
+  .comebacks li { grid-template-columns: minmax(0, 1fr) auto; }
+  .comeback-bar { grid-column: 1 / -1; grid-row: 2; }
+}
 
 /* match page */
 .match { grid-column: 1 / -1; }
