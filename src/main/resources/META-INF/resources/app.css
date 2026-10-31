@@ -371,6 +371,13 @@ h2 { font-size: 1.35rem; }
 .run-in-sum { min-width: 9.5rem; text-align: left !important; padding-left: .5rem !important; }
 .run-in-sum strong, .run-in-sum span { display: block; }
 .run-in-sum span { font-size: .75rem; }
+/* story r016: goals by 15-minute block as plain bars, the number beside each */
+.timing-bars { width: 100%; max-width: 36rem; border-collapse: separate; border-spacing: 0 4px; font-variant-numeric: tabular-nums; }
+.timing-bars th { width: 4.5rem; text-align: left; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.timing-bars td { display: flex; align-items: center; gap: .5rem; }
+.timing-bar { display: block; height: 1rem; min-width: 2px; background: var(--ink); border-radius: 0 3px 3px 0; }
+.timing-value { font-weight: 700; }
+.timing-sentence { margin: 0 0 .6rem; max-width: 70ch; }
 /* story r068: Läuft / Hängt — the result letters carry win and loss, the rows stay neutral */
 .streak-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.5rem; }
 .streaks { list-style: none; margin: 0; padding: 0; border-radius: 8px; overflow: hidden; }
