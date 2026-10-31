@@ -54,6 +54,8 @@
         </span>
       </a>
       {#if page.noMatchesLeft}<p class="muted">Keine Spiele mehr in dieser Saison.</p>{/if}
+      {! story r027: a plain download, so htmx must not take the link over !}
+      {#if page.calendarLink}<p class="calendar-link"><a href="{page.calendarLink}" hx-boost="false" download>Spielplan in den Kalender</a></p>{/if}
     </section>
     {/let}
 

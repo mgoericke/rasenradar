@@ -51,6 +51,7 @@ import de.javamark.matchoracle.matchday.control.GoalTimingCalculator;
 import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
+import de.javamark.matchoracle.matchday.control.MatchCalendar;
 import de.javamark.matchoracle.matchday.control.Stakes;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
@@ -273,6 +274,52 @@ public class MatchdayPages {
     public TemplateInstance team(@PathParam("league") String league, @PathParam("season") int season, @PathParam("id") long id) {
         Team team = Team.<Team>findByIdOptional(id).orElseThrow(() -> new NotFoundException("team not found"));
         return Templates.team(teamPage(team, league(league), season));
+    }
+
+    /**
+     * Story r027: the club's open matches of the season in this competition as a calendar file.
+     * Nothing about the visitor is involved; the file is the same for everyone.
+     */
+    @GET
+    @Path("/{league}/{season}/teams/{id}/spielplan.ics")
+    public Response clubCalendar(@PathParam("league") String league, @PathParam("season") int season, @PathParam("id") long id) {
+        League l = league(league);
+        Team team = Team.<Team>findByIdOptional(id).orElseThrow(() -> new NotFoundException("team not found"));
+        Instant now = Instant.now();
+        List<Match> open = openMatches(Match.findByTeam(team, l, season), now);
+        if (open.isEmpty()) {
+            throw new NotFoundException(team.name + " has no open matches in " + league + " " + season);
+        }
+        String name = team.name + " · " + MatchdayPageModels.leagueName(l) + " " + MatchdayPageModels.seasonLabel(season);
+        return calendar(MatchCalendar.of(name, open, this::absoluteLink, now), "spielplan-" + team.id + ".ics");
+    }
+
+    /** Story r027: one open match as a calendar file. */
+    @GET
+    @Path("/{league}/matches/{id}/kalender.ics")
+    public Response matchCalendar(@PathParam("league") String league, @PathParam("id") long id) {
+        League l = league(league);
+        Instant now = Instant.now();
+        Match match = Match.<Match>findByIdOptional(id).filter(m -> m.matchday.league == l)
+                .filter(m -> !openMatches(List.of(m), now).isEmpty())
+                .orElseThrow(() -> new NotFoundException("no open match " + id));
+        String title = match.homeTeam.name + " – " + match.awayTeam.name;
+        return calendar(MatchCalendar.of(title, List.of(match), this::absoluteLink, now), "spiel-" + match.id + ".ics");
+    }
+
+    /** Matches still ahead: not played and not kicked off yet. */
+    private static List<Match> openMatches(List<Match> matches, Instant now) {
+        return matches.stream().filter(m -> !m.isPlayed() && m.kickoff.isAfter(now)).toList();
+    }
+
+    private String absoluteLink(Match m) {
+        return SiteGlobals.siteBaseUrl() + "/" + m.matchday.league.sourceShortcut() + "/matches/" + m.id;
+    }
+
+    private static Response calendar(String ics, String fileName) {
+        return Response.ok(ics, "text/calendar; charset=utf-8")
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .header("Cache-Control", "no-store").build();
     }
 
     /** Story r003: "Mein Verein" is chosen among the clubs of the two Bundesligas. */
@@ -781,7 +828,9 @@ public class MatchdayPages {
                 hasTable, cupRunOutcome(team, league, played), tierLabel(team, league, season),
                 MY_CLUB_LEAGUES.contains(league) ? MyClubChoice.of(team) : null,
                 currentSeason && nextMatchOf(team, Instant.now()) == null,
-                clubForm(team, shortcut, played));
+                clubForm(team, shortcut, played),
+                currentSeason && !openMatches(schedule, Instant.now()).isEmpty()
+                        ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null);
     }
 
     /** Story r024: the club's last final results, oldest first — provisional ones do not count as form. */
