@@ -10,7 +10,7 @@
     {#crest src=page.icon size="hero" /}
     <div>
       <h1 class="club-name">{page.name}</h1>
-      <p class="club-season">{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
+{page.nav.leagueName} {page.season}{#if !page.currentSeason} <span class="muted">· Vorsaison</span>{/if}</p>
       <p class="club-standing {page.zone}">
         {#if page.hasTable}
         {#if page.position}<span class="place">Platz {page.position}</span> mit {page.total.points} Punkten aus {page.total.played} Spielen
@@ -30,6 +30,13 @@
         <li><a href="{s.link}">{s.season} <span class="muted">{s.league}</span>{#if s.position} · Platz {s.position}{/if}</a></li>
         {/for}
       </ul>
+      {/if}
+      {#if page.myClub}
+      {! story r003: one of the two buttons is shown by nav.js, depending on the choice in this browser !}
+      <p class="club-choice">
+        <button type="button" class="link-button" data-club-choose data-club-id="{page.myClub.id}" data-club-name="{page.myClub.name}" data-club-short="{page.myClub.shortName}" hidden>Als Mein Verein wählen</button>
+        <button type="button" class="link-button" data-club-clear data-club-id="{page.myClub.id}" hidden>Auswahl entfernen</button>
+      </p>
       {/if}
     </div>
   </header>

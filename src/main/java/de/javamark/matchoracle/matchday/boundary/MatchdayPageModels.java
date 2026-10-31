@@ -190,7 +190,8 @@ public final class MatchdayPageModels {
     record MatchRow(long id, String link, String time, String home, String away, String homeShort, String awayShort,
                     String homeIcon, String awayIcon,
                     String score, String halfTime, boolean played, boolean provisional, boolean live,
-                    String liveScore, boolean watched, String decision, String homeTier, String awayTier) {
+                    String liveScore, boolean watched, String decision, String homeTier, String awayTier,
+                    long homeId, long awayId) {
         static MatchRow of(Match m, String leagueShortcut, Instant now, Duration liveWindow) {
             return of(m, leagueShortcut, now, liveWindow, null, null);
         }
@@ -207,7 +208,8 @@ public final class MatchdayPageModels {
                     isLive(m.kickoff, m.isPlayed(), now, liveWindow),
                     m.liveScore == null ? null : m.liveScore.home + ":" + m.liveScore.away,
                     isWatched(m.kickoff, m.isPlayed(), now, liveWindow),
-                    decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier);
+                    decisionLabel(m.decision, m.penaltyScore), homeTier, awayTier,
+                    m.homeTeam.id, m.awayTeam.id);
         }
     }
 
@@ -318,7 +320,8 @@ public final class MatchdayPageModels {
     }
 
     record StandingRow(int position, String team, String teamLink, String icon, int played, int wins, int draws, int losses,
-                       String goals, String difference, int points, String zone, String teamShort, List<ResultRow> form) {
+                       String goals, String difference, int points, String zone, String teamShort, List<ResultRow> form,
+                       long teamId) {
         static StandingRow of(StandingPosition p, League league) {
             return of(p, league, List.of());
         }
@@ -331,7 +334,7 @@ public final class MatchdayPageModels {
                     b.played(), b.wins(), b.draws(), b.losses(),
                     b.goalsFor() + ":" + b.goalsAgainst(), (diff > 0 ? "+" : "") + diff, b.points(), MatchdayPageModels.zone(league, p.position()),
                     p.team().shortName == null ? p.team().name : p.team().shortName,
-                    form.stream().map(v -> ResultRow.of(v, league.sourceShortcut())).toList());
+                    form.stream().map(v -> ResultRow.of(v, league.sourceShortcut())).toList(), p.team().id);
         }
     }
 
@@ -659,11 +662,32 @@ public final class MatchdayPageModels {
      * position curve are absent and {@code cupRunOutcome} says how the run ended instead
      * (spec 06). {@code tier} is the club's division, empty outside a cup.
      */
+    /**
+     * Story r003: one club of the two Bundesligas as "Mein Verein". The choice lives in the browser
+     * only (localStorage, see nav.js); the server just lists the clubs and resolves the club's link.
+     */
+    record MyClubChoice(long id, String name, String shortName, String crest) {
+        static MyClubChoice of(Team t) {
+            return new MyClubChoice(t.id, t.name, t.shortName == null ? t.name : t.shortName, crestLink(t));
+        }
+
+        /** League-free, so the link survives promotion and relegation (MatchdayPages.myClub). */
+        public String link() {
+            return "/mein-verein/" + id;
+        }
+    }
+
+    record MyClubLeague(String name, List<MyClubChoice> clubs) {
+    }
+
+    record MyClubPage(Nav nav, List<MyClubLeague> leagues) {
+    }
+
     record TeamPage(Nav nav, String season, int seasonYear, boolean currentSeason, String name, String icon,
                     Integer position, String zone, BalanceRow total, boolean standingsProvisional,
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
-                    boolean hasTable, String cupRunOutcome, String tier) {
+                    boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub) {
         public List<BalanceRow> balances() {
             return List.of(home, away);
         }

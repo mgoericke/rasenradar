@@ -74,3 +74,65 @@
 document.addEventListener('click', function (e) {
   if (e.target.closest && e.target.closest('[data-print]')) window.print();
 });
+
+// Story r003: "Mein Verein" — one club of the two Bundesligas, stored in this browser only
+// (no account, nothing on the server). The head script in base.html highlights its rows before
+// the first paint; this wires up the choice buttons and the link in the navigation.
+(function () {
+  var KEY = 'rr-club';
+  function read() {
+    try {
+      var c = JSON.parse(localStorage.getItem(KEY) || 'null');
+      return c && /^\d+$/.test(String(c.id)) ? c : null;
+    } catch (e) { return null; }
+  }
+  function write(c) {
+    try { if (c) localStorage.setItem(KEY, JSON.stringify(c)); else localStorage.removeItem(KEY); } catch (e) {}
+  }
+  function highlight(c) {
+    var style = document.getElementById('rr-club-style');
+    if (!c) { if (style) style.remove(); return; }
+    if (!style) { style = document.createElement('style'); style.id = 'rr-club-style'; document.head.appendChild(style); }
+    style.textContent = window.rrClubCss(c.id);
+  }
+  function render() {
+    var c = read();
+    // the server sends a club that plays in neither Bundesliga any more back to the choice
+    var gone = new URLSearchParams(location.search).get('nicht-gefunden');
+    if (gone && c && String(c.id) === gone) {
+      write(null); highlight(null); c = null;
+      var note = document.querySelector('[data-my-club-gone]');
+      if (note) note.hidden = false;
+    }
+    var link = document.querySelector('[data-my-club-link]');
+    if (link) {
+      link.href = c ? '/mein-verein/' + c.id : '/mein-verein';
+      link.textContent = c ? c.short : 'Mein Verein';
+      link.title = c ? 'Mein Verein: ' + c.name : 'Mein Verein wählen';
+    }
+    document.querySelectorAll('[data-club-choose]').forEach(function (b) {
+      var mine = !!c && String(c.id) === b.dataset.clubId;
+      if (b.classList.contains('my-club-option')) b.setAttribute('aria-pressed', mine ? 'true' : 'false');
+      else b.hidden = mine;
+    });
+    document.querySelectorAll('[data-club-clear]').forEach(function (b) {
+      b.hidden = !c || (!!b.dataset.clubId && String(c.id) !== b.dataset.clubId);
+    });
+    var current = document.querySelector('[data-my-club-current]');
+    if (current) {
+      current.hidden = !c;
+      var a = current.querySelector('[data-my-club-current-link]');
+      if (c && a) { a.textContent = c.name; a.href = '/mein-verein/' + c.id; }
+    }
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest) return;
+    var choose = e.target.closest('[data-club-choose]');
+    var clear = e.target.closest('[data-club-clear]');
+    if (!choose && !clear) return;
+    var c = choose ? { id: choose.dataset.clubId, name: choose.dataset.clubName, short: choose.dataset.clubShort } : null;
+    write(c); highlight(c); render();
+  });
+  document.addEventListener('DOMContentLoaded', render);
+  document.addEventListener('htmx:afterSettle', render);
+})();
