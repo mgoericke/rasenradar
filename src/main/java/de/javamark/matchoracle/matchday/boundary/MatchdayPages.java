@@ -16,6 +16,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MyClubPage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.NextMatchBar;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayView;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
 import de.javamark.matchoracle.matchday.control.MatchdayStream;
 import de.javamark.matchoracle.matchday.control.MatchdayStream.StreamDay;
@@ -51,6 +52,7 @@ import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.entity.Form;
+import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.HeadToHead;
 import de.javamark.matchoracle.matchday.entity.Balance;
@@ -141,11 +143,13 @@ public class MatchdayPages {
         List<LandingLeague> leagues = new ArrayList<>();
         List<Match> shown = new ArrayList<>();
         List<Match> next = new ArrayList<>();
+        List<String> finalPlaces = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
             Matchday.findDisplayed(l, now).ifPresent(matchday -> {
                 List<Match> matches = Match.findByMatchday(matchday);
                 shown.addAll(matches);
                 leagues.add(landingLeague(matchday));
+                finalPlaces.add(MatchdayPageModels.finalPlaces(finalTable(matchday.league, matchday.season)));
                 if (MatchdayStream.showsNext(matches)) {
                     Matchday.find(matchday.league, matchday.season, matchday.number + 1)
                             .ifPresent(md -> next.addAll(Match.findByMatchday(md)));
@@ -159,7 +163,23 @@ public class MatchdayPages {
         int live = (int) shown.stream().filter(m -> m.isLive(now, liveWindow)).count();
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
-                MatchdayPageModels.LEADERBOARD_LINK));
+                MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces)));
+    }
+
+    /** Story r044: the played matches the card "Seit dem letzten Besuch" can pick from, newest first. */
+    private List<SinceRow> sinceRows(Instant now) {
+        return Match.findPlayedSince(List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2), now.minus(MatchdayPageModels.SINCE_REACH))
+                .stream().map(m -> new SinceRow(MatchdayPageModels.badge(m.matchday.league),
+                        MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow),
+                        m.kickoff.plus(MatchdayPageModels.MATCH_LENGTH).getEpochSecond()))
+                .toList();
+    }
+
+    /** The table of final results only — provisional scores do not move a club (story r044). */
+    private Standings finalTable(League league, int season) {
+        List<Match> settled = Match.findPlayedBefore(league, season, Integer.MAX_VALUE).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        return standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
     }
 
     private List<StreamDayView> streamViews(List<StreamDay> days, Instant now) {

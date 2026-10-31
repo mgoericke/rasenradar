@@ -150,6 +150,12 @@ public class Match extends PanacheEntity {
         return match.matchday.label == null;
     }
 
+    /** Story r044: played matches of these leagues since a moment, newest first. */
+    public static List<Match> findPlayedSince(List<League> leagues, Instant since) {
+        return list("matchday.league in ?1 and kickoff >= ?2 and fullTimeScore is not null order by kickoff desc",
+                leagues, since);
+    }
+
     public static List<Match> findPlayedBefore(League league, int season, int matchday) {
         return list("matchday.league = ?1 and matchday.season = ?2 and matchday.number < ?3"
                 + " and matchday.label is null and fullTimeScore is not null",
