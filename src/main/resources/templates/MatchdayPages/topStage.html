@@ -1,0 +1,13 @@
+{! The start page's stage: one match on the pitch, the same turf as the match head, smaller. The
+   whole stage links to the match page. The score is the shared tag, so the live poller updates it.
+   nav.js swaps in the club's own match for "Mein Verein" (data-top-stage). !}
+<a class="scoreboard top-stage" href="{stage.match.link}" data-top-stage="{stage.match.id}">
+  <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
+  <span class="top-stage-label"><b>{stage.label}</b> {stage.leagueName}{#if stage.reason} · {stage.reason}{/if}</span>
+  <span class="teams">
+    <span class="home">{stage.match.home} {#crest src=stage.match.homeIcon size="large" /}</span>
+    {#score m=stage.match /}
+    <span class="away">{#crest src=stage.match.awayIcon size="large" /} {stage.match.away}</span>
+  </span>
+  <span class="top-stage-when">{stage.when}</span>
+</a>

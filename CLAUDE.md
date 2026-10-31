@@ -123,7 +123,7 @@ Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 ## Styleguide (`docs/styleguide.md`)
 
 Alle UI-Änderungen folgen `docs/styleguide.md` („Rasenschnitt"): heller Kreidegrund, Datenlisten
-auf Mähstreifen, genau eine grüne Bühne (der Spielkopf der Spielseite), keine Anzeigetafel-Optik,
+auf Mähstreifen, grüne Bühne nur für ein einzelnes Spiel (der Spielkopf der Spielseite und das Topspiel der Startseite), keine Anzeigetafel-Optik,
 Grün/Rot nur als Bedeutung, Lila (`--ki`) nur für die KI-Vorschau und immer mit dem Wort „KI",
 Blau (`--live`) nur für laufende Spiele, hell/dunkel nach Systemeinstellung, Sofia Sans Extra
 Condensed für Display und Sofia Sans für Text, selbst gehostet. Neue Tokens oder Bausteine dort

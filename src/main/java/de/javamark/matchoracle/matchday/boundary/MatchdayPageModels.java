@@ -396,6 +396,13 @@ public final class MatchdayPageModels {
     }
 
     /**
+     * The start page's stage: one match on the pitch, the second place the styleguide allows it.
+     * {@code label} is "Topspiel" or "Mein Verein"; {@code reason} names both places, empty without.
+     */
+    record TopStage(String label, String leagueName, String when, String reason, MatchRow match) {
+    }
+
+    /**
      * Story r044: a played match for the card "Seit dem letzten Besuch". The browser compares
      * {@code endsAt} (kickoff plus the usual length of a match, epoch seconds) with the visit it
      * remembers — the visit itself never reaches the server.
@@ -463,7 +470,7 @@ public final class MatchdayPageModels {
      */
     record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
                        List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink,
-                       List<SinceRow> recent, String finalPlaces) {
+                       List<SinceRow> recent, String finalPlaces, TopStage top) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())
