@@ -460,6 +460,12 @@ public final class MatchdayPageModels {
         }
     }
 
+    /** Story r024: how many scorers the club page shows above its tabs. */
+    static final int TOP_CLUB_SCORERS = 5;
+
+    /** Story r024: how many final results the form strip in the club head shows, oldest left as in the table. */
+    static final int CLUB_FORM_LENGTH = 5;
+
     /** Story r035: how many meetings to list on the match page; the totals count all of them. */
     static final int RECENT_MEETINGS = 5;
     private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MMM yyyy", Locale.GERMAN);
@@ -762,10 +768,35 @@ public final class MatchdayPageModels {
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
-                    boolean noMatchesLeft) {
+                    boolean noMatchesLeft, List<ResultRow> form) {
 
         public List<BalanceRow> balances() {
             return List.of(home, away);
+        }
+
+        /** Story r024: the first open match of the season, or the last played one once none is left. */
+        public ScheduleRow next() {
+            return schedule.stream().filter(r -> r.score() == null).findFirst()
+                    .orElse(schedule.isEmpty() ? null : schedule.get(schedule.size() - 1));
+        }
+
+        /** Story r024: open matches in kickoff order — the next one first. */
+        public List<ScheduleRow> upcoming() {
+            return schedule.stream().filter(r -> r.score() == null).toList();
+        }
+
+        /** Story r024: played matches, newest first. */
+        public List<ScheduleRow> results() {
+            return schedule.stream().filter(r -> r.score() != null).toList().reversed();
+        }
+
+        /** Story r024: the head of the scorer list sits above the tabs; the rest folds away. */
+        public List<ScorerRow> topScorers() {
+            return scorers.subList(0, Math.min(TOP_CLUB_SCORERS, scorers.size()));
+        }
+
+        public List<ScorerRow> moreScorers() {
+            return scorers.subList(Math.min(TOP_CLUB_SCORERS, scorers.size()), scorers.size());
         }
 
         /**
