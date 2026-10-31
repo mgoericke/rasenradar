@@ -279,7 +279,7 @@ h2 { font-size: 1.35rem; }
 .ki-reasoning .section-sub { color: var(--ink-soft); font-size: .92rem; margin: 0 0 1rem; max-width: 62ch; }
 .ki-reasoning .assessment { background: var(--surface); border: 1px solid var(--line); }
 .ki-forecaster { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; margin-top: 1rem; }
-.ki-forecaster h3 { font-size: 1rem; margin-bottom: .4rem; }
+.ki-forecaster h3 { font-size: 1.3rem; margin-bottom: .4rem; }
 .ki-forecaster p { margin: 0; max-width: 66ch; }
 .ki-reviewer { margin-top: .9rem !important; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .92rem; color: var(--ink-soft); }
 .ki-reviewer strong { color: var(--ink); }
@@ -334,7 +334,7 @@ h2 { font-size: 1.35rem; }
 }
 .footer-identity { flex: 1 1 260px; max-width: 340px; }
 .footer-wordmark {
-  font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: 0;
+  font-family: var(--display); font-weight: 800; font-size: 1.5rem; letter-spacing: 0;
   color: var(--ink); margin: 0 0 .35rem;
 }
 .footer-tagline { margin: 0; color: var(--ink-mute); font-size: .85rem; line-height: 1.5; }
@@ -342,7 +342,7 @@ h2 { font-size: 1.35rem; }
 .footer-col { color: var(--ink-mute); font-size: .85rem; line-height: 1.7; min-width: 10rem; }
 .footer-col p { margin: 0; }
 .footer-heading {
-  font-family: var(--display); font-weight: 600; font-size: .9rem; letter-spacing: 0;
+  font-family: var(--display); font-weight: 700; font-size: 1.1rem; letter-spacing: 0;
   color: var(--ink-soft); margin-bottom: .5rem !important;
 }
 .footer-col a { color: var(--ink-mute); border-bottom: 1px solid var(--line); }
@@ -537,7 +537,7 @@ h2 { font-size: 1.35rem; }
 @media (max-width: 800px) { .assessments { grid-template-columns: 1fr; } }
 .assessment { background: var(--ground); border-radius: 10px; padding: 1rem 1.1rem; font-size: .92rem; }
 .assessment.is-failed { border: 1px dashed var(--loss); }
-.assessment h2, .assessment h3 { font-size: 1rem; margin-bottom: .3rem; }
+.assessment h2, .assessment h3 { font-size: 1.3rem; margin-bottom: .3rem; }
 .assessment-lean { margin: 0 0 .5rem; }
 .lean { font-weight: 600; }
 .lean.home_win { color: var(--ink); }
@@ -545,7 +545,7 @@ h2 { font-size: 1.35rem; }
 .lean.draw, .lean.none { color: var(--ink-soft); }
 
 .review { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; border: 1px solid var(--line); font-size: .92rem; }
-.review h2 { font-size: 1rem; margin-bottom: .3rem; }
+.review h2 { font-size: 1.25rem; margin-bottom: .3rem; }
 .review.accepted { border-color: var(--win); }
 .review.objection { border-color: var(--loss); }
 .forecast-meta { color: var(--ink-mute); font-size: .8rem; margin: 1rem 0 0; }
@@ -566,7 +566,7 @@ h2 { font-size: 1.35rem; }
 @media (max-width: 800px) { .role-row { grid-template-columns: 1fr; } }
 .role-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.2rem; }
 .role-card.wide { width: 100%; max-width: 640px; }
-.role-card h2 { font-size: 1.05rem; margin-bottom: .35rem; }
+.role-card h2 { font-size: 1.4rem; margin-bottom: .35rem; }
 .role-card p { color: var(--ink-soft); font-size: .92rem; margin: 0; }
 .role-note { font-size: .82rem; margin: 0; }
 .role-arrow { font-size: 1.3rem; color: var(--ink-mute); line-height: 1; }
@@ -658,7 +658,7 @@ h2 { font-size: 1.35rem; }
 
 /* retrospective on the forecast page */
 .retrospective { margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px; background: var(--ground); font-size: .92rem; }
-.retrospective h2 { font-size: 1rem; margin-bottom: .4rem; }
+.retrospective h2 { font-size: 1.25rem; margin-bottom: .4rem; }
 .retrospective ul { margin: 0; padding-left: 1.1rem; }
 .retrospective li { margin: .15rem 0; }
 
