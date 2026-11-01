@@ -209,7 +209,7 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   wird gemessen, sie wächst mit „Mein Verein" und auf dem Telefon), der Abschnitt im Blick ist wie ein
   aktiver Reiter markiert (`--ink`, 3-px-Unterstrich) und die Zeile wischt ihn ins Bild. Auf dem
   Telefon eine wischbare Zeile ohne sichtbaren Scrollbalken, wie die Wettbewerbe in der Navigation.
-  Der Sprung ist nie animiert.
+  Der Sprung zum Abschnitt scrollt weich (Antwort auf den Klick), bei `prefers-reduced-motion` springt er.
 - **Kompakt** (Spieltagsseite, Umschalter „Liste | Kompakt“): eine Zeile je Spiel mit Zeit,
   Kurznamen und Ergebnis, der KI-Marker bleibt; alles unter der Paarung entfällt. Die Wahl liegt nur
   im Browser (`rr-view`) und wird wie die Darstellung im `<head>` vor dem ersten Zeichnen gesetzt.

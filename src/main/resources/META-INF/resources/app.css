@@ -323,6 +323,8 @@ h2 { font-size: 1.35rem; }
 /* design r102: the season page takes the full width of the centred column */
 .forecast-page.season-page { grid-column: 1 / -1; max-width: none; }
 .season-block { margin: 2rem 0 0; scroll-margin-top: 7rem; }
+/* the wayfinder's jump scrolls softly — an answer to the click; a hard jump with reduced motion */
+@media (prefers-reduced-motion: no-preference) { html:has(.season-toc) { scroll-behavior: smooth; } }
 /* story r085: one link per section, plain anchors; with script it sticks below the top navigation
    (nav.js measures its height into --topnav-h) and marks the section in view like an active tab */
 .season-toc { margin: 1.2rem 0 0; background: var(--ground); border-bottom: 1px solid var(--line); }
