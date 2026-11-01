@@ -506,7 +506,7 @@ Lab reference: [CHANGELOG entry](../monitoring/CHANGELOG.md#r028--spieltagsbogen
 **Title:** Printable matchday sheet (plain, without guessing columns)
 **Story:** As a Bundesliga fan, I want to print a clean A4 sheet of the current matchday, so that I can follow the games on paper at the table or pin it up, without screen or app.
 **Acceptance Criteria:**
-- Given a matchday page with fixtures, When I choose "Bogen drucken" (or use the browser's print function), Then the print preview shows only the matchday sheet (no top navigation, filters or buttons) with the league, matchday number and date range as heading.
+- Given a matchday page with fixtures, When I choose "Spieltag drucken" (or use the browser's print function), Then the print preview shows only the matchday sheet (no top navigation, filters or buttons) with the league, matchday number and date range as heading.
 - Given the print preview of a matchday with N fixtures, When I read the sheet, Then each fixture appears exactly once with kickoff date/time, home team, away team and, for finished matches, the final score.
 - Given a matchday containing at least one match with a provisional result (`ResultStatus.PROVISIONAL`), When I print, Then that score is shown but marked "vorläufig" in print as well (marking must not rely on colour).
 - Given a fixture for which a Forecast exists, When I print, Then the sheet may show its tendency in one column labelled "KI-Vorschau" together with the line "eine Einschätzung, kein Rat"; fixtures without a Forecast show "–".
