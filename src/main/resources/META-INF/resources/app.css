@@ -1064,7 +1064,8 @@ h2 { font-size: 1.35rem; }
 .scorer-goals .md, .scorer-goals .min { color: var(--ink-mute); }
 .scorer-goals .sc { font-family: var(--display); font-weight: 700; }
 /* story r088: the club calendar — home filled (mow), away a frame, the result letter in its colour, today an ink outline */
-.club-calendar { margin: 0 0 1.5rem; }
+/* a row of its own above both schedule columns of the panel grid — in a cell it pushed "Ergebnisse" below "Kommende Spiele" */
+.club-calendar { grid-column: 1 / -1; margin: 0; }
 .club-calendar summary { cursor: pointer; font: 700 1.25rem var(--display); min-height: 44px; display: flex; align-items: center; }
 .club-calendar .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 1rem 1.5rem; }
 .month { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; font-variant-numeric: tabular-nums; }
