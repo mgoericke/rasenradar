@@ -1,0 +1,79 @@
+{#include base nav=page.nav}
+{#title}{#if page.error}Vereinsvergleich{#else}{page.a.shortName} gegen {page.b.shortName} – Vereinsvergleich {page.season}{/if}{/title}
+{#description}{#if page.error}Zwei Vereine einer Liga nebeneinander.{#else}{page.a.name} und {page.b.name} in der {page.nav.leagueName} {page.season} nebeneinander: Punkte, Siege, Tore, Gegentore, Tordifferenz, Tabellenplatz je Spieltag und die direkten Duelle.{/if}{/description}
+{#body}
+{! story r026: two clubs side by side — the better value of each pair in full ink, the other quiet; no crest colours !}
+<article class="compare">
+  <header class="compare-head">
+    <h1>Vereinsvergleich <span class="muted">{page.nav.leagueName} {page.season}</span></h1>
+  </header>
+  {#if page.error}
+  <p class="compare-error">{page.error}</p>
+  <ul class="compare-back">
+    {#if page.a}<li><a href="{page.a.link}">Zur Seite von {page.a.name}</a></li>{/if}
+    {#if page.b}<li><a href="{page.b.link}">Zur Seite von {page.b.name}</a></li>{/if}
+  </ul>
+  {#else}
+  <div class="compare-clubs">
+    <a class="compare-club" href="{page.a.link}">{#crest src=page.a.icon size="small" /} <span>{page.a.name}</span>{#if page.a.position} <span class="muted">Platz {page.a.position}</span>{/if}</a>
+    <a class="compare-club is-right" href="{page.b.link}">{#if page.b.position}<span class="muted">Platz {page.b.position}</span> {/if}<span>{page.b.name}</span> {#crest src=page.b.icon size="small" /}</a>
+  </div>
+  <section class="compare-block" aria-labelledby="compare-bars-title">
+    <h2 id="compare-bars-title">In Zahlen</h2>
+    <table class="compare-bars">
+      <caption class="sr-only">{page.a.name} links, {page.b.name} rechts</caption>
+      <thead class="sr-only"><tr><th scope="col">{page.a.name}</th><th scope="col">Wert</th><th scope="col">{page.b.name}</th></tr></thead>
+      <tbody>
+        {#for r in page.rows}
+        <tr>
+          <td class="cb-side cb-left{#if r.better == -1} is-better{/if}"><span class="cb-value">{r.left}</span><span class="cb-bar" style="--w: {r.leftWidth}"></span></td>
+          <th scope="row" class="cb-label">{r.label}</th>
+          <td class="cb-side cb-right{#if r.better == 1} is-better{/if}"><span class="cb-bar" style="--w: {r.rightWidth}"></span><span class="cb-value">{r.right}</span></td>
+        </tr>
+        {/for}
+      </tbody>
+    </table>
+    {#if page.provisional}<p class="muted">Enthält vorläufige Ergebnisse.</p>{/if}
+  </section>
+  {#let r=page.race}
+  <section class="compare-block" aria-labelledby="compare-race-title">
+    <h2 id="compare-race-title">Tabellenplatz je Spieltag</h2>
+    {#if !r.drawn}
+    <p class="muted">Verlauf ab dem 2. Spieltag.</p>
+    {#else}
+    <div class="race-scroll">
+      <svg class="race compare-race" data-race width="{r.width}" height="{r.height}" viewBox="0 0 {r.width} {r.height}" role="img" aria-label="Tabellenplatz je Spieltag: {page.a.name} durchgezogen, {page.b.name} gestrichelt">
+        <g class="race-ticks" aria-hidden="true">
+          {#for t in r.ticks}
+          <line x1="{t.x}" x2="{t.x}" y1="6" y2="{r.axisY}"></line>
+          {#if t.labelled}<text x="{t.x}" y="{r.labelY}">{t.matchday}</text>{/if}
+          {/for}
+        </g>
+        {#for l in r.lines}
+        <g class="compare-line{#if l_index == 1} is-dashed{/if}">
+          <polyline points="{l.solid}"></polyline>
+          {#if l.tail}<polyline class="race-tail" points="{l.tail}"></polyline>{/if}
+          <text class="race-name" x="{l.labelX}" y="{l.endY}" dy=".35em">{l.name} ({l.endPosition}.)</text>
+        </g>
+        {/for}
+      </svg>
+    </div>
+    {/if}
+  </section>
+  {/let}
+  <section class="compare-block" aria-labelledby="compare-duels-title">
+    <h2 id="compare-duels-title">Direkte Duelle in dieser Saison</h2>
+    {#if page.duels.isEmpty}
+    <p class="muted">In dieser Saison noch nicht gegeneinander gespielt.</p>
+    {#else}
+    <ul class="compare-duels">
+      {#for d in page.duels}
+      <li><a href="{d.link}"><span class="muted">{d.date}</span> <span>{d.home} – {d.away}</span> <strong>{d.score}</strong> <span class="muted">{d.status}</span></a></li>
+      {/for}
+    </ul>
+    {/if}
+  </section>
+  {/if}
+</article>
+{/body}
+{/include}

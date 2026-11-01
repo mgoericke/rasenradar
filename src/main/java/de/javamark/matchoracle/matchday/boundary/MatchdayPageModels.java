@@ -1083,6 +1083,16 @@ public final class MatchdayPageModels {
             return height - 6;
         }
 
+        /** Story r026: the same race with only the given clubs' lines, in the given order. */
+        SeasonRace only(List<Long> teamIds) {
+            if (lines == null) {
+                return this;
+            }
+            List<RaceLine> kept = teamIds.stream()
+                    .flatMap(id -> lines.stream().filter(l -> l.teamId() == id)).toList();
+            return new SeasonRace(matchdays, teams, kept, lastProvisional, width, height, ticks);
+        }
+
         /** x of the last matchday — where "vorläufig" stands. */
         public int lastX() {
             return x(matchdays, matchdays);
@@ -1169,6 +1179,65 @@ public final class MatchdayPageModels {
     }
 
     record RaceTick(int matchday, int x, boolean labelled) {
+    }
+
+    /** Story r026: a club the team page offers to compare with — same league, current season. */
+    record CompareOption(long id, String name) {
+    }
+
+    /** Story r026: the picker of a team page — this club and the ones it can be compared with. */
+    record ComparePicker(long teamId, List<CompareOption> options) {
+    }
+
+    /**
+     * Story r026 "Vereinsvergleich": two clubs of one league side by side — mirrored bars, both
+     * position curves, and this season's matches between them. {@code a} is the club on the left.
+     * {@code error}: the address names clubs that do not both play in the league this season.
+     */
+    record ComparePage(Nav nav, String season, CompareClub a, CompareClub b, List<CompareRow> rows, SeasonRace race,
+                       List<DuelRow> duels, boolean provisional, String error) {
+    }
+
+    record CompareClub(long id, String name, String shortName, String icon, String link, Integer position) {
+    }
+
+    /**
+     * One pair of mirrored bars. Widths in percent of the larger value (of the larger amount for the goal
+     * difference); {@code better} is -1 for the left club, 1 for the right one, 0 when equal.
+     */
+    record CompareRow(String label, String left, String right, int leftWidth, int rightWidth, int better) {
+
+        static CompareRow of(String label, int a, int b, boolean lowerIsBetter, boolean signed) {
+            int max = Math.max(Math.abs(a), Math.abs(b));
+            int better = a == b ? 0 : (a > b) != lowerIsBetter ? -1 : 1;
+            return new CompareRow(label, signed ? signed(a) : String.valueOf(a), signed ? signed(b) : String.valueOf(b),
+                    max == 0 ? 0 : Math.round(100f * Math.abs(a) / max), max == 0 ? 0 : Math.round(100f * Math.abs(b) / max), better);
+        }
+
+        /** Punkte, Siege, Tore, Gegentore (fewer is better) and Tordifferenz, in that order. */
+        static List<CompareRow> of(Balance a, Balance b) {
+            return List.of(
+                    of("Punkte", a.points(), b.points(), false, false),
+                    of("Siege", a.wins(), b.wins(), false, false),
+                    of("Tore", a.goalsFor(), b.goalsFor(), false, false),
+                    of("Gegentore", a.goalsAgainst(), b.goalsAgainst(), true, false),
+                    of("Tordifferenz", a.goalDifference(), b.goalDifference(), false, true));
+        }
+
+        private static String signed(int n) {
+            return n > 0 ? "+" + n : n < 0 ? "−" + (-n) : "0";
+        }
+    }
+
+    /** A match between the two compared clubs this season: date, pairing, score and where it stands. */
+    record DuelRow(String date, String home, String away, String score, String status, String link) {
+
+        static DuelRow of(Match m, String shortcut) {
+            String status = !m.isPlayed() ? "offen" : m.resultStatus == ResultStatus.PROVISIONAL ? "vorläufig" : "Endstand";
+            return new DuelRow(DAY_SHORT.format(m.kickoff.atZone(DISPLAY_ZONE)), shortOrName(m.homeTeam), shortOrName(m.awayTeam),
+                    m.fullTimeScore == null ? "–:–" : m.fullTimeScore.home + ":" + m.fullTimeScore.away, status,
+                    "/" + shortcut + "/matches/" + m.id);
+        }
     }
 
     /** "Pokal in Zahlen": how many pairings went to extra time and to penalties, and which ones went the distance. */
@@ -1836,7 +1905,8 @@ public final class MatchdayPageModels {
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
                     boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming,
-                    Map<String, ScorerProfileView> scorerProfiles, List<CalendarMonth> calendar) {
+                    Map<String, ScorerProfileView> scorerProfiles, List<CalendarMonth> calendar,
+                    ComparePicker compare) {
 
         /** Story r063: the profile behind a name in the scorer list, null for a name without one. */
         public ScorerProfileView profileOf(String scorer) {

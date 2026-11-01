@@ -131,6 +131,7 @@ public class MatchdayPages {
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance matchNotFound(MatchNotFoundPage page);
         static native TemplateInstance team(TeamPage page);
+        static native TemplateInstance compare(MatchdayPageModels.ComparePage page);
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
@@ -1641,7 +1642,64 @@ public class MatchdayPages {
                         ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null,
                 MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing),
                 scorerProfiles(team, schedule, shortcut),
-                MatchdayPageModels.clubCalendar(schedule, team, shortcut, java.time.LocalDate.now(MatchdayPageModels.DISPLAY_ZONE)));
+                MatchdayPageModels.clubCalendar(schedule, team, shortcut, java.time.LocalDate.now(MatchdayPageModels.DISPLAY_ZONE)),
+                // story r026: the other clubs of this league and season, alphabetically
+                hasTable && currentSeason && standing.isPresent()
+                        ? new MatchdayPageModels.ComparePicker(team.id, standings.positions().stream().map(p -> p.team())
+                                .filter(t -> !t.equals(team)).sorted(java.util.Comparator.comparing(t -> t.name))
+                                .map(t -> new MatchdayPageModels.CompareOption(t.id, t.name)).toList())
+                        : null);
+    }
+
+    /** Story r026: the picker on the team page sends both ids here; the comparison has an address of its own. */
+    @GET
+    @Path("/{league}/vergleich")
+    public Response comparePick(@PathParam("league") String league, @QueryParam("a") long a, @QueryParam("b") long b) {
+        return Response.seeOther(URI.create("/" + league(league).sourceShortcut() + "/vergleich/" + a + "/" + b)).build();
+    }
+
+    /**
+     * Story r026 "Vereinsvergleich": two clubs of a league in the current season. Anything in the
+     * address that is not two clubs of this league gets an explanation instead of an error page.
+     */
+    @GET
+    @Path("/{league}/vergleich/{a}/{b}")
+    public TemplateInstance compare(@PathParam("league") String league, @PathParam("a") long a, @PathParam("b") long b) {
+        League l = league(league);
+        if (!l.hasTable()) {
+            throw new NotFoundException("no comparison in " + league);
+        }
+        String shortcut = l.sourceShortcut();
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> played = Match.findPlayedBefore(l, season, Integer.MAX_VALUE);
+        int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
+        Standings table = standingsCalculator.standings(l, season, last + 1, played);
+        Optional<Team> teamA = Team.<Team>findByIdOptional(a);
+        Optional<Team> teamB = Team.<Team>findByIdOptional(b);
+        var posA = teamA.flatMap(table::of);
+        var posB = teamB.flatMap(table::of);
+        MatchdayPageModels.CompareClub clubA = teamA.map(t -> compareClub(t, shortcut, posA.map(p -> p.position()).orElse(null))).orElse(null);
+        MatchdayPageModels.CompareClub clubB = teamB.map(t -> compareClub(t, shortcut, posB.map(p -> p.position()).orElse(null))).orElse(null);
+        if (posA.isEmpty() || posB.isEmpty() || a == b) {
+            String error = a == b ? "Ein Verein lässt sich nicht mit sich selbst vergleichen."
+                    : "Beide Vereine müssen in dieser Saison in der " + MatchdayPageModels.leagueName(l) + " spielen.";
+            // a club of another league: its page wherever it plays this season (the "Mein Verein" route finds it)
+            java.util.function.UnaryOperator<MatchdayPageModels.CompareClub> anywhere = c -> c == null ? null
+                    : new MatchdayPageModels.CompareClub(c.id(), c.name(), c.shortName(), c.icon(), "/mein-verein/" + c.id(), c.position());
+            return Templates.compare(new MatchdayPageModels.ComparePage(Nav.of(l), MatchdayPageModels.seasonLabel(season),
+                    anywhere.apply(clubA), anywhere.apply(clubB), List.of(), null, List.of(), false, error));
+        }
+        List<MatchdayPageModels.DuelRow> duels = Match.findByTeam(teamA.get(), l, season).stream()
+                .filter(m -> m.homeTeam.equals(teamB.get()) || m.awayTeam.equals(teamB.get()))
+                .map(m -> MatchdayPageModels.DuelRow.of(m, shortcut)).toList();
+        return Templates.compare(new MatchdayPageModels.ComparePage(Nav.of(l), MatchdayPageModels.seasonLabel(season), clubA, clubB,
+                MatchdayPageModels.CompareRow.of(posA.get().balance(), posB.get().balance()),
+                seasonRace(l, season, shortcut).only(List.of(a, b)), duels, table.includesProvisional(), null));
+    }
+
+    private static MatchdayPageModels.CompareClub compareClub(Team t, String shortcut, Integer position) {
+        return new MatchdayPageModels.CompareClub(t.id, t.name, t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName,
+                MatchdayPageModels.crestLink(t), "/" + shortcut + "/teams/" + t.id, position);
     }
 
     /** Story r063: one profile per scorer of the club, keyed by the name the scorer list shows. */

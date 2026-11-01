@@ -214,6 +214,13 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Vereinsvergleich** (`.compare`, eigene Seite `/{liga}/vergleich/{a}/{b}`, Story r026): auf der
+  Vereinsseite „Vergleichen mit“ (ein einfaches Formular, Auswahl nur aus derselben Liga). Gespiegelte
+  Balken für Punkte, Siege, Tore, Gegentore, Tordifferenz; der bessere Wert eines Paars (bei
+  Gegentoren der kleinere) in voller Tinte und fett, der andere gedämpft, gleiche Werte beide
+  gedämpft. Darunter beide Platzkurven wie im Saisonrennen, links durchgezogen in `--ink`, rechts
+  gestrichelt in `--ink-soft`, Name und Platz am Linienende, keine Vereinsfarben. Dann die direkten
+  Duelle dieser Saison mit Datum, Ergebnis und Status.
 - **Seite anpassen** (`.customize`, Fuß jeder Seite mit mindestens zwei schaltbaren Abschnitten,
   Story r100): „Diese Seite anpassen“ öffnet einen nativen Dialog mit je einer Checkbox pro Abschnitt
   (Text = Überschrift), dem Satz „Was ausgeschaltet wird, bleibt in diesem Browser ausgeblendet. Die

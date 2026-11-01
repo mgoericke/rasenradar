@@ -1213,6 +1213,40 @@ h2 { font-size: 1.35rem; }
 .outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+/* story r026: Vereinsvergleich — mirrored bars, the better value of a pair in full ink, the other quiet; no crest colours */
+.compare { grid-column: 1 / -1; max-width: 56rem; }
+.compare-pick { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .6rem 0 0; }
+.compare-pick select { font: inherit; max-width: 100%; min-height: 2.5rem; padding: .3rem .5rem; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); color: var(--ink); }
+.compare-head h1 { margin: 0 0 .75rem; }
+.compare-head h1 .muted { font-size: .5em; font-weight: 500; display: block; }
+.compare-error { font-weight: 600; }
+.compare-clubs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.compare-club { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--ink); text-decoration: none; min-width: 0; }
+.compare-club span:not(.muted) { overflow-wrap: anywhere; }
+.compare-club.is-right { justify-content: flex-end; text-align: right; }
+.compare-club .muted { white-space: nowrap; font-weight: 500; }
+.compare-block { margin: 1.5rem 0; }
+.compare-bars { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.compare-bars td, .compare-bars th { padding: .35rem 0; }
+.cb-label { width: 7.5rem; text-align: center; font-weight: 500; color: var(--ink-soft); font-size: .9rem; }
+.cb-side { color: var(--ink-mute); }
+.cb-side > * { vertical-align: middle; }
+.cb-left { text-align: right; }
+.cb-value { display: inline-block; min-width: 2.2rem; font-family: var(--display); font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cb-left .cb-value { text-align: right; margin-right: .4rem; }
+.cb-right .cb-value { margin-left: .4rem; }
+.cb-bar { display: inline-block; height: .7rem; width: calc((100% - 3rem) * var(--w) / 100); background: var(--ink-mute); opacity: .35; border-radius: 2px; }
+.cb-side.is-better { color: var(--ink); }
+.cb-side.is-better .cb-value { font-weight: 800; }
+.cb-side.is-better .cb-bar { background: var(--ink); opacity: 1; }
+.compare-race .compare-line polyline { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.compare-race .compare-line.is-dashed polyline { stroke: var(--ink-soft); stroke-dasharray: 7 5; }
+.compare-race .compare-line .race-tail { stroke-dasharray: 3 3; }
+.compare-race .race-name { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.compare-duels { list-style: none; margin: 0; padding: 0; }
+.compare-duels a { display: flex; flex-wrap: wrap; gap: .3rem .75rem; padding: .5rem 0; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+@media (max-width: 500px) { .cb-label { width: 5.5rem; font-size: .8rem; } .cb-value { min-width: 1.8rem; font-size: 1.1rem; } }
 /* story r100: Seite anpassen — a native dialog (focus stays inside, Escape closes, focus returns) */
 .customize-open { margin: 0 0 .75rem; }
 .customize { max-width: min(28rem, calc(100vw - 2rem)); width: 100%; box-sizing: border-box; padding: 1.25rem; border: 1px solid var(--line);

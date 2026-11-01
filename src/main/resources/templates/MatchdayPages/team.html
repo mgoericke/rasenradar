@@ -37,6 +37,17 @@
         <button type="button" class="link-button" data-club-clear data-club-id="{page.myClub.id}" hidden>Auswahl entfernen</button>
       </p>
       {/if}
+      {#if page.compare}
+      {! story r026: a plain form — the server answers with the comparison's own address !}
+      <form class="compare-pick" action="/{page.nav.leagueShortcut}/vergleich" method="get">
+        <input type="hidden" name="a" value="{page.compare.teamId}">
+        <label for="compare-b">Vergleichen mit</label>
+        <select id="compare-b" name="b" required>
+          {#for o in page.compare.options}<option value="{o.id}">{o.name}</option>{/for}
+        </select>
+        <button type="submit" class="link-button">Vergleichen</button>
+      </form>
+      {/if}
     </div>
   </header>
 

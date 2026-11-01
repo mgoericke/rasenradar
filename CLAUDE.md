@@ -137,6 +137,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Spannung (offenes Spiel, 1–5, aus Tabelle und Form, Story r073 „Spannendste zuerst") | `TensionCalculator` |
 | Punktestrahl (Tabelle als Punkteachse, Story r022) | `PointsAxis` / `AxisRow` |
 | Saisonrennen (Tabellenplatz aller Vereine je Spieltag, Story r019) | `SeasonRace` / `RaceLine` |
+| Vereinsvergleich (zwei Vereine einer Liga nebeneinander, Story r026) | `ComparePage` / `CompareRow` / `DuelRow` |
 | Sofa-Modus (Spieltag als bildschirmfüllende Bühne, Story r038) | `.board` in `nav.js` |
 | Schaltbarer Abschnitt (Story r100 „Seite anpassen“, nur im Browser gemerkt) | `data-section` / `rr-hidden` |
 | Konferenz nachspielen (Tore des letzten kompletten Spieltags in Minutenfolge, Story r052) | `ConferenceReplay` / `ReplayMatch` / `ReplayGoal` |
