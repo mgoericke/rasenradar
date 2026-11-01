@@ -19,14 +19,14 @@
     <ol>
       {#if !page.cup}<li><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>{/if}
       {#if !page.cup}<li><a href="#restprogramm">Restprogramm</a></li>{/if}
-      {#if !page.cup}<li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
+      {#if page.lastYear}<li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
       {#if !page.cup}<li><a href="#serien">Serien</a></li>{/if}
       <li><a href="#ergebnisse">Häufigste Ergebnisse</a></li>
       <li><a href="#besondere-tore">Tore der besonderen Art</a></li>
       <li><a href="#aufholjagden">Aufholjagden</a></li>
-      {#if !page.cup}<li><a href="#kreuztabelle">Kreuztabelle</a></li>{/if}
+      {#if page.crossTable}<li><a href="#kreuztabelle">Kreuztabelle</a></li>{/if}
       <li><a href="#torminuten">Wann fallen die Tore?</a></li>
-      {#if page.cup}<li><a href="#entscheidung">Verlängerung und Elfmeterschießen</a></li>{/if}
+      {#if page.decisions}<li><a href="#entscheidung">Verlängerung und Elfmeterschießen</a></li>{/if}
       {#if !page.cup}<li><a href="#heimvorteil">Heimvorteil</a></li>{/if}
     </ol>
   </nav>
@@ -93,7 +93,7 @@
   </section>
   {/if}
 
-{#if !page.cup}
+{#if page.lastYear}
   {! story r081: points now against the same number of games last season — more to the right (--win), fewer to the left (--loss) !}
   <section class="season-block" id="vorjahr" aria-labelledby="vorjahr-title">
     <h2 id="vorjahr-title">Besser als vor einem Jahr?</h2>
@@ -231,7 +231,7 @@
     {/let}
   </section>
 
-{#if !page.cup}
+{#if page.crossTable}
   {! story r072: home teams down, away teams across, both in table order; scrolls sideways inside its own box !}
   <section class="season-block" id="kreuztabelle" aria-labelledby="kreuztabelle-title">
     <h2 id="kreuztabelle-title">Kreuztabelle</h2>
@@ -275,13 +275,13 @@
         {/for}
       </tbody>
     </table>
-    <p class="note">Tore in der Nachspielzeit am Ende zählen zu 76.–90.{#if page.cup}, in Spielen mit Verlängerung zu 91.–120.{/if}; Tore ohne Minutenangabe fehlen. Nur endgültige Ergebnisse.</p>
+    <p class="note">Tore in der Nachspielzeit am Ende zählen zu 76.–90.{#if page.decisions && page.decisions.extraTime > 0}, in Spielen mit Verlängerung zu 91.–120.{/if}; Tore ohne Minutenangabe fehlen. Nur endgültige Ergebnisse.</p>
     {/if}
     {/let}
   </section>
 
   {! Pokal in Zahlen: pairings decided after 90 minutes, newest first !}
-  {#if page.cup}
+  {#if page.decisions}
   <section class="season-block" id="entscheidung" aria-labelledby="entscheidung-title">
     <h2 id="entscheidung-title">Verlängerung und Elfmeterschießen</h2>
     {#let d=page.decisions}

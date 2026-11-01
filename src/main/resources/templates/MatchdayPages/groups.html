@@ -3,6 +3,11 @@
 {#description}Alle Gruppen der {page.nav.leagueName} {page.season} – Tabellen und die Begegnungen des {page.number}. Spieltags.{/description}
 {#body}
 <section class="matchday groups">
+  {! the stage over the full width: the matchday's match of the best-placed sides; the arrows browse the matchday !}
+  {#if page.stage}<div id="cup-stage">{#include MatchdayPages/topStage stage=page.stage /}</div>{/if}
+
+  <div class="knockout-layout">
+  <div class="knockout-main">
   <div class="matchday-head">
     <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
     <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
@@ -13,22 +18,28 @@
   </div>
 
   {! Spec 06: die Gruppen laufen nebeneinander, jede mit eigener Tabelle und eigenem
-     Spieltagszähler — eine Wettbewerbsseite, nicht vier Einträge in der Navigation. !}
+     Spieltagszähler — eine Wettbewerbsseite, nicht vier Einträge in der Navigation.
+     "Noch möglich": die Plätze, die nach allen Ausgängen der offenen Gruppenspiele noch drin sind. !}
+  {#if page.groups}
+  <p class="group-legend"><span class="zone-key zone-top"></span>Viertelfinale <span class="zone-key zone-bottom-playoff"></span>Relegation <span class="zone-key zone-bottom"></span>Abstieg in Liga B</p>
+  {/if}
   {#for g in page.groups}
   <section class="group">
     <h2 class="round-name">{g.name}</h2>
+    {#if g.lead}<p class="group-lead">{g.lead}</p>{/if}
 
     <table class="group-table">
       <thead>
-        <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff.</th><th>Pkt.</th></tr>
+        <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th class="wdl">S</th><th class="wdl">U</th><th class="wdl">N</th><th class="wdl">Tore</th><th>Diff.</th><th>Pkt.</th>{#if g.stillPossible}<th class="possible" title="Plätze, die nach allen Ausgängen der offenen Gruppenspiele noch möglich sind">Noch möglich</th>{/if}</tr>
       </thead>
       <tbody>
         {#for r in g.table}
-        <tr data-clubs="{r.teamId}">
+        <tr data-clubs="{r.teamId}" class="{r.zone}">
           <td class="pos">{r.position}</td>
           <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}</a></td>
-          <td>{r.played}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
-          <td>{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+          <td>{r.played}</td><td class="wdl">{r.wins}</td><td class="wdl">{r.draws}</td><td class="wdl">{r.losses}</td>
+          <td class="wdl">{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+          {#if g.stillPossible}<td class="possible">{g.possibleOf(r.teamId)}</td>{/if}
         </tr>
         {/for}
       </tbody>
@@ -87,6 +98,53 @@
   {/for}
 
   {#if page.standingsProvisional}<p class="note">Enthält vorläufige Ergebnisse.</p>{/if}
+  {#if page.groups}<p class="note">Noch möglich: alle Ausgänge der offenen Gruppenspiele durchgerechnet, nur nach Punkten; bei Punktgleichheit zählt für den besten Platz der günstigste, für den schlechtesten der ungünstigste Fall. Eine Rechnung, keine Vorhersage.</p>{/if}
+  </div>
+
+  <aside class="knockout-rail">
+    {#if page.holder}
+    {#let h=page.holder}
+    <section class="rail-card holder" aria-labelledby="rail-holder">
+      <h2 id="rail-holder">Titelverteidiger</h2>
+      <p class="cup-winner">{#crest src=h.icon size="large" /} <strong>{h.team}</strong></p>
+      <p class="round-meta">Sieger der Ausgabe {h.season}, der Weg durch die Endrunde:</p>
+      <ol class="holder-path">
+        {#for st in h.path}
+        <li><a href="{st.link}"><span class="upset-round">{st.round}</span><span>{st.pairing}</span><span class="upset-score">{st.score}{#if st.decision} <span class="decision">{st.decision}</span>{/if}</span></a></li>
+        {/for}
+      </ol>
+    </section>
+    {/let}
+    {/if}
+
+    {#if page.scorers}
+    <section class="rail-card rail-scorers" aria-labelledby="rail-scorers">
+      <h2 id="rail-scorers">Torjäger</h2>
+      <table class="stream-table">
+        <caption class="sr-only">Die ersten fünf der Torschützenliste</caption>
+        <thead><tr><th class="pos">#</th><th class="team">Name</th><th class="team">Land</th><th>Tore</th></tr></thead>
+        <tbody>
+          {#for s in page.scorers}
+          <tr><td class="pos">{s.rank}</td><td class="team">{s.name}</td><td class="team club">{#crest src=s.crest size="small" lazy=true /} {s.teamShort}</td><td class="points">{s.goals}</td></tr>
+          {/for}
+        </tbody>
+      </table>
+      <p class="note"><a href="/{page.nav.leagueShortcut}/torschuetzen">Ganze Torschützenliste</a></p>
+    </section>
+    {/if}
+
+    {#if page.figures.matches}
+    <section class="rail-card" aria-labelledby="rail-figures">
+      <h2 id="rail-figures">In Zahlen</h2>
+      <p class="funnel-figures">
+        <span><strong>{page.figures.matches}</strong> Gruppenspiele</span>
+        <span><strong>{page.figures.goals}</strong> Tore</span>
+        <span><strong>{page.figures.perMatch}</strong> Tore je Spiel</span>
+      </p>
+    </section>
+    {/if}
+  </aside>
+  </div>
 </section>
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}

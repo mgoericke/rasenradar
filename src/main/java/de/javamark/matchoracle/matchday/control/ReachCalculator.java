@@ -65,12 +65,18 @@ public final class ReachCalculator {
 
     /** The places that end a zone of the table (the same zones the table marks, see PlacementGoal). */
     private static List<int[]> places(League league) {
+        if (league == League.CHAMPIONS_LEAGUE) {
+            return List.of(new int[]{8}, new int[]{24});
+        }
         return league == League.BUNDESLIGA_2
                 ? List.of(new int[]{2}, new int[]{3}, new int[]{15})
                 : List.of(new int[]{4}, new int[]{15});
     }
 
     private static String label(League league, int place) {
+        if (league == League.CHAMPIONS_LEAGUE) {
+            return place == 8 ? "Platz 8 · Achtelfinale" : "Platz 24 · Play-offs";
+        }
         if (league == League.BUNDESLIGA_2) {
             return switch (place) { case 2 -> "Platz 2 · Aufstieg"; case 3 -> "Platz 3 · Relegation"; default -> "Platz 15 · Klassenerhalt"; };
         }

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Story r058 "Wer kann noch?": maximum, pace and "kann Platz 1 nicht mehr erreichen". */
+/** Story r058 "Wer kann noch?": maximum, pace, "kann Platz 1 nicht mehr erreichen" and the places per league. */
 class ReachCalculatorTest {
 
     private final Team bremen = team("Bremen");
@@ -69,5 +69,18 @@ class ReachCalculatorTest {
         assertFalse(of(r, bremen).titleOutOfReach());
         assertEquals("Platz 1", r.thresholds().getFirst().label());
         assertEquals(9, r.thresholds().getFirst().points());
+    }
+
+    @Test
+    void theChampionsLeagueMeasuresAgainstTheKnockoutPlaces() {
+        List<Match> playedMatches = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            playedMatches.add(played(1, team("Heim " + i), 1, team("Gast " + i), 0));
+        }
+
+        Reach r = ReachCalculator.of(standings.standings(League.CHAMPIONS_LEAGUE, 2026, 99, playedMatches), playedMatches);
+
+        assertEquals(List.of("Platz 1", "Platz 8 · Achtelfinale", "Platz 24 · Play-offs"),
+                r.thresholds().stream().map(ReachCalculator.Threshold::label).toList());
     }
 }
