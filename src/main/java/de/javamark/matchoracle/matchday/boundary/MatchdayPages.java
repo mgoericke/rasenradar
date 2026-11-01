@@ -211,7 +211,7 @@ public class MatchdayPages {
     }
 
     /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
-    private static List<Match> startPageMatches(Instant now) {
+    static List<Match> startPageMatches(Instant now) {
         List<Match> all = new ArrayList<>();
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
             Matchday.findDisplayed(l, now).ifPresent(matchday -> {

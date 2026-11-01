@@ -1,0 +1,12 @@
+{! Design r102: the hits under the search field (and on /suche) — crest, name, what it is, where it leads. !}
+{#if query}
+{#if hits.isEmpty}
+<p class="search-empty">Nichts gefunden zu „{query}“. Einen Vereinsnamen, ein Spiel („Bremen Köln“) oder einen Torjäger versuchen.</p>
+{#else}
+<ul class="search-hits">
+  {#for h in hits}
+  <li><a href="{h.link}">{#crest src=h.icon lazy=true /}<span class="search-hit-text"><b>{h.label}</b><small>{h.hint}</small></span><em>{h.kind}</em></a></li>
+  {/for}
+</ul>
+{/if}
+{/if}

@@ -1515,16 +1515,75 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 .theme-options button:hover { background: var(--mow-a); color: var(--ink); }
 .theme-options button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+/* design r102: the search in the navigation — a field on the turf band, its hits in a panel below it
+   (turf like the theme menu). On phones it is a magnifier the size of the other controls that
+   opens over the first row while in use. The same hit list stands on chalk on /suche. */
+.topnav-inner { position: relative; }
+.site-search { position: relative; order: 0; display: flex; align-items: center; }
+.site-search input {
+  width: clamp(9rem, 16vw, 15rem); height: 2.5rem; padding: 0 2rem 0 2.1rem;
+  font: inherit; color: var(--ink); background: rgba(0, 0, 0, .18);
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.site-search input::placeholder { color: var(--ink-soft); opacity: 1; }
+.site-search input:focus { outline: 3px solid var(--ink); outline-offset: 2px; }
+.site-search input::-webkit-search-cancel-button { display: none; }
+.site-search-icon { position: absolute; left: .75rem; color: var(--ink-soft); pointer-events: none; }
+.site-search kbd {
+  position: absolute; right: .55rem; padding: 0 .35rem; border: 1px solid var(--line); border-radius: 4px;
+  font: 600 .75rem/1.4 var(--text); color: var(--ink-soft); pointer-events: none;
+}
+.site-search:focus-within kbd { display: none; }
+.site-search-hits {
+  display: none; position: absolute; right: 0; top: calc(100% + .4rem); z-index: 20;
+  width: min(26rem, calc(100vw - 2rem)); padding: .35rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.site-search:focus-within .site-search-hits:not(:empty) { display: block; }
+.search-hits { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+.search-hits a {
+  display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto; align-items: center; gap: .7rem;
+  padding: .45rem .6rem; min-height: 2.75rem; border-radius: 6px; color: var(--ink);
+}
+.search-hits a:hover, .search-hits a:focus-visible { background: var(--mow-a); outline-offset: -3px; }
+.search-hits .crest { width: 1.6rem; height: 1.6rem; }
+.search-hit-text { display: grid; min-width: 0; }
+.search-hit-text b, .search-hit-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-hit-text small { color: var(--ink-soft); font-size: .85rem; }
+.search-hits em { font-style: normal; font-size: .8rem; color: var(--ink-mute); }
+.search-empty { margin: 0; padding: .6rem; color: var(--ink-soft); }
+.search-page { grid-column: 1 / -1; max-width: 44rem; }
+.search-page-form { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .7rem; margin: 1rem 0 1.4rem; }
+.search-page-form label { width: 100%; font-weight: 600; }
+.search-page-form input {
+  flex: 1; min-width: 12rem; height: 2.75rem; padding: 0 .8rem; font: inherit; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.search-page .search-hits a { background: var(--mow-a); }
+.search-page .search-hits li:nth-child(even) a { background: var(--mow-b); }
+@media (max-width: 560px) {
+  .site-search input { width: 2.5rem; padding: 0; color: transparent; cursor: pointer; }
+  .site-search input::placeholder { color: transparent; }
+  .site-search kbd { display: none; }
+  .site-search:focus-within .site-search-icon { left: 1.75rem; }
+  .site-search:focus-within { position: absolute; inset: 0 0 auto; z-index: 5; padding: .5rem 1rem .7rem; background: var(--turf-a); }
+  .site-search:focus-within input { width: 100%; padding: 0 .8rem 0 2.1rem; color: var(--ink); cursor: text; background: var(--turf-a); }
+  .site-search-hits { left: 1rem; right: 1rem; width: auto; }
+}
+
 /* story r003: with "Mein Verein" the header no longer fits one row even at full width — brand,
    "Mein Verein" and the theme share the first row, the competitions get the second to themselves */
 .topnav-inner .brand { flex: 1; }
 .theme-menu, .my-club-link { order: 0; }
 .nav-links { order: 4; }
 @media (min-width: 561px) { .nav-links { width: 100%; } }
-/* design r102: on wide screens the full-width band has room for one row — brand, competitions, then the controls */
-@media (min-width: 1180px) {
-  .topnav-inner .brand { flex: none; margin-right: 1rem; }
+/* design r102: on wide screens the full-width band has room for one row — brand, competitions, then
+   search and the controls; below that the competitions get the second row as before */
+@media (min-width: 1560px) {
+  .topnav-inner { column-gap: 1.1rem; }
+  .topnav-inner .brand { flex: none; margin-right: .6rem; }
   .nav-links { order: 0; width: auto; margin-right: auto; }
+  .site-search input { width: 12.5rem; }
 }
 @media (max-width: 560px) {
   .brand { width: auto; }
