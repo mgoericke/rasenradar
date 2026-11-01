@@ -1049,6 +1049,26 @@ h2 { font-size: 1.35rem; }
 .scorer-profile .scorer-goals li { display: block; padding: 0; min-height: 0; }
 .scorer-goals .md, .scorer-goals .min { color: var(--ink-mute); }
 .scorer-goals .sc { font-family: var(--display); font-weight: 700; }
+/* story r088: the club calendar — home filled (mow), away a frame, the result letter in its colour, today an ink outline */
+.club-calendar { margin: 0 0 1.5rem; }
+.club-calendar summary { cursor: pointer; font: 700 1.25rem var(--display); min-height: 44px; display: flex; align-items: center; }
+.club-calendar .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 1rem 1.5rem; }
+.month { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.month caption { text-align: left; font-weight: 700; padding: 0 0 .3rem; }
+.month th { font-weight: 600; font-size: .75rem; color: var(--ink-mute); }
+.month td { height: 2.6rem; padding: 0; text-align: center; vertical-align: top; border-radius: 4px; font-size: .75rem; color: var(--ink-mute); }
+.month td.out { visibility: hidden; }
+.month td.today { box-shadow: inset 0 0 0 2px var(--ink); }
+.month .d { display: block; padding-top: .15rem; }
+.cal-match { display: flex; flex-direction: column; align-items: center; height: 100%; border-radius: 4px; color: var(--ink); }
+.cal-match.home { background: var(--mow-b); }
+.cal-match.away { box-shadow: inset 0 0 0 1px var(--ink-mute); }
+.cal-match .crest { width: .9rem; height: .9rem; }
+.cal-match .r { font-weight: 700; padding: 0 .2rem; border-radius: 3px; color: var(--on-result); line-height: 1.1; }
+.cal-match.win .r { background: var(--win); }
+.cal-match.draw .r { background: var(--draw); }
+.cal-match.loss .r { background: var(--loss); }
+.cal-match.is-provisional .r { background: none; color: var(--ink-mute); }
 /* story r064: the season wall — a tile per matchday, the result letter beside the colour, the next match in a hairline frame */
 .wall-block { margin: 0 0 1.5rem; }
 .wall-key { margin: 0 0 .6rem; font-variant-numeric: tabular-nums; }

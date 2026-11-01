@@ -167,6 +167,24 @@
     </div>
 
     <div class="club-panel club-panel-matches">
+      {#if page.calendar}
+      {! story r088: the season as month grids — home filled, away framed, the result in text and colour; a day opens its match !}
+      <details class="club-calendar">
+        <summary>Saison als Kalender</summary>
+        <p class="note">Gefüllt: Heimspiel · gerahmt: Auswärtsspiel · S/U/N nach dem Spiel · umrandet: heute. Späte Anstoßzeiten stehen oft erst wenige Wochen vorher fest.</p>
+        <div class="months">
+          {#for mo in page.calendar}
+          <table class="month">
+            <caption>{mo.label}</caption>
+            <thead><tr><th scope="col" abbr="Montag">Mo</th><th scope="col" abbr="Dienstag">Di</th><th scope="col" abbr="Mittwoch">Mi</th><th scope="col" abbr="Donnerstag">Do</th><th scope="col" abbr="Freitag">Fr</th><th scope="col" abbr="Samstag">Sa</th><th scope="col" abbr="Sonntag">So</th></tr></thead>
+            <tbody>
+              {#for w in mo.weeks}<tr>{#for d in w}<td class="{#if !d.inMonth}out{/if}{#if d.today} today{/if}">{#if d.inMonth}{#if d.match}{#let r=d.match}<a href="{r.link}" class="cal-match {#if r.home}home{#else}away{/if}{#if r.result} {r.result.toString.toLowerCase}{/if}{#if r.provisional} is-provisional{/if}" title="{d.label(mo.label)}" aria-label="{d.label(mo.label)}"><span class="d">{d.day}</span>{#crest src=r.opponentIcon size="small" lazy=true /}{#if r.score}<span class="r">{#if r.provisional}vorl.{#else}{#switch r.result}{#case WIN}S{#case DRAW}U{#case LOSS}N{/switch}{/if}</span>{/if}</a>{/let}{#else}<span class="d">{d.day}</span>{/if}{/if}</td>{/for}</tr>{/for}
+            </tbody>
+          </table>
+          {/for}
+        </div>
+      </details>
+      {/if}
       {#if page.upcoming}
       <div class="schedule-block">
         <h2>{#if page.hasTable}Kommende Spiele{#else}Nächste Runde{/if}</h2>

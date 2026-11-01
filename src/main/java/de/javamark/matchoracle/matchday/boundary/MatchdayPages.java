@@ -1014,7 +1014,8 @@ public class MatchdayPages {
                 currentSeason && !openMatches(schedule, Instant.now()).isEmpty()
                         ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null,
                 MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing),
-                scorerProfiles(team, schedule, shortcut));
+                scorerProfiles(team, schedule, shortcut),
+                MatchdayPageModels.clubCalendar(schedule, team, shortcut, java.time.LocalDate.now(MatchdayPageModels.DISPLAY_ZONE)));
     }
 
     /** Story r063: one profile per scorer of the club, keyed by the name the scorer list shows. */
