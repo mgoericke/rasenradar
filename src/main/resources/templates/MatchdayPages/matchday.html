@@ -17,25 +17,28 @@
       {#if page.days}<button type="button" class="link-button" data-sofa-open hidden>Sofa-Modus</button>{/if}
       {#if page.days}<button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>{/if}
     </p>
-    {#if page.days}
-    {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
-    <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
-      <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
-    </p>
-    {/if}
-    {#if page.tension}
-    {! story r073: the order of the list, kept in this browser only (rr-sort); without script the days stay !}
-    <p class="seg sort-choice" role="group" aria-label="Reihenfolge der Spiele" hidden>
-      <button type="button" data-sort-choice="tag" aria-pressed="true">Nach Tag</button><button type="button" data-sort-choice="spannung" aria-pressed="false">Spannendste zuerst</button>
-    </p>
-    {/if}
-    <nav class="pager" aria-label="Spieltag wechseln">
-      {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
-      {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
-    </nav>
+    {! the matches come first: one tool row — the matchday step on the left, how the list shows on the right !}
+    <div class="md-toolbar">
+      <nav class="pager" aria-label="Spieltag wechseln">
+        {! on phones only the arrows show; the words stay for screen readers !}
+        {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹<span class="pager-word">Vorheriger</span></a>{#else}<span class="disabled">‹<span class="pager-word">Vorheriger</span></span>{/if}
+        {#if page.nextLink}<a href="{page.nextLink}" rel="next"><span class="pager-word">Nächster</span>›</a>{#else}<span class="disabled"><span class="pager-word">Nächster</span>›</span>{/if}
+      </nav>
+      {#if page.days}
+      {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
+      <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
+        <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
+      </p>
+      {/if}
+      {#if page.tension}
+      {! story r073: the order of the list, kept in this browser only (rr-sort); without script the days stay !}
+      <p class="seg sort-choice" role="group" aria-label="Reihenfolge der Spiele" hidden>
+        <button type="button" data-sort-choice="tag" aria-pressed="true">Nach Tag</button><button type="button" data-sort-choice="spannung" aria-pressed="false">Spannendste zuerst</button>
+      </p>
+      {/if}
+    </div>
   </div>
 
-  {#if page.leadLines}<p class="lead-legend">Die Linie unter einem Ergebnis ist der Spielverlauf: nach oben bei einem Tor der Heimmannschaft, nach unten bei einem Tor der Gäste, der senkrechte Strich ist die Halbzeit. Antippen zeigt die Tore.</p>{/if}
   {! story r096: starred matches move up into this block (nav.js); the stars live in this browser only !}
   <div class="watched" data-watch-block hidden>
     <h2 class="day">Beobachtet</h2>
@@ -74,6 +77,8 @@
   </ol>
   {/for}
   </div>
+  {! the key to the lines under the results, below the list it explains !}
+  {#if page.leadLines}<p class="lead-legend">Die Linie unter einem Ergebnis ist der Spielverlauf: nach oben bei einem Tor der Heimmannschaft, nach unten bei einem Tor der Gäste, der senkrechte Strich ist die Halbzeit. Antippen zeigt die Tore.</p>{/if}
   {#if page.nav.forecastSupported}
   <div hx-get="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts/markers" hx-trigger="load" hx-swap="none"></div>
   {/if}

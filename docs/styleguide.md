@@ -173,7 +173,8 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Darunter beide Spieltage verlinkt und der Zeitraum, dann zwischen zwei 2 px-Kreidelinien die
   Werkzeugleiste (`.md-tools`): „‹ Aktueller Spieltag ›" als Links (`/?versatz=-1`, ohne Skript
   bedienbar, am Saisonrand ausgegraut, „Zurück zu jetzt" abseits von heute) und Liste | Kompakt
-  (`rr-view`). „Seit dem letzten Besuch" ist aus, bis es unter „Seite anpassen" eingeschaltet wird
+  (`rr-view`) in einer Zeile. Auf dem Telefon steht „Mehr zum Spieltag" rechts neben der H1, damit
+  die Spiele früh beginnen. „Seit dem letzten Besuch" ist aus, bis es unter „Seite anpassen" eingeschaltet wird
   (`data-section-default="off"`, `rr-shown`). Abseits von heute fallen diese Karte und der nächste Spieltag weg.
   Darunter der **Vorbericht** (`.brief`): kein Kasten, H2, je Zeile ein 2 px-Strich in `--ink`,
   fetter Anfang, unten eine Kreidelinie. Die Zeile von „Mein Verein" steht für jeden Verein im
@@ -282,6 +283,15 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   aktiver Reiter markiert (`--ink`, 3-px-Unterstrich) und die Zeile wischt ihn ins Bild. Auf dem
   Telefon eine wischbare Zeile ohne sichtbaren Scrollbalken, wie die Wettbewerbe in der Navigation.
   Der Sprung zum Abschnitt scrollt weich (Antwort auf den Klick), bei `prefers-reduced-motion` springt er.
+- **Kopf der Spieltags- und Pokalseite:** Die Spiele stehen im Vordergrund. Die Aktionen
+  (`.matchday-actions`: KI-Vorschau, Torschützen, Saison, Drucken, Sofa, Konferenz) brechen auf
+  breiten Bildschirmen um und sind bis 720 px ein wischbares Band ohne Scrollbalken wie die
+  Abschnittsleiste der Saison (eine Maus kann nicht wischen, deshalb nicht auf dem Desktop).
+  Darunter eine Werkzeugzeile (`.md-toolbar`): links „‹ Vorheriger | Nächster ›", rechts
+  Liste | Kompakt (und „Spannendste zuerst"); auf dem Telefon nur die Pfeile in 44-px-Feldern,
+  die Wörter bleiben für Screenreader. Die Erklärung des Torverlaufs (`.lead-legend`) steht unter
+  den Spielen. Auf dem Telefon entfällt der Zusatz „mit KI-Vorschau" an der Marke, damit die
+  Kopfzeile eine Zeile bleibt.
 - **Kompakt** (Spieltagsseite, Umschalter „Liste | Kompakt“): eine Zeile je Spiel mit Zeit,
   Kurznamen und Ergebnis, der KI-Marker bleibt; alles unter der Paarung entfällt. Die Wahl liegt nur
   im Browser (`rr-view`) und wird wie die Darstellung im `<head>` vor dem ersten Zeichnen gesetzt.
