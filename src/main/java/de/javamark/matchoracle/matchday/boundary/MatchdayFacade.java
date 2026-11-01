@@ -22,7 +22,10 @@ import de.javamark.matchoracle.matchday.entity.TeamMatchView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +55,35 @@ public class MatchdayFacade {
 
     public record Club(long id, String name, List<Long> matchIds) {
     }
+
+    /**
+     * Story r007, one club in the table "nach KI-Vorschau": {@code change} is places up (positive) or
+     * down against the table now.
+     */
+    public record ProjectedClub(long teamId, String name, String shortName, String crest, String link,
+                                int position, int played, int goalDifference, int points, int change) {
+
+        public String changeLabel() {
+            return change > 0 ? "+" + change : change < 0 ? "−" + (-change) : "0";
+        }
+
+        public String changeDescription() {
+            int n = Math.abs(change);
+            return change == 0 ? "unverändert" : n + (n == 1 ? " Platz " : " Plätze ") + (change > 0 ? "hoch" : "runter");
+        }
+    }
+
+    /**
+     * Story r007: the table if every open match of the matchday ended at its forecast's Richtwert.
+     * {@code assumed} names those matches, {@code withoutForecast} the open ones that have none and
+     * stay out; running matches count at their current score, which makes it {@code provisional}.
+     */
+    public record Projection(List<ProjectedClub> clubs, List<String> assumed, List<String> withoutForecast,
+                             boolean provisional) {
+    }
+
+    @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
+    Duration liveWindow;
 
     @Inject
     FormCalculator formCalculator;
@@ -139,6 +171,59 @@ public class MatchdayFacade {
         return League.bySourceShortcut(league).flatMap(l -> Matchday.find(l, season, number))
                 .map(md -> Match.findByMatchday(md).stream().filter(Match::isPlayed).map(m -> m.id).toList())
                 .orElse(List.of());
+    }
+
+    /**
+     * Story r007: the table after the matchday with each open match counted at the score given in
+     * {@code richtwerte} (match id → home/away goals). Empty when the league has no table, the
+     * matchday is unknown or nothing is open — then there is nothing to assume.
+     */
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Optional<Projection> projectedStandings(String league, int season, int number, Map<Long, MatchScore> richtwerte) {
+        Optional<Matchday> found = League.bySourceShortcut(league).filter(League::hasTable).flatMap(l -> Matchday.find(l, season, number));
+        if (found.isEmpty()) {
+            return Optional.empty();
+        }
+        Matchday matchday = found.get();
+        List<Match> matches = new ArrayList<>(Match.findByMatchday(matchday));
+        matches.sort((a, b) -> a.kickoff.compareTo(b.kickoff));
+        Instant now = Instant.now();
+        List<StandingsCalculator.Assumed> counted = new ArrayList<>();
+        List<String> assumed = new ArrayList<>();
+        List<String> without = new ArrayList<>();
+        boolean running = false;
+        for (Match m : matches) {
+            if (m.isPlayed()) continue;
+            String pairing = shortName(m.homeTeam) + " – " + shortName(m.awayTeam);
+            MatchScore r = richtwerte.get(m.id);
+            if (m.isLive(now, liveWindow)) {
+                counted.add(StandingsCalculator.Assumed.live(m));
+                running = true;
+            } else if (r != null) {
+                counted.add(new StandingsCalculator.Assumed(m, r.homeGoals(), r.awayGoals()));
+                assumed.add(pairing + " " + r.homeGoals() + ":" + r.awayGoals());
+            } else if (!m.kickoff.isBefore(now)) {
+                without.add(pairing);
+            }
+        }
+        if (assumed.isEmpty()) {
+            return Optional.empty();
+        }
+        Standings current = standingsCalculator.standingsBefore(matchday.league, season, number + 1);
+        Standings projected = standingsCalculator.assumedStandings(current, counted, running);
+        String shortcut = matchday.league.sourceShortcut();
+        List<ProjectedClub> clubs = projected.positions().stream().map(p -> {
+            Team t = p.team();
+            int was = current.of(t).map(StandingPosition::position).orElse(p.position());
+            return new ProjectedClub(t.id, t.name, shortName(t), MatchdayPageModels.crestLink(t),
+                    MatchdayPageModels.teamLink(t, shortcut), p.position(), p.balance().played(),
+                    p.balance().goalDifference(), p.balance().points(), was - p.position());
+        }).toList();
+        return Optional.of(new Projection(clubs, List.copyOf(assumed), List.copyOf(without), projected.includesProvisional()));
+    }
+
+    private static String shortName(Team team) {
+        return team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName;
     }
 
     /** Resolves a league shortcut (bl1/bl2); empty if unknown. Other features never see the enum. */

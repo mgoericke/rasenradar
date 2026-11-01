@@ -48,17 +48,32 @@ public class StandingsCalculator {
      * review: the result is marked as including provisional results.
      */
     public Standings liveStandings(Standings before, List<Match> running) {
+        return assumedStandings(before, running.stream().map(Assumed::live).toList(), true);
+    }
+
+    /** A match counted at a score it does not (yet) have: its current score, or a forecast's Richtwert (story r007). */
+    public record Assumed(Match match, int homeGoals, int awayGoals) {
+        public static Assumed live(Match match) {
+            return match.liveScore == null ? new Assumed(match, 0, 0)
+                    : new Assumed(match, match.liveScore.home, match.liveScore.away);
+        }
+    }
+
+    /**
+     * {@code before} plus every assumed match at its assumed score. Never stored, never used for the
+     * review; {@code provisional} marks the result as including provisional results.
+     */
+    public Standings assumedStandings(Standings before, List<Assumed> assumed, boolean provisional) {
         Map<Team, Balance> balances = new LinkedHashMap<>();
         before.positions().forEach(p -> balances.put(p.team(), p.balance()));
-        for (Match match : running) {
-            int home = match.liveScore == null ? 0 : match.liveScore.home;
-            int away = match.liveScore == null ? 0 : match.liveScore.away;
-            balances.merge(match.homeTeam, Balance.EMPTY.plus(new TeamMatchView(match, true, home, away)),
-                    (a, b) -> a.plus(new TeamMatchView(match, true, home, away)));
-            balances.merge(match.awayTeam, Balance.EMPTY.plus(new TeamMatchView(match, false, away, home)),
-                    (a, b) -> a.plus(new TeamMatchView(match, false, away, home)));
+        for (Assumed a : assumed) {
+            TeamMatchView home = new TeamMatchView(a.match(), true, a.homeGoals(), a.awayGoals());
+            TeamMatchView away = new TeamMatchView(a.match(), false, a.awayGoals(), a.homeGoals());
+            balances.merge(a.match().homeTeam, Balance.EMPTY.plus(home), (x, y) -> x.plus(home));
+            balances.merge(a.match().awayTeam, Balance.EMPTY.plus(away), (x, y) -> x.plus(away));
         }
-        return new Standings(before.league(), before.season(), before.beforeMatchday(), ranked(balances), true);
+        return new Standings(before.league(), before.season(), before.beforeMatchday(), ranked(balances),
+                provisional || before.includesProvisional());
     }
 
     /** Pure calculation over the played matches of one season; public for pages that reuse the same matches. */

@@ -266,6 +266,11 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Kante und Satz grün nur für „das bisherige Tempo reicht“, rot nur für „rechnerisch nicht mehr
   erreichbar“; „bereits sicher“ bleibt in Tinte, fett. Kein Messing. Darunter ein Satz, woher der
   typische Wert kommt („Eine Einschätzung, kein Rat.“).
+- **Was wäre, wenn** (`.table-proj-switch`, `.table-projection`, Spieltagstabelle solange Spiele offen
+  sind, Story r007): Umschalter „Jetzt“ / „Nach KI-Vorschau“; der gewählte KI-Knopf in `--ki-wash` mit
+  `--ki-deep`. Die angenommene Tabelle beginnt mit dem KI-Chip und „Angenommen: …“ (alle eingerechneten
+  Richtwerte), nennt offene Spiele ohne KI-Vorschau und zeigt die Spalte „Veränderung“ als
+  vorzeichenbehaftete Zahl in neutraler Tinte. Keine Animation, nie „Ergebnis“ oder „Empfehlung“.
 - **Wegweiser** (`.season-toc`, Saisonseite): ab sieben Abschnitten direkt unter dem Seitenkopf eine
   Zeile mit einem Link je Abschnitt, Linktext gleich Überschrift, in Seitenreihenfolge. Einfache
   Anker, also auch ohne Skript nutzbar. Mit Skript klebt die Zeile unter der Navigation (deren Höhe

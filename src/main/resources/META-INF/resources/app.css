@@ -270,6 +270,19 @@ h2 { font-size: 1.35rem; }
 @media (max-width: 380px) { .table-split-switch label { padding-left: .55rem; padding-right: .55rem; } }
 @media print { .table-split-switch, .table-split { display: none !important; } .table-split-total { display: table !important; } }
 /* story r059: the live table "wenn es so bleibt" beside the normal one — Live first while a match runs */
+/* story r007 "Was wäre, wenn": Jetzt / Nach KI-Vorschau — the projection replaces everything below the switch */
+.table-proj-switch { margin-top: .6rem; }
+.table-proj-input:nth-of-type(1):checked ~ .table-proj-switch label:nth-of-type(1),
+.table-proj-input:nth-of-type(2):checked ~ .table-proj-switch label:nth-of-type(2) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+#table-proj-ki:checked ~ .table-proj-switch label:nth-of-type(2) { background: var(--ki-wash); color: var(--ki-deep); }
+.table-proj-input:focus-visible ~ .table-proj-switch { outline: 3px solid var(--ink); outline-offset: 2px; }
+.table-projection { display: none; }
+#table-proj-ki:checked ~ .table-projection { display: block; }
+#table-proj-ki:checked ~ :not(.table-proj-input):not(.table-proj-switch):not(.table-projection) { display: none !important; }
+.projection-assumed { margin: .8rem 0 .4rem; line-height: 1.45; }
+.projection-table td.move, .projection-table th.move { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+@media print { .table-proj-switch, .table-projection { display: none !important; } }
+
 .table-view-switch { margin-bottom: .8rem; }
 .table-view-input:nth-of-type(1):checked ~ .table-view-switch label:nth-of-type(1),
 .table-view-input:nth-of-type(2):checked ~ .table-view-switch label:nth-of-type(2) { background: var(--ink); color: var(--on-ink); font-weight: 700; }

@@ -91,6 +91,15 @@
   {/if}
   <div class="table-total">
   <h2>Tabelle <span class="muted">nach dem {page.number}. Spieltag</span></h2>
+  {#if page.nav.forecastSupported && !page.over}
+  {! story r007 "Was wäre, wenn": the table with the open matches at their KI-Richtwert, loaded on first switch !}
+  <input class="table-proj-input sr-only" type="radio" name="table-proj" id="table-proj-now" checked>
+  <input class="table-proj-input sr-only" type="radio" name="table-proj" id="table-proj-ki">
+  <div class="seg table-proj-switch" role="group" aria-label="Tabelle annehmen">
+    <label for="table-proj-now">Jetzt</label><label for="table-proj-ki">Nach KI-Vorschau</label>
+  </div>
+  <div class="table-projection" aria-live="polite" hx-get="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts/projection" hx-trigger="change from:#table-proj-ki once"><p class="note">Lädt …</p></div>
+  {/if}
   {#if page.splits}
   {! story r041: Gesamt, Heim, Auswärts, Letzte 5 — radios in CSS, so "Gesamt" shows without script too !}
   <input class="table-split-input sr-only" type="radio" name="table-split" id="table-split-gesamt" checked>

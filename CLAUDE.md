@@ -146,6 +146,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Schaltbarer Abschnitt (Story r100 „Seite anpassen“, nur im Browser gemerkt) | `data-section` / `rr-hidden` |
 | Konferenz nachspielen (Tore des letzten kompletten Spieltags in Minutenfolge, Story r052) | `ConferenceReplay` / `ReplayMatch` / `ReplayGoal` |
 | Typische Punktzahl (Median der Endpunkte eines Tabellenplatzes über die simulierten Restsaisons, Story r039 „Was braucht {Verein}?“) | `SeasonThreshold` / `SeasonTargets` |
+| Was wäre, wenn (Tabelle mit den offenen Spielen beim KI-Richtwert, Story r007) | `MatchdayFacade.Projection` / `StandingsCalculator.Assumed` |
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
 | Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |
 | Titelverteidiger (Sieger der vorigen Ausgabe mit seinem Weg durch die Endrunde) | `Holder` / `HolderStep` |
