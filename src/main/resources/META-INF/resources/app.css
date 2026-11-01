@@ -808,6 +808,8 @@ h2 { font-size: 1.35rem; }
 .footer-columns { display: flex; flex-wrap: wrap; gap: 2.5rem 3rem; }
 .footer-col { color: var(--ink-mute); font-size: .85rem; line-height: 1.7; min-width: 10rem; }
 .footer-col p { margin: 0; }
+.footer-sources { flex: 1 1 22rem; max-width: 34rem; }
+.footer-sources p + p { margin-top: .35rem; }
 .footer-heading {
   font-family: var(--display); font-weight: 700; font-size: 1.1rem; letter-spacing: 0;
   color: var(--ink-soft); margin-bottom: .5rem !important;
