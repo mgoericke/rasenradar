@@ -197,4 +197,27 @@ class MatchdayPageModelsTest {
         assertEquals("Ebnoutalib", MatchdayPageModels.surname("Younes Ebnoutalib"));
         assertEquals("Kane", MatchdayPageModels.surname("Kane"));
     }
+
+    /** Design r102: the stage's arrows go round the start page's matches at both ends. */
+    @Test
+    void stageBrowsesRoundTheStartPage() {
+        var middle = MatchdayPageModels.StageBrowse.of(List.of(11L, 12L, 13L), 12L);
+        assertEquals(new MatchdayPageModels.StageBrowse(11L, 13L, 2, 3), middle);
+        var first = MatchdayPageModels.StageBrowse.of(List.of(11L, 12L, 13L), 11L);
+        assertEquals(13L, first.previous());
+        var last = MatchdayPageModels.StageBrowse.of(List.of(11L, 12L, 13L), 13L);
+        assertEquals(11L, last.next());
+    }
+
+    /** "Mein Verein" in another competition: no position, the arrows lead onto the page at either end. */
+    @Test
+    void stageOffThePageEntersAtEitherEnd() {
+        var off = MatchdayPageModels.StageBrowse.of(List.of(11L, 12L, 13L), 99L);
+        assertEquals(new MatchdayPageModels.StageBrowse(13L, 11L, 0, 3), off);
+    }
+
+    @Test
+    void stageWithoutAnotherMatchHasNoArrows() {
+        assertNull(MatchdayPageModels.StageBrowse.of(List.of(11L), 11L));
+    }
 }

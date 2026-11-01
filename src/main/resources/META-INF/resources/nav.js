@@ -218,9 +218,11 @@ document.addEventListener('click', function (e) {
     var id = c ? String(c.id) : '';
     if (!force && slot.dataset.club === id) return;
     slot.dataset.club = id;
-    if (!c) { slot.innerHTML = slot.rrTop; return; }
+    // the kept top match goes back as plain markup; htmx.process wires its KI line and arrows again
+    function restore() { slot.innerHTML = slot.rrTop; htmx.process(slot); }
+    if (!c) { restore(); return; }
     htmx.ajax('GET', '/mein-verein/' + c.id + '/topspiel', { target: slot, swap: 'innerHTML' })
-      .then(function () { if (!slot.children.length) slot.innerHTML = slot.rrTop; });
+      .then(function () { if (!slot.children.length) restore(); });
   }
   document.addEventListener('DOMContentLoaded', function () { loadStage(read()); });
   document.addEventListener('htmx:afterSettle', function (e) {
