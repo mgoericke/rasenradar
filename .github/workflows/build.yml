@@ -65,6 +65,12 @@ jobs:
             echo "push_latest=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Write build info (footer version stamp)
+        run: |
+          printf 'commit=%s\nbuilt=%s\nversion=%s\n' \
+            "${GITHUB_SHA}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${{ steps.tag.outputs.version }}" \
+            > src/main/resources/build-info.properties
+
       - name: Build & Push with Quarkus JIB (branch)
         if: steps.tag.outputs.push_latest == 'false'
         run: |

@@ -150,6 +150,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
 | Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |
 | Titelverteidiger (Sieger der vorigen Ausgabe mit seinem Weg durch die Endrunde) | `Holder` / `HolderStep` |
+| Versionsstempel (Commit und Bauzeit im Footer, vom Build in GitHub Actions geschrieben) | `BuildStamp` / `BuildInfo` |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
