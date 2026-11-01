@@ -488,7 +488,10 @@ public class MatchdayPages {
                 crossTable(l, season, shortcut, homeAdvantage),
                 reach(l, season, settled, shortcut),
                 runIn(l, season, settled, shortcut),
-                MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.league(settled))));
+                MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.league(settled)),
+                MatchdayPageModels.LastYearView.of(de.javamark.matchoracle.matchday.control.LastYearCalculator.of(l, settled, Map.of(
+                        League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
+                        League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut)));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */

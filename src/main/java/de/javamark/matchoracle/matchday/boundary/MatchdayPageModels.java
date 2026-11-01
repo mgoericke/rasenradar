@@ -817,7 +817,7 @@ public final class MatchdayPageModels {
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
-                      ReachView reach, RunInView runIn, GoalTimingView goalTiming) {
+                      ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */
@@ -1234,6 +1234,33 @@ public final class MatchdayPageModels {
         public String halfTime() {
             return x(45);
         }
+    }
+
+    /** Story r081: one row per club with last season to compare, the newcomers apart, a lead sentence. */
+    record LastYearView(String lead, List<LastYearRow> rows, List<String> newcomers, boolean available) {
+        static LastYearView of(de.javamark.matchoracle.matchday.control.LastYearCalculator.LastYear y, String shortcut) {
+            int scale = Math.max(1, y.clubs().stream().mapToInt(c -> Math.abs(c.difference())).max().orElse(1));
+            List<LastYearRow> rows = y.clubs().stream().map(c -> new LastYearRow(shortOrName(c.team()),
+                    MatchdayPageModels.crestLink(c.team()), MatchdayPageModels.teamLink(c.team(), shortcut),
+                    c.otherLeague() == null ? null : "(" + (c.otherLeague() == League.BUNDESLIGA_1 ? "1. Liga" : "2. Liga") + ")",
+                    c.points() + " statt " + c.pointsThen() + " nach " + c.games() + (c.games() == 1 ? " Spiel" : " Spielen"),
+                    (c.difference() > 0 ? "+" : c.difference() < 0 ? "\u2212" : "±") + Math.abs(c.difference()),
+                    c.difference() > 0 ? "up" : c.difference() < 0 ? "down" : "same",
+                    (int) Math.round(50.0 * Math.abs(c.difference()) / scale))).toList();
+            String lead = null;
+            if (!y.clubs().isEmpty()) {
+                long better = y.clubs().stream().filter(c -> c.difference() > 0).count();
+                var top = y.clubs().getFirst();
+                lead = better + " von " + y.clubs().size() + " Vereinen haben mehr Punkte als nach gleich vielen Spielen im Vorjahr"
+                        + (top.difference() > 0 ? "; am meisten zugelegt: " + shortOrName(top.team()) + " (+" + top.difference() + ")." : ".");
+            }
+            return new LastYearView(lead, rows, y.newcomers().stream().map(MatchdayPageModels::shortOrName).toList(), !y.clubs().isEmpty());
+        }
+    }
+
+    /** {@code width}: the bar in percent of the row's half — to the right for more points, to the left for fewer. */
+    record LastYearRow(String team, String icon, String teamLink, String otherLeague, String figures, String difference,
+                       String direction, int width) {
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */

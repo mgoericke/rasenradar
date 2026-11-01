@@ -68,6 +68,31 @@
     {/let}
   </section>
 
+  {! story r081: points now against the same number of games last season — more to the right (--win), fewer to the left (--loss) !}
+  <section class="season-block" id="vorjahr" aria-labelledby="vorjahr-title">
+    <h2 id="vorjahr-title">Besser als vor einem Jahr?</h2>
+    {#let v=page.lastYear}
+    {#if page.basedOn == 0}
+    <p class="muted">Noch kein Spiel gespielt.</p>
+    {#else if !v.available}
+    <p class="muted">Für die Vorsaison liegen keine Ergebnisse vor.</p>
+    {#else}
+    <p class="season-lead">{v.lead}</p>
+    <ol class="last-year">
+      {#for r in v.rows}
+      <li>
+        <a class="team" href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} {r.team}{#if r.otherLeague} <span class="muted">{r.otherLeague}</span>{/if}</a>
+        <span class="last-year-bar {r.direction}" aria-hidden="true"><span style="width: {r.width}%"></span></span>
+        <span class="figures"><strong>{r.difference}</strong> · {r.figures}</span>
+      </li>
+      {/for}
+    </ol>
+    {#if v.newcomers}<p class="note">Ohne Vorjahresvergleich (vorige Saison in keiner der beiden Bundesligen): {#for n in v.newcomers}{n}{#if n_hasNext}, {/if}{/for}.</p>{/if}
+    <p class="note">Verglichen wird nach gleich vielen eigenen Spielen, nicht nach demselben Spieltag; nur endgültige Ergebnisse. „(2. Liga)“: die Vorsaison spielte der Verein in der anderen Bundesliga.</p>
+    {/if}
+    {/let}
+  </section>
+
   {! story r068: who is on a run and who is stuck — only the strongest running streak of each club per group !}
   <section class="season-block" id="serien" aria-labelledby="serien-title">
     <h2 id="serien-title">Serien</h2>
