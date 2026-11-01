@@ -1036,6 +1036,19 @@ h2 { font-size: 1.35rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
 .standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
 
+/* story r063: a scorer's name opens the profile — a plain-looking button, the profile a card in the middle */
+.scorer-open { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; border-bottom: 1px dotted var(--ink-mute); }
+.scorer-open:hover { border-bottom-color: var(--ink); }
+.scorer-profile { margin: auto; width: min(30rem, calc(100vw - 2rem)); max-height: 85vh; overflow: auto; padding: 1.1rem 1.2rem; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; }
+.scorer-profile h3 { margin: 0 0 .3rem; font-size: 1.5rem; }
+.scorer-profile p { margin: 0 0 .4rem; }
+.scorer-profile .summary { font-weight: 600; }
+.scorer-profile .scorer-goals { list-style: none; margin: .5rem 0; padding: 0; border-radius: 8px; overflow: hidden; font-variant-numeric: tabular-nums; }
+.scorer-goals a { display: flex; flex-wrap: wrap; gap: .1rem .5rem; padding: .45rem .6rem; min-height: 40px; background: var(--mow-a); color: var(--ink); }
+.scorer-goals li:nth-child(even) a { background: var(--mow-b); }
+.scorer-profile .scorer-goals li { display: block; padding: 0; min-height: 0; }
+.scorer-goals .md, .scorer-goals .min { color: var(--ink-mute); }
+.scorer-goals .sc { font-family: var(--display); font-weight: 700; }
 /* story r064: the season wall — a tile per matchday, the result letter beside the colour, the next match in a hairline frame */
 .wall-block { margin: 0 0 1.5rem; }
 .wall-key { margin: 0 0 .6rem; font-variant-numeric: tabular-nums; }

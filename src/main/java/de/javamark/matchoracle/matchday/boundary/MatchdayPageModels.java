@@ -712,6 +712,32 @@ public final class MatchdayPageModels {
         return provisional == 0 ? key : key + ", " + provisional + " vorläufig";
     }
 
+    /** Story r063: a scorer's profile, ready to print; {@code id} is the popover's element id. */
+    record ScorerProfileView(String id, String name, String summary, String share, String split, String late,
+                             List<ScorerGoalRow> goals) {
+        static ScorerProfileView of(String id, de.javamark.matchoracle.matchday.control.ScorerProfileCalculator.Profile p,
+                                    String club, String shortcut) {
+            long pens = p.penalties();
+            String summary = p.count() + (p.count() == 1 ? " Tor in " : " Tore in ") + p.matches() + (p.matches() == 1 ? " Spiel" : " Spielen")
+                    + (pens == 0 ? "" : ", davon " + pens + (pens == 1 ? " Elfmeter" : " Elfmeter"));
+            String share = p.sharePercent() == null ? null
+                    : p.sharePercent() + " % der Tore von " + club + ", " + p.finalGoals() + " von " + p.clubFinalGoals();
+            String split = "Heim " + p.homeGoals() + " : Auswärts " + (p.count() - p.homeGoals())
+                    + " · 1. Halbzeit " + p.firstHalf() + " : 2. Halbzeit " + p.secondHalf();
+            String late = p.late() == 0 ? null
+                    : p.late() + (p.late() == 1 ? " Tor" : " Tore") + " ab der " + de.javamark.matchoracle.matchday.control.ScorerProfileCalculator.LATE + ". Minute";
+            List<ScorerGoalRow> rows = p.goals().stream().map(g -> new ScorerGoalRow(g.match().matchday.number,
+                    (g.home() ? "gegen " : "bei ") + shortOrName(g.opponent()), g.minute() == null ? "–" : g.minute() + "'",
+                    g.forAfter() + ":" + g.againstAfter(), g.forFinal() + ":" + g.againstFinal(), g.penalty(), g.provisional(),
+                    "/" + shortcut + "/matches/" + g.match().id)).toList();
+            return new ScorerProfileView(id, p.name(), summary, share, split, late, rows);
+        }
+    }
+
+    record ScorerGoalRow(int matchday, String opponent, String minute, String scoreAfter, String finalScore, boolean penalty,
+                         boolean provisional, String link) {
+    }
+
     /** A past season of the club with its final position, linking to that season's club page. */
     record SeasonChip(String season, String league, Integer position, String link) {
     }
@@ -1297,7 +1323,13 @@ public final class MatchdayPageModels {
                     List<SeasonChip> otherSeasons, List<ScheduleRow> schedule, BalanceRow home, BalanceRow away,
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
-                    boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming) {
+                    boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming,
+                    Map<String, ScorerProfileView> scorerProfiles) {
+
+        /** Story r063: the profile behind a name in the scorer list, null for a name without one. */
+        public ScorerProfileView profileOf(String scorer) {
+            return scorerProfiles.get(scorer);
+        }
 
         public List<BalanceRow> balances() {
             return List.of(home, away);

@@ -66,7 +66,7 @@
       {#else}
       <ol class="scorers">
         {#for s in page.topScorers}
-        <li><span class="name">{s.name}</span><span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
+        <li>{#include MatchdayPages/scorerName p=page.profileOf(s.name) name=s.name /}<span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
         {/for}
       </ol>
       {#if page.moreScorers}
@@ -74,7 +74,7 @@
         <summary>Alle {page.scorers.size} Torschützen</summary>
         <ol class="scorers" start="{page.topScorers.size + 1}">
           {#for s in page.moreScorers}
-          <li><span class="name">{s.name}</span><span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
+          <li>{#include MatchdayPages/scorerName p=page.profileOf(s.name) name=s.name /}<span class="count">{s.goals}{#if s.penalties > 0} <span class="muted">({s.penalties} Elfm.)</span>{/if}</span></li>
           {/for}
         </ol>
       </details>
