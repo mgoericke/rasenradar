@@ -795,7 +795,7 @@ public class MatchdayPages {
         List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
         all.addAll(Match.findUnplayed(league, season));
         Standings finalTable = standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
-        return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), shortcut);
+        return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), league, shortcut);
     }
 
     /** Story r045: the next matchdays per club, opponents by their current place (final results only). */

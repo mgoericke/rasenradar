@@ -1268,10 +1268,10 @@ public final class MatchdayPageModels {
      * Story r058: every club on one points scale — today's points (filled), what is still possible
      * (outlined), the pace value (a neutral tick) and the reference places as thin lines.
      */
-    record ReachView(String lead, List<ReachLine> lines, List<ReachRow> rows) {
-        static ReachView of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, String shortcut) {
+    record ReachView(String lead, List<ReachLine> lines, List<ReachRow> rows, PointsAxis axis) {
+        static ReachView of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, League league, String shortcut) {
             if (r.clubs().isEmpty()) {
-                return new ReachView(null, List.of(), List.of());
+                return new ReachView(null, List.of(), List.of(), null);
             }
             int scale = Math.max(1, r.clubs().stream().mapToInt(c -> Math.max(c.maximum(), c.pace() == null ? 0 : c.pace())).max().orElse(1));
             List<ReachLine> lines = r.thresholds().stream()
@@ -1288,12 +1288,71 @@ public final class MatchdayPageModels {
                     + (out == 0 ? "; jeder Verein kann Platz 1 rechnerisch noch erreichen."
                        : "; " + out + (out == 1 ? " Verein kann" : " Vereine können") + " Platz 1 rechnerisch nicht mehr erreichen.")
                     + " Eine Rechnung, keine Vorhersage.";
-            return new ReachView(lead, lines, rows);
+            return new ReachView(lead, lines, rows, PointsAxis.of(r, league, shortcut));
         }
 
         private static int percent(int value, int scale) {
             return (int) Math.round(100.0 * value / scale);
         }
+    }
+
+    /**
+     * Story r022 "Punktestrahl": the table on a points axis, top down — one row per points total, the
+     * gap to the row above as space (one step per missing point, at most six), the zone lines of the
+     * league under the row that holds their place. Final results only, like the rest of the page.
+     */
+    record PointsAxis(String lead, List<AxisRow> rows) {
+        static final int MAX_GAP = 6;
+
+        static PointsAxis of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, League league, String shortcut) {
+            var clubs = r.clubs();
+            Map<Integer, List<AxisClub>> byPoints = new java.util.TreeMap<>(java.util.Comparator.reverseOrder());
+            clubs.forEach(c -> byPoints.computeIfAbsent(c.points(), p -> new java.util.ArrayList<>())
+                    .add(new AxisClub(shortOrName(c.team()), crestLink(c.team()), teamLink(c.team(), shortcut), c.position())));
+            List<AxisRow> rows = new java.util.ArrayList<>();
+            Integer above = null;
+            for (var e : byPoints.entrySet()) {
+                int points = e.getKey();
+                List<AxisLine> lines = r.thresholds().stream()
+                        .filter(t -> t.position() > 1 && t.position() < clubs.size() && t.points() == points)
+                        .map(t -> new AxisLine(t.label(), lineZone(league, t.position()))).toList();
+                rows.add(new AxisRow(points, above == null ? 0 : Math.min(MAX_GAP, above - points - 1), e.getValue(), lines));
+                above = points;
+            }
+            return new PointsAxis(lead(r), List.copyOf(rows));
+        }
+
+        /** How many clubs below the first zone line are at most three points behind it. */
+        static String lead(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r) {
+            var clubs = r.clubs();
+            if (clubs.stream().map(c -> c.points()).distinct().count() <= 1) {
+                return "Noch keine Abstände.";
+            }
+            var line = r.thresholds().stream().filter(t -> t.position() > 1 && t.position() < clubs.size()).findFirst();
+            if (line.isEmpty()) {
+                return null;
+            }
+            int place = line.get().position();
+            int points = line.get().points();
+            long close = clubs.stream().filter(c -> c.position() > place && c.points() >= points - 3).count();
+            return (close == 0 ? "Keine Mannschaft liegt" : close == 1 ? "1 Mannschaft liegt" : close + " Mannschaften liegen")
+                    + " höchstens drei Punkte hinter Platz " + place + ".";
+        }
+
+        /** The zone a line closes: the place itself, or for a lower line the place below it. */
+        private static String lineZone(League league, int place) {
+            String own = zone(league, place);
+            return own.isEmpty() ? zone(league, place + 1) : own;
+        }
+    }
+
+    record AxisRow(int points, int gap, List<AxisClub> clubs, List<AxisLine> lines) {
+    }
+
+    record AxisClub(String name, String icon, String link, int position) {
+    }
+
+    record AxisLine(String label, String zone) {
     }
 
     record ReachLine(String label, int points, int at) {

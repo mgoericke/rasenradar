@@ -203,6 +203,11 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   mit Display-Überschrift und 2-px-Kreidelinie, darunter ein Satz in Worten, dann die Zahlen auf
   Mähstreifen. Anteile Heim/Remis/Auswärts als ein Balken (`.share-bar`) in den Tendenzfarben
   (`--ink`, `--draw`, `--ink-soft`), die Zahlen immer als Text daneben.
+- **Punktestrahl** (`.points-axis`, Saisonseite, Story r022): die Tabelle als senkrechte Punkteachse,
+  eine Zeile je Punktzahl mit Wappen und Kurznamen, jeder fehlende Punkt dazwischen ein Schritt Abstand
+  (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
+  die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
+  viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
 - **Wegweiser** (`.season-toc`, Saisonseite): ab sieben Abschnitten direkt unter dem Seitenkopf eine
   Zeile mit einem Link je Abschnitt, Linktext gleich Überschrift, in Seitenreihenfolge. Einfache
   Anker, also auch ohne Skript nutzbar. Mit Skript klebt die Zeile unter der Navigation (deren Höhe

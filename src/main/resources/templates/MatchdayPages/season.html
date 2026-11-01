@@ -17,6 +17,7 @@
      marks the section in view. Every section below always renders (empty states inside), so no link dies. !}
   <nav class="season-toc" aria-label="Abschnitte">
     <ol>
+      {#if !page.cup}<li><a href="#punktestrahl">Punktestrahl</a></li>{/if}
       {#if !page.cup}<li><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>{/if}
       {#if !page.cup}<li><a href="#restprogramm">Restprogramm</a></li>{/if}
       {#if page.lastYear}<li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
@@ -30,6 +31,30 @@
       {#if !page.cup}<li><a href="#heimvorteil">Heimvorteil</a></li>{/if}
     </ol>
   </nav>
+
+{#if !page.cup}
+  {! story r022: the table on a points axis — the gaps, not only the order; top down, one row per points total !}
+  <section class="season-block" id="punktestrahl" aria-labelledby="punktestrahl-title">
+    <h2 id="punktestrahl-title">Punktestrahl</h2>
+    <p class="season-sub">Die Tabelle nach Punkten: Je größer der Abstand zwischen zwei Zeilen, desto mehr Punkte liegen dazwischen.</p>
+    {#let a=page.reach.axis}
+    {#if !a}
+    <p class="muted">Noch kein Spiel beendet.</p>
+    {#else}
+    {#if a.lead}<p class="season-lead">{a.lead}</p>{/if}
+    <ol class="points-axis">
+      {#for row in a.rows}
+      <li style="--gap: {row.gap}">
+        <span class="axis-points">{row.points}<span class="sr-only"> Punkte</span></span>
+        <span class="axis-clubs">{#for c in row.clubs}<a href="{c.link}" title="{c.position}. {c.name}, {row.points} Punkte">{#crest src=c.icon size="small" lazy=true /} {c.name}</a>{/for}</span>
+        {#for l in row.lines}<span class="axis-line {l.zone}">{l.label}</span>{/for}
+      </li>
+      {/for}
+    </ol>
+    {/if}
+    {/let}
+  </section>
+  {/if}
 
 {#if !page.cup}
   {! story r058: what is still possible — points today, the maximum, the pace; a calculation, no forecast !}
