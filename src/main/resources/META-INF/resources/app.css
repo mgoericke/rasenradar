@@ -251,12 +251,13 @@ h2 { font-size: 1.35rem; }
 .standings th.form-cell, .standings td.form-cell { text-align: left; padding-left: .7rem; }
 /* story r041: Gesamt / Heim / Auswärts / Letzte 5 — only the chosen table shows; split tables carry no zones */
 .table-split-switch { margin-top: .6rem; }
-.table-split-input:nth-of-type(1):checked ~ .table-split-switch label:nth-of-type(1),
-.table-split-input:nth-of-type(2):checked ~ .table-split-switch label:nth-of-type(2),
-.table-split-input:nth-of-type(3):checked ~ .table-split-switch label:nth-of-type(3),
-.table-split-input:nth-of-type(4):checked ~ .table-split-switch label:nth-of-type(4),
-.table-split-input:nth-of-type(5):checked ~ .table-split-switch label:nth-of-type(5),
-.table-split-input:nth-of-type(6):checked ~ .table-split-switch label:nth-of-type(6) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+/* by id, not by position: the "Jetzt / Nach KI-Vorschau" radios stand before these on open matchdays */
+#table-split-gesamt:checked ~ .table-split-switch label[for="table-split-gesamt"],
+#table-split-heim:checked ~ .table-split-switch label[for="table-split-heim"],
+#table-split-auswaerts:checked ~ .table-split-switch label[for="table-split-auswaerts"],
+#table-split-letzte-5:checked ~ .table-split-switch label[for="table-split-letzte-5"],
+#table-split-halbzeit:checked ~ .table-split-switch label[for="table-split-halbzeit"],
+#table-split-nach-80:checked ~ .table-split-switch label[for="table-split-nach-80"] { background: var(--ink); color: var(--on-ink); font-weight: 700; }
 .table-split-input:focus-visible ~ .table-split-switch { outline: 3px solid var(--ink); outline-offset: 2px; }
 .table-split { display: none; }
 #table-split-heim:checked ~ .table-split-heim, #table-split-auswaerts:checked ~ .table-split-auswaerts,

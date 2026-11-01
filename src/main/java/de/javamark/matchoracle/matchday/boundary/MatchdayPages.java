@@ -1294,36 +1294,20 @@ public class MatchdayPages {
     }
 
     /**
-     * The stage of a group matchday: the match of the matchday's two best-placed sides before it —
-     * open matches first, the closer points on a tie. A match the visitor browsed to takes its place.
+     * The stage of a group matchday shows the match of "Mein Verein" only, which nav.js swaps in. The
+     * server renders one only for a match browsed to without script ({@code spiel}).
      */
     private TopStage groupStage(List<Match> day, Long spiel, Instant now, String page) {
-        if (day.isEmpty()) {
+        if (spiel == null) {
             return null;
         }
-        StageRoute route = StageRoute.competition(page, day.get(0).matchday.league.sourceShortcut());
-        Optional<Match> browsed = spiel == null ? Optional.empty() : day.stream().filter(m -> m.id.equals(spiel)).findFirst();
-        if (browsed.isPresent()) {
-            TopStage s = stageOf(browsed.get(), "", day, now);
-            return s.on(route, browsed.get().matchday.groupName, s.reason());
+        StageRoute route = StageRoute.competition(page, day.isEmpty() ? "" : day.get(0).matchday.league.sourceShortcut());
+        Optional<Match> browsed = day.stream().filter(m -> m.id.equals(spiel)).findFirst();
+        if (browsed.isEmpty()) {
+            return null;
         }
-        Map<Matchday, Standings> before = new HashMap<>();
-        Comparator<Match> order = Comparator.comparingInt((Match m) -> m.isPlayed() ? 1 : 0)
-                .thenComparingInt(m -> {
-                    Standings s = before.computeIfAbsent(m.matchday, standingsCalculator::standingsBefore);
-                    return s.of(m.homeTeam).map(p -> p.position()).orElse(9) + s.of(m.awayTeam).map(p -> p.position()).orElse(9);
-                })
-                .thenComparingInt(m -> {
-                    Standings s = before.get(m.matchday);
-                    int home = s.of(m.homeTeam).map(p -> p.balance().points()).orElse(0);
-                    int away = s.of(m.awayTeam).map(p -> p.balance().points()).orElse(0);
-                    return Math.abs(home - away);
-                })
-                .thenComparing(m -> m.kickoff);
-        Match pick = day.stream().min(order).orElseThrow();
-        TopStage s = stageOf(pick, "", day, now);
-        return s.on(route, "Spiel des Spieltags",
-                pick.matchday.groupName + (s.reason().isEmpty() ? "" : " · " + s.reason()));
+        TopStage s = stageOf(browsed.get(), "", day, now);
+        return s.on(route, browsed.get().matchday.groupName, s.reason());
     }
 
     /**
@@ -1458,52 +1442,17 @@ public class MatchdayPages {
     }
 
     /**
-     * The cup stage: one pairing of {@code round} on the pitch over the full width. While the round
-     * is still to be played it is "Spiel der Runde", the pairing of the two highest divisions; once
-     * it is over the biggest surprise, or the match with the most goals when there was none. A match
-     * the visitor browsed to ({@code spiel}) takes its place; the arrows browse the round.
+     * The cup stage shows the pairing of "Mein Verein" only, which nav.js swaps in. The server renders
+     * one only for a match browsed to without script ({@code spiel}); the arrows browse its round.
      */
     private TopStage cupStage(List<Match> round, int season, Long spiel, Instant now) {
-        if (round.isEmpty()) {
+        if (spiel == null) {
             return null;
         }
-        StageRoute route = StageRoute.cup(round.get(0).matchday.league.sourceShortcut());
-        Optional<Match> browsed = spiel == null ? Optional.empty()
-                : round.stream().filter(m -> m.id.equals(spiel)).findFirst();
-        if (browsed.isPresent()) {
-            Match m = browsed.get();
-            return stageOf(m, "", round, now).on(route, m.matchday.displayName(), cupReason(m, season));
-        }
-        StagePick pick = stagePick(round, tierOf(season));
-        return stageOf(pick.match(), "", round, now).on(route, pick.label(), cupReason(pick.match(), season));
-    }
-
-    record StagePick(Match match, String label) {
-    }
-
-    /**
-     * Which pairing of a round the cup stage shows: while matches are still open the one of the two
-     * highest divisions (the earlier kickoff on a tie); once the round is over the biggest surprise
-     * (more goals on a tie), else the match with the most goals. A round of one match is named by itself.
-     */
-    static StagePick stagePick(List<Match> round, java.util.function.Function<Team, Tier> tierOf) {
-        List<Match> open = round.stream().filter(m -> !m.isPlayed()).toList();
-        if (!open.isEmpty()) {
-            Match pick = open.stream().min(Comparator.comparingInt((Match m) ->
-                    tierOf.apply(m.homeTeam).level() + tierOf.apply(m.awayTeam).level())
-                    .thenComparing(m -> m.kickoff)).orElseThrow();
-            return new StagePick(pick, round.size() == 1 ? pick.matchday.displayName() : "Spiel der Runde");
-        }
-        java.util.function.ToIntFunction<Match> gap = m -> m.winner().map(won -> {
-            Team lost = won.equals(m.homeTeam) ? m.awayTeam : m.homeTeam;
-            return TeamTier.gap(tierOf.apply(won), tierOf.apply(lost));
-        }).orElse(0);
-        Optional<Match> surprise = round.stream().filter(m -> gap.applyAsInt(m) > 0)
-                .max(Comparator.comparingInt(gap).thenComparingInt(MatchdayPages::goalsOf));
-        Match pick = surprise.orElseGet(() -> round.stream().max(Comparator.comparingInt(MatchdayPages::goalsOf)).orElseThrow());
-        String label = round.size() == 1 ? pick.matchday.displayName()
-                : surprise.isPresent() ? "Überraschung der Runde" : "Torreichstes Spiel der Runde";
-        return new StagePick(pick, label);
+        StageRoute route = round.isEmpty() ? null : StageRoute.cup(round.get(0).matchday.league.sourceShortcut());
+        return round.stream().filter(m -> m.id.equals(spiel)).findFirst()
+                .map(m -> stageOf(m, "", round, now).on(route, m.matchday.displayName(), cupReason(m, season)))
+                .orElse(null);
     }
 
     /** Why the pairing matters: who beat whom across divisions once it is decided, the divisions before. */

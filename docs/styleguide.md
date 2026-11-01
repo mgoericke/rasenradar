@@ -19,7 +19,7 @@ entwickelt und gemessen).
   Haarlinien zwischen Zeilen. Die Streifen tragen Rhythmus, keine Bedeutung — nichts darf davon abhängen,
   sie zu unterscheiden.
 - **Kreidelinien trennen.** Tagesüberschriften enden in einer 2-px-Kreidelinie, Abschnitte ebenso.
-- **Grüne Bühne nur für ein einzelnes Spiel: der Spielkopf, das Topspiel und die Pokalbühne.** Auf der Spielseite steht
+- **Grüne Bühne nur für ein einzelnes Spiel: der Spielkopf und die Bühne von „Mein Verein".** Auf der Spielseite steht
   die Begegnung auf dem gestreiften Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als
   Rahmen; keine Linie kreuzt Text. Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte,
   Form) sind die große Schrift; die KI-Vorschau ist eine markierte Zeile darunter. Die Startseite zeigt
@@ -30,11 +30,9 @@ entwickelt und gemessen).
   `--draw`, `--loss`, damit die weiße Schrift in beiden Themen trägt). Unter einer Kreidelinie folgt die
   KI-Zeile (Richtwert, drei Wahrscheinlichkeiten unter den Vereinsnamen, Begründung in einer gekürzten
   Zeile), daneben „Alles zum Spiel". Pfeile auf der Seitenlinie blättern durch alle Spiele der
-  Startseite („Spiel 11 von 18"). Die Pokalseite hat dieselbe Bühne in eigenem Platz (`#cup-stage`,
-  „Mein Verein" tauscht dort nichts): vor und während der Runde das „Spiel der Runde" (die Paarung der
-  beiden höchsten Spielklassen), danach die „Überraschung der Runde" (größter Klassenunterschied)
-  oder sonst das torreichste Spiel; statt Platz und Punkte die Spielklassen („Bochum (2. Liga) schlägt
-  Mainz (1. Liga)"), keine KI-Zeile. Die Pfeile blättern durch die Runde. Mehr Bühnen gibt es nicht;
+  Startseite („Spiel 11 von 18"). Die Pokalseite hat dieselbe Bühne in eigenem Platz (`#cup-stage`),
+  ebenfalls nur mit „Mein Verein": dessen jüngste Paarung im Wettbewerb, sonst bleibt sie weg; statt
+  Platz und Punkte die Spielklassen („Bochum (2. Liga) schlägt Mainz (1. Liga)"), keine KI-Zeile. Die Pfeile blättern durch die Runde. Mehr Bühnen gibt es nicht;
   Listen, Tabellen und Karten bleiben auf Kreide.
 - **Suche** (`.site-search`, Entwurf r102): Feld im Rasenband, findet Vereine, Spiele der Startseite und
   Torjäger beider Bundesligen. Die Treffer stehen in einem Feld wie das Menü „Darstellung", `/`
@@ -302,9 +300,8 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
   Elfmeterschießen" als gestreifte Liste (`.cup-decisions`). Ohne Tabelle, Serien, Vorjahr,
   Kreuztabelle und Heimvorteil; die Sprungmarken folgen.
-- **Nations-League-Seite** (Gruppen): oben die Bühne „Spiel des Spieltags" (offene Spiele zuerst,
-  die Paarung der bestplatzierten Teams, bei Gleichstand die engere Punktzahl; Pfeile blättern durch
-  den Spieltag aller Gruppen), darunter zwei Spalten wie die Pokalseite. Gruppentabellen mit Zonen
+- **Nations-League-Seite** (Gruppen): oben die Bühne nur mit „Mein Verein" und dessen Spiel am
+  Spieltag (Pfeile blättern durch den Spieltag aller Gruppen), darunter zwei Spalten wie die Pokalseite. Gruppentabellen mit Zonen
   (Platz 1–2 Viertelfinale `zone-top`, Platz 3 Relegation `zone-bottom-playoff`, Platz 4 Abstieg in
   Liga B `zone-bottom`) und Schlüssel darüber (`.group-legend`), Spalte „Noch möglich" („1.–3.",
   „2. fest") und darüber eine Zeile mit dem Entschiedenen (`.group-lead`). Auf dem Telefon entfallen

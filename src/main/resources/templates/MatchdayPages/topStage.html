@@ -2,9 +2,9 @@
    score link to the match page, so does "Alles zum Spiel". The score is the shared tag, so the live
    poller updates it. Below: place, points and form of both clubs before the match, then the KI line
    (loaded by htmx where there is a KI-Vorschau). The arrows browse the start page's matches — links to
-   the start page without script, swapped in place with it. nav.js swaps in the club's own match for
-   "Mein Verein" (data-top-stage). The cup page has the same stage in its own slot (stage.route): its
-   arrows browse the round, nav.js leaves it alone. !}
+   the start page without script, swapped in place with it. The stage shows only with "Mein Verein":
+   nav.js swaps in the club's own match. A competition page has the same stage in its own slot
+   (stage.route) with the club's pairing there; its arrows browse the round. !}
 <div class="scoreboard top-stage" data-top-stage="{stage.match.id}">
   <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
   <p class="top-stage-label">{#if stage.label}<b>{stage.label}</b> {/if}{stage.leagueName} · {stage.when}{#if stage.reason} · <span class="top-stage-reason">{stage.reason}</span>{/if}</p>

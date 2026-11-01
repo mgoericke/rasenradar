@@ -231,10 +231,19 @@ document.addEventListener('click', function (e) {
   setInterval(refresh, 60000);
   document.addEventListener('visibilitychange', refresh);
   document.addEventListener('DOMContentLoaded', function () { loadNextMatch(read()); });
-  // the start page's stage: the club's own running or next match, and nothing without a club or
-  // when the club has no match. A match the server put there (browsed to without script) stays.
+  // the stage of the start page and of a competition page: only with "Mein Verein" — on the start page
+  // the club's running or next match, on a competition page its latest pairing there. Nothing without
+  // a club or when the club has no match. A match the server put there (browsed to without script) stays.
+  function stageLink(slot, c) {
+    if (slot.id === 'top-stage') return '/mein-verein/' + c.id + '/topspiel';
+    // the rounds run newest first, so the first pairing of the club is its latest
+    var a = Array.prototype.slice.call(document.querySelectorAll('a.fixture[data-clubs~="' + c.id + '"]'))
+      .filter(function (x) { return !slot.contains(x); })[0];
+    var id = a && (a.getAttribute('href').match(/\/matches\/(\d+)$/) || [])[1];
+    return id ? slot.dataset.stageFragment + id : null;
+  }
   function loadStage(c, force) {
-    var slot = document.getElementById('top-stage');
+    var slot = document.getElementById('top-stage') || document.getElementById('cup-stage');
     if (!slot || !window.htmx) return;
     if (slot.rrTop == null) slot.rrTop = slot.innerHTML;
     var id = c ? String(c.id) : '';
@@ -242,17 +251,18 @@ document.addEventListener('click', function (e) {
     slot.dataset.club = id;
     // the kept markup goes back as it came; htmx.process wires its KI line and arrows again
     function restore() { slot.innerHTML = slot.rrTop; htmx.process(slot); slot.hidden = !slot.children.length; }
-    if (!c) { restore(); return; }
-    htmx.ajax('GET', '/mein-verein/' + c.id + '/topspiel', { target: slot, swap: 'innerHTML' })
+    var link = c && stageLink(slot, c);
+    if (!link) { restore(); return; }
+    htmx.ajax('GET', link, { target: slot, swap: 'innerHTML' })
       .then(function () { if (!slot.children.length) restore(); });
   }
   // whatever lands on the stage decides whether it shows: the club's match, a browsed one, or nothing
   document.addEventListener('htmx:afterSwap', function (e) {
-    if (e.target.id === 'top-stage') e.target.hidden = !e.target.children.length;
+    if (e.target.id === 'top-stage' || e.target.id === 'cup-stage') e.target.hidden = !e.target.children.length;
   });
   document.addEventListener('DOMContentLoaded', function () { loadStage(read()); });
   document.addEventListener('htmx:afterSettle', function (e) {
-    if (e.target.closest && e.target.closest('#top-stage')) return;
+    if (e.target.closest && e.target.closest('#top-stage, #cup-stage')) return;
     loadStage(read());
   });
   document.addEventListener('click', function (e) {

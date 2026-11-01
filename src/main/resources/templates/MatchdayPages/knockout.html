@@ -3,9 +3,9 @@
 {#description}Alle Runden des {page.nav.leagueName}s {page.season} – Ergebnisse, Spielklassen und die Überraschungen der Ausgabe.{/description}
 {#body}
 <section class="matchday knockout">
-  {! the cup stage over the full width: "Spiel der Runde" before the round, its biggest surprise
-     after it; the arrows browse the round. Its own slot, so nav.js's "Mein Verein" leaves it alone. !}
-  {#if page.stage}<div id="cup-stage">{#include MatchdayPages/topStage stage=page.stage /}</div>{/if}
+  {! the cup stage over the full width: only with "Mein Verein" — nav.js puts the club's latest pairing
+     there; the arrows browse its round. The server fills it only for a match browsed to without script. !}
+  <div id="cup-stage" data-stage-fragment="/{page.nav.leagueShortcut}/topspiel/"{#if !page.stage} hidden{/if}>{#if page.stage}{#include MatchdayPages/topStage stage=page.stage /}{/if}</div>
 
   <div class="knockout-layout">
   <div class="knockout-main">
