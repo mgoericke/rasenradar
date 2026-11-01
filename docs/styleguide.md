@@ -170,6 +170,13 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   mit Display-Überschrift und 2-px-Kreidelinie, darunter ein Satz in Worten, dann die Zahlen auf
   Mähstreifen. Anteile Heim/Remis/Auswärts als ein Balken (`.share-bar`) in den Tendenzfarben
   (`--ink`, `--draw`, `--ink-soft`), die Zahlen immer als Text daneben.
+- **Wegweiser** (`.season-toc`, Saisonseite): ab sieben Abschnitten direkt unter dem Seitenkopf eine
+  Zeile mit einem Link je Abschnitt, Linktext gleich Überschrift, in Seitenreihenfolge. Einfache
+  Anker, also auch ohne Skript nutzbar. Mit Skript klebt die Zeile unter der Navigation (deren Höhe
+  wird gemessen, sie wächst mit „Mein Verein" und auf dem Telefon), der Abschnitt im Blick ist wie ein
+  aktiver Reiter markiert (`--ink`, 3-px-Unterstrich) und die Zeile wischt ihn ins Bild. Auf dem
+  Telefon eine wischbare Zeile ohne sichtbaren Scrollbalken, wie die Wettbewerbe in der Navigation.
+  Der Sprung ist nie animiert.
 - **Kompakt** (Spieltagsseite, Umschalter „Liste | Kompakt“): eine Zeile je Spiel mit Zeit,
   Kurznamen und Ergebnis, der KI-Marker bleibt; alles unter der Paarung entfällt. Die Wahl liegt nur
   im Browser (`rr-view`) und wird wie die Darstellung im `<head>` vor dem ersten Zeichnen gesetzt.

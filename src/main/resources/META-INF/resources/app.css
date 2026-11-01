@@ -319,7 +319,25 @@ h2 { font-size: 1.35rem; }
 .scorer-switch a.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 /* the season page of a Bundesliga: one section per figure, each ending in a chalk line like the day heads */
 .season-page { max-width: 52rem; }
-.season-block { margin: 2rem 0 0; }
+.season-block { margin: 2rem 0 0; scroll-margin-top: 7rem; }
+/* story r085: one link per section, plain anchors; with script it sticks below the top navigation
+   (nav.js measures its height into --topnav-h) and marks the section in view like an active tab */
+.season-toc { margin: 1.2rem 0 0; background: var(--ground); border-bottom: 1px solid var(--line); }
+.js .season-toc { position: sticky; top: var(--topnav-h, 0px); z-index: 5; }
+.js .season-block { scroll-margin-top: calc(var(--topnav-h, 4rem) + 3.6rem); }
+/* the scroll box would clip the focus ring: padding makes room for it, the negative margin keeps the
+   underline on the hairline */
+.season-toc ol {
+  list-style: none; margin: 0 0 -6px; padding: 5px 5px 6px; display: flex; gap: 0 1.1rem;
+  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: 1rem;
+}
+.season-toc ol::-webkit-scrollbar { display: none; }
+.season-toc a {
+  display: inline-block; padding: .45rem 0 .4rem; border-bottom: 3px solid transparent;
+  color: var(--ink-soft); font-weight: 600; white-space: nowrap;
+}
+.season-toc a:hover { color: var(--ink); }
+.season-toc a[aria-current] { color: var(--ink); border-color: var(--ink); }
 .season-block > h2 { display: flex; align-items: center; gap: .6rem; font-size: 1.6rem; margin: 0 0 .6rem; }
 .season-block > h2::after { content: ""; flex: 1; height: 2px; background: var(--line); }
 .season-block h3 { font-size: 1.15rem; margin: 1rem 0 .4rem; }
