@@ -358,7 +358,8 @@ public class MatchdayPages {
                         String.valueOf(slot.kickoff().getEpochSecond()),
                         slot.matches().stream().map(m -> new StreamRow(m.matchday.league.sourceShortcut(),
                                 MatchdayPageModels.badge(m.matchday.league),
-                                MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow))).toList())).toList()))
+                                MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow),
+                                MatchdayPageModels.LeadLine.of(m))).toList())).toList()))
                 .toList();
     }
 

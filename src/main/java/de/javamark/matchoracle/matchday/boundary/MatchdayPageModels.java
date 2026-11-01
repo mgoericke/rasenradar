@@ -546,8 +546,8 @@ public final class MatchdayPageModels {
         }
     }
 
-    /** A match in the stream, with the league it belongs to — the stream mixes both. */
-    record StreamRow(String league, String badge, MatchRow match) {
+    /** A match in the stream, with the league it belongs to — the stream mixes both — and its lead line once finished. */
+    record StreamRow(String league, String badge, MatchRow match, LeadLine lead) {
     }
 
     /** A kickoff block of the stream; {@code key} ties the forecast fragment's per-block summary to it. */
