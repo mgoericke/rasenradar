@@ -18,6 +18,7 @@
   <nav class="season-toc" aria-label="Abschnitte">
     <ol>
       {#if !page.cup}<li><a href="#punktestrahl">Punktestrahl</a></li>{/if}
+      {#if page.race}<li><a href="#saisonrennen">Saisonrennen</a></li>{/if}
       {#if !page.cup}<li><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>{/if}
       {#if !page.cup}<li><a href="#restprogramm">Restprogramm</a></li>{/if}
       {#if page.lastYear}<li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
@@ -55,6 +56,56 @@
     {/let}
   </section>
   {/if}
+
+{#if page.race}
+  {! story r019: every club's place after every matchday; neutral lines, one brought forward on hover, tap or focus !}
+  {#let r=page.race}
+  <section class="season-block" id="saisonrennen" aria-labelledby="saisonrennen-title">
+    <h2 id="saisonrennen-title">Saisonrennen</h2>
+    {#if !r.drawn}
+    <p class="muted">Verlauf ab dem 2. Spieltag.</p>
+    {#else}
+    <p class="season-sub">Der Tabellenplatz jedes Vereins nach jedem Spieltag, Platz 1 oben. Zeigen, tippen oder mit der Tabulatortaste auf einen Verein gehen, um seinen Weg hervorzuheben.</p>
+    <div class="race-scroll">
+      <svg class="race" data-race width="{r.width}" height="{r.height}" viewBox="0 0 {r.width} {r.height}" role="group" aria-label="Saisonrennen: Tabellenplatz je Spieltag">
+        <g class="race-ticks" aria-hidden="true">
+          {#for t in r.ticks}
+          <line x1="{t.x}" x2="{t.x}" y1="6" y2="{r.axisY}"></line>
+          {#if t.labelled}<text x="{t.x}" y="{r.labelY}">{t.matchday}</text>{/if}
+          {/for}
+          {#if r.lastProvisional}<text class="race-provisional" x="{r.lastX}" y="{r.labelY}" dy="-14">vorläufig</text>{/if}
+        </g>
+        {#for l in r.lines}
+        <g class="race-line" tabindex="0" data-team="{l.teamId}" aria-label="{l.fullName}, zuletzt Platz {l.endPosition}">
+          <polyline points="{l.solid}"></polyline>
+          {#if l.tail}<polyline class="race-tail" points="{l.tail}"></polyline>{/if}
+          <g class="race-dots" aria-hidden="true">
+            {#for p in l.points}<circle cx="{p.x}" cy="{p.y}" r="8"></circle><text x="{p.x}" y="{p.y}" dy=".35em">{p.position}</text>{/for}
+          </g>
+          <text class="race-name" x="{l.labelX}" y="{l.endY}" dy=".35em">{l.name}</text>
+        </g>
+        {/for}
+      </svg>
+    </div>
+    <details class="race-table">
+      <summary>Position nach Spieltag als Tabelle</summary>
+      <div class="race-table-scroll">
+        <table>
+          <caption class="sr-only">Position nach Spieltag</caption>
+          <thead><tr><th scope="col">Verein</th>{#for t in r.ticks}<th scope="col">{t.matchday}.</th>{/for}</tr></thead>
+          <tbody>
+            {#for l in r.lines}
+            <tr><th scope="row"><a href="{l.link}">{l.name}</a></th>{#for c in l.cells(r.matchdays)}<td>{c}</td>{/for}</tr>
+            {/for}
+          </tbody>
+        </table>
+      </div>
+      {#if r.lastProvisional}<p class="muted">Der letzte Spieltag enthält vorläufige Ergebnisse.</p>{/if}
+    </details>
+    {/if}
+  </section>
+  {/let}
+{/if}
 
 {#if !page.cup}
   {! story r058: what is still possible — points today, the maximum, the pace; a calculation, no forecast !}

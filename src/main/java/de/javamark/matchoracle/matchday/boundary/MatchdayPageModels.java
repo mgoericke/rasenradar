@@ -1009,11 +1009,125 @@ public final class MatchdayPageModels {
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
                       ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear,
-                      CupDecisionView decisions) {
+                      CupDecisionView decisions, SeasonRace race) {
         /** The cup's numbers page: no table, so no reach, run-in, streaks, cross table, last year or home advantage. */
         public boolean cup() {
             return reach == null;
         }
+    }
+
+    /**
+     * Story r019 "Saisonrennen": every club's table position after each matchday, as lines on a grid
+     * — place 1 at the top, the short name at each line's end. The coordinates are worked out here so
+     * the template only draws. {@code lastProvisional}: the last matchday holds a result that is not
+     * final yet, so the last step of every line is dashed. Null {@code lines}: fewer than two matchdays.
+     */
+    record SeasonRace(int matchdays, int teams, List<RaceLine> lines, boolean lastProvisional,
+                      int width, int height, List<RaceTick> ticks) {
+
+        static final int STEP_Y = 22;
+        static final int PAD = 14;
+        static final int LABEL_WIDTH = 120;
+
+        public boolean drawn() {
+            return lines != null;
+        }
+
+        /** Bottom end of the matchday lines, and the baseline of their numbers below. */
+        public int axisY() {
+            return height - 22;
+        }
+
+        public int labelY() {
+            return height - 6;
+        }
+
+        /** x of the last matchday — where "vorläufig" stands. */
+        public int lastX() {
+            return x(matchdays, matchdays);
+        }
+
+        /** Spread over about 640 px while there are few matchdays; from there on 26 px each, scrolled inside its box. */
+        static int stepX(int matchdays) {
+            return Math.max(26, Math.min(72, 640 / Math.max(1, matchdays - 1)));
+        }
+
+        static int x(int matchday, int matchdays) {
+            return PAD + (matchday - 1) * stepX(matchdays);
+        }
+
+        static int y(int position) {
+            return PAD + (position - 1) * STEP_Y;
+        }
+
+        /**
+         * @param afterEach the table after matchday 1, 2, … in order — {@code afterEach.get(n - 1)} after matchday n
+         */
+        static SeasonRace of(List<Standings> afterEach, boolean lastProvisional, String shortcut) {
+            int matchdays = afterEach.size();
+            int teams = afterEach.isEmpty() ? 0 : afterEach.getLast().positions().size();
+            if (matchdays < 2 || teams == 0) {
+                return new SeasonRace(matchdays, teams, null, false, 0, 0, List.of());
+            }
+            List<RaceLine> lines = new java.util.ArrayList<>();
+            for (StandingPosition end : afterEach.getLast().positions()) {
+                Team team = end.team();
+                List<RacePoint> points = new java.util.ArrayList<>();
+                for (int n = 1; n <= matchdays; n++) {
+                    int matchday = n;
+                    afterEach.get(n - 1).of(team).ifPresent(p ->
+                            points.add(new RacePoint(matchday, p.position(), x(matchday, matchdays), y(p.position()))));
+                }
+                List<RacePoint> solid = lastProvisional && points.size() > 1 ? points.subList(0, points.size() - 1) : points;
+                List<RacePoint> tail = lastProvisional && points.size() > 1 ? points.subList(points.size() - 2, points.size()) : List.of();
+                lines.add(new RaceLine(team.id, shortOrName(team), team.name, teamLink(team, shortcut), end.position(),
+                        List.copyOf(points), polyline(solid), polyline(tail)));
+            }
+            List<RaceTick> ticks = new java.util.ArrayList<>();
+            for (int n = 1; n <= matchdays; n++) {
+                // a label at every matchday is too dense from a dozen on; the first, every fifth and the last
+                boolean labelled = matchdays <= 12 || n == 1 || n % 5 == 0 || n == matchdays;
+                ticks.add(new RaceTick(n, x(n, matchdays), labelled));
+            }
+            int width = x(matchdays, matchdays) + LABEL_WIDTH;
+            int height = y(teams) + 40;
+            return new SeasonRace(matchdays, teams, List.copyOf(lines), lastProvisional, width, height, List.copyOf(ticks));
+        }
+
+        private static String polyline(List<RacePoint> points) {
+            return points.stream().map(p -> p.x() + "," + p.y()).collect(java.util.stream.Collectors.joining(" "));
+        }
+    }
+
+    /** One club in the Saisonrennen: its points as SVG coordinates, solid and — when provisional — the dashed last step. */
+    record RaceLine(long teamId, String name, String fullName, String link, int endPosition, List<RacePoint> points,
+                    String solid, String tail) {
+
+        public int endY() {
+            return points.isEmpty() ? 0 : points.getLast().y();
+        }
+
+        /** The name starts right of the last point, clear of its position dot. */
+        public int labelX() {
+            return (points.isEmpty() ? 0 : points.getLast().x()) + 12;
+        }
+
+        /** The table row for screen readers: the position after each matchday, empty where the club had no table place yet. */
+        public List<String> cells(int matchdays) {
+            List<String> cells = new java.util.ArrayList<>();
+            for (int n = 1; n <= matchdays; n++) {
+                int matchday = n;
+                cells.add(points.stream().filter(p -> p.matchday() == matchday).findFirst()
+                        .map(p -> String.valueOf(p.position())).orElse(""));
+            }
+            return cells;
+        }
+    }
+
+    record RacePoint(int matchday, int position, int x, int y) {
+    }
+
+    record RaceTick(int matchday, int x, boolean labelled) {
     }
 
     /** "Pokal in Zahlen": how many pairings went to extra time and to penalties, and which ones went the distance. */

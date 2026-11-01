@@ -736,7 +736,26 @@ public class MatchdayPages {
                 MatchdayPageModels.LastYearView.of(de.javamark.matchoracle.matchday.control.LastYearCalculator.of(l, settled, Map.of(
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
                         League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
-                null));
+                null,
+                seasonRace(l, season, shortcut)));
+    }
+
+    /**
+     * Story r019: the table after every matchday so far, from one query — every played match, provisional
+     * ones included, so the last step can be drawn dashed while a result is still open.
+     */
+    private MatchdayPageModels.SeasonRace seasonRace(League league, int season, String shortcut) {
+        List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE);
+        int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
+        List<Standings> afterEach = new ArrayList<>();
+        for (int n = 1; n <= last; n++) {
+            int before = n + 1;
+            afterEach.add(standingsCalculator.standings(league, season, before,
+                    played.stream().filter(m -> m.matchday.number < before).toList()));
+        }
+        boolean lastProvisional = played.stream()
+                .anyMatch(m -> m.matchday.number == last && m.resultStatus == ResultStatus.PROVISIONAL);
+        return MatchdayPageModels.SeasonRace.of(afterEach, lastProvisional, shortcut);
     }
 
     /**
@@ -771,7 +790,7 @@ public class MatchdayPages {
                 runIn(l, season, leaguePhase, shortcut),
                 MatchdayPageModels.GoalTimingView.ofLeague(extraTime ? GoalTimingCalculator.cup(settled) : GoalTimingCalculator.league(settled)),
                 null,
-                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut)));
+                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut), null));
     }
 
     private TemplateInstance cupSeason(League l) {
@@ -787,7 +806,7 @@ public class MatchdayPages {
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
                 null, null, null,
                 MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.cup(settled)),
-                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut)));
+                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut), null));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */

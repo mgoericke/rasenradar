@@ -214,6 +214,13 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Saisonrennen** (`.race`, Saisonseite, Story r019): der Tabellenplatz jedes Vereins nach jedem
+  Spieltag als Linie, Platz 1 oben, am Linienende der Kurzname. Alle Linien neutral (`--ink-mute`,
+  gedämpft); Zeigen, Tippen oder Fokus legt eine Kopie der Linie in `--ink`, 3 px, mit Platzziffern
+  je Spieltag über alle anderen (die Reihenfolge der Linien und damit die Tab-Reihenfolge bleibt die
+  der Tabelle). Ohne Auswahl ist „Mein Verein“ hervorgehoben. Ein vorläufiger letzter Spieltag:
+  letzter Schritt gestrichelt, „vorläufig“ über der Achse. Breiter als der Bildschirm scrollt nur die
+  Box, geöffnet am aktuellen Ende. Darunter „Position nach Spieltag als Tabelle“ zum Aufklappen.
 - **Was braucht {Verein}?** (`.season-targets`, Vereinsseite, Story r039): je Platzierungsziel eine
   Karte mit „typisch N Punkte“ (Median des Tabellenplatzes aus der Saisonaussicht), fehlenden Punkten,
   Restspielen und nötigem gegen bisheriges Tempo, darunter der Anteil der simulierten Saisons. Linke

@@ -136,6 +136,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Noch im Wettbewerb (verbliebene Vereine nach Spielklasse, Ausgeschiedene mit Runde, Pokalsieger) | `CupField` / `MatchdayPages.cupField` |
 | Spannung (offenes Spiel, 1–5, aus Tabelle und Form, Story r073 „Spannendste zuerst") | `TensionCalculator` |
 | Punktestrahl (Tabelle als Punkteachse, Story r022) | `PointsAxis` / `AxisRow` |
+| Saisonrennen (Tabellenplatz aller Vereine je Spieltag, Story r019) | `SeasonRace` / `RaceLine` |
 | Typische Punktzahl (Median der Endpunkte eines Tabellenplatzes über die simulierten Restsaisons, Story r039 „Was braucht {Verein}?“) | `SeasonThreshold` / `SeasonTargets` |
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
 | Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |

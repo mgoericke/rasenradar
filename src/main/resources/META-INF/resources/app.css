@@ -1213,6 +1213,29 @@ h2 { font-size: 1.35rem; }
 .outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+/* story r019: Saisonrennen — every line neutral, the one in view in ink and thicker; scrolls inside its box, never the page */
+.race-scroll { overflow-x: auto; margin: .6rem 0 0; -webkit-overflow-scrolling: touch; }
+.race { display: block; font-family: var(--text); }
+.race-ticks line { stroke: var(--line); stroke-width: 1; }
+.race-ticks text { fill: var(--ink-mute); font-size: 11px; text-anchor: middle; }
+.race-ticks .race-provisional { font-style: italic; }
+.race-line { cursor: pointer; outline: none; }
+.race-line polyline { fill: none; stroke: var(--ink-mute); stroke-opacity: .35; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.race-line .race-tail { stroke-dasharray: 4 3; }
+.race-line .race-name { fill: var(--ink-mute); font-size: 12px; }
+.race-dots { display: none; }
+.race-line:hover polyline, .race-line:focus polyline, .race-top polyline { stroke: var(--ink); stroke-opacity: 1; stroke-width: 3; }
+.race-line:hover .race-name, .race-line:focus .race-name, .race-top .race-name { fill: var(--ink); font-weight: 700; }
+.race-line:focus-visible .race-name { text-decoration: underline; }
+.race-top { pointer-events: none; }
+.race-top .race-dots { display: inline; }
+.race-dots circle { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.race-dots text { fill: var(--ink); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.race-table { margin-top: .6rem; }
+.race-table-scroll { overflow-x: auto; }
+.race-table table { border-collapse: collapse; font-size: .8rem; }
+.race-table th, .race-table td { padding: .2rem .35rem; text-align: center; border-bottom: 1px solid var(--line); }
+.race-table th[scope="row"] { text-align: left; white-space: nowrap; }
 /* story r039: Was braucht {Verein}? — green only for "the pace so far is enough", red only for "out of reach" */
 .season-targets { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .5rem; }
 .season-targets .target { padding: .6rem .75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; background: var(--surface); }

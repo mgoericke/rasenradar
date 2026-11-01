@@ -441,3 +441,39 @@ document.addEventListener('click', function (e) {
     }
   });
 })();
+
+// Story r019: the Saisonrennen. Hovering, tapping or focusing a club draws a copy of its line on a
+// layer above all others, so it is never hidden behind another club; the lines themselves keep
+// their order, so the tab order stays the table's. "Mein Verein" is the line shown when none is.
+(function () {
+  function myClub() {
+    try { var c = JSON.parse(localStorage.getItem('rr-club') || 'null'); return c ? String(c.id) : null; } catch (e) { return null; }
+  }
+  function init() {
+    document.querySelectorAll('[data-race]:not([data-race-ready])').forEach(function (svg) {
+      svg.setAttribute('data-race-ready', '');
+      var top = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      top.setAttribute('class', 'race-top');
+      top.setAttribute('aria-hidden', 'true');
+      svg.appendChild(top);
+      var mine = svg.querySelector('.race-line[data-team="' + myClub() + '"]');
+      function show(line) {
+        top.textContent = '';
+        line = line || mine;
+        if (line) top.appendChild(line.cloneNode(true)).removeAttribute('tabindex');
+      }
+      svg.querySelectorAll('.race-line').forEach(function (line) {
+        line.addEventListener('mouseenter', function () { show(line); });
+        line.addEventListener('focus', function () { show(line); });
+        line.addEventListener('click', function () { show(line); });
+        line.addEventListener('mouseleave', function () { if (document.activeElement !== line) show(null); });
+        line.addEventListener('blur', function () { show(null); });
+      });
+      show(null);
+      // on a narrow screen the box scrolls: open it at today's end, where the names stand
+      svg.parentNode.scrollLeft = svg.parentNode.scrollWidth;
+    });
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('htmx:afterSettle', init);
+})();
