@@ -94,6 +94,19 @@ public final class MatchdayPageModels {
         return ids.isEmpty() ? null : LIVE_SCORES_LINK + "?" + ids + (details ? "&details=true" : "");
     }
 
+    /** Story r034: the weather values of a matchday's fixtures, out of band; {@code /wetter/spiel/{id}} for one match page. */
+    static final String WEATHER_LINK = "/wetter/spieltag";
+
+    /** Story r060: the line on a match page — a derby, or the away side's trip. Null when a ground is unknown. */
+    static String travelLine(Match m, Integer km, String awayCity) {
+        if (km == null) {
+            return null;
+        }
+        return km <= de.javamark.matchoracle.matchday.control.Stadiums.DERBY_KM
+                ? "Derby: " + TravelView.km(km) + " km zwischen den Stadien."
+                : "Anreise für " + shortOrName(m.awayTeam) + ": " + TravelView.km(km) + " km Luftlinie nach " + awayCity + ".";
+    }
+
     /** Polled every minute by a page that shows a running match: fresh score cells, out of band. */
     static final String LIVE_SCORES_LINK = "/live/spielstaende";
 
@@ -423,7 +436,18 @@ public final class MatchdayPageModels {
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
                         LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines,
-                        Map<Long, Integer> tension, Map<Long, Integer> tensionOrder) {
+                        Map<Long, Integer> tension, Map<Long, Integer> tensionOrder, java.util.Set<Long> weather) {
+
+        /** Story r034: whether this fixture keeps a line free for its weather (ahead, in range, ground known). */
+        public boolean weatherOf(long matchId) {
+            return weather.contains(matchId);
+        }
+
+        /** Story r034: one request for all fixtures with a weather line, answered out of band; null without any. */
+        public String weatherLink() {
+            return weather.isEmpty() ? null : WEATHER_LINK + "?" + weather.stream().sorted().map(id -> "match=" + id)
+                    .collect(java.util.stream.Collectors.joining("&"));
+        }
 
         /** Story r073: the Spannung of an open match, 1 to 5, or null for a started or finished one. */
         public Integer tensionOf(long matchId) {
@@ -891,7 +915,7 @@ public final class MatchdayPageModels {
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
                      HeadToHeadSummary headToHead,
                      String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data,
-                     Countdown countdown) {
+                     Countdown countdown, String travelLine, String weatherLink) {
         public List<TeamSituation> teams() {
             return List.of(homeTeam, awayTeam);
         }
@@ -1050,7 +1074,7 @@ public final class MatchdayPageModels {
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
                       ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear,
-                      CupDecisionView decisions, SeasonRace race) {
+                      CupDecisionView decisions, SeasonRace race, TravelView travel) {
         /** The cup's numbers page: no table, so no reach, run-in, streaks, cross table, last year or home advantage. */
         public boolean cup() {
             return reach == null;
@@ -1179,6 +1203,39 @@ public final class MatchdayPageModels {
     }
 
     record RaceTick(int matchday, int x, boolean labelled) {
+    }
+
+    /**
+     * Story r060: "Auswärtsfahrten" — every club by its kilometres to away grounds this season, split
+     * into travelled and ahead (bar widths in percent of the longest total) — and the "Derbys".
+     */
+    record TravelView(String lead, List<TripRow> trips, List<DerbyRow> derbies) {
+
+        static TravelView of(List<de.javamark.matchoracle.matchday.control.TravelCalculator.Trips> trips,
+                             List<de.javamark.matchoracle.matchday.control.TravelCalculator.Derby> derbies, String shortcut) {
+            int max = trips.stream().mapToInt(t -> t.total()).max().orElse(0);
+            List<TripRow> rows = trips.stream().map(t -> new TripRow(shortOrName(t.team()), teamLink(t.team(), shortcut), t.known(),
+                    km(t.total()), km(t.travelled()), km(t.ahead()),
+                    t.longest() == null ? null : t.longest().city() + ", " + km(t.longest().km()) + " km",
+                    max == 0 ? 0 : Math.round(100f * t.travelled() / max), max == 0 ? 0 : Math.round(100f * t.ahead() / max))).toList();
+            String lead = trips.stream().filter(t -> t.known() && t.total() > 0).findFirst()
+                    .map(t -> "Am weitesten reist " + shortOrName(t.team()) + ": " + km(t.total())
+                            + " km Luftlinie zu den Auswärtsspielen dieser Saison.").orElse(null);
+            List<DerbyRow> derbyRows = derbies.stream().map(d -> new DerbyRow(shortOrName(d.first()), shortOrName(d.second()),
+                    d.km(), d.meetings().stream().map(m -> DuelRow.of(m, shortcut)).toList())).toList();
+            return new TravelView(lead, rows, derbyRows);
+        }
+
+        static String km(int km) {
+            return String.format(Locale.GERMANY, "%,d", km);
+        }
+    }
+
+    record TripRow(String name, String link, boolean known, String total, String travelled, String ahead, String longest,
+                   int travelledWidth, int aheadWidth) {
+    }
+
+    record DerbyRow(String first, String second, int km, List<DuelRow> meetings) {
     }
 
     /** Story r026: a club the team page offers to compare with — same league, current season. */

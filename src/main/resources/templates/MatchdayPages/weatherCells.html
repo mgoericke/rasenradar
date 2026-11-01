@@ -1,0 +1,3 @@
+{! story r034: the short weather value of each fixture, into the line the matchday page keeps free for it !}
+{#for e in cells.entrySet}<span id="weather-{e.key}" class="fixture-weather" hx-swap-oob="true">{e.value.temperature} °C, {e.value.sky}</span>
+{/for}

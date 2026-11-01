@@ -139,6 +139,9 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Saisonrennen (Tabellenplatz aller Vereine je Spieltag, Story r019) | `SeasonRace` / `RaceLine` |
 | Vereinsvergleich (zwei Vereine einer Liga nebeneinander, Story r026) | `ComparePage` / `CompareRow` / `DuelRow` |
 | Bereich (Reiter Spieltag / Saison / KI-Bilanz, Story r020) | `.area-tabs` / `data-area` in `base.html` |
+| Stadion / Heimspielort (Koordinaten je OpenLigaDB-Team, `stadiums.jsonl`) | `Stadiums` / `Stadium` |
+| Auswärtsfahrt, Derby (Luftlinie, Derby ≤ 60 km, Story r060) | `TravelCalculator` / `TravelView` |
+| Wetter am Spielort (Bright Sky/DWD, zur Halbzeit, Story r034) | `WeatherService` / `BrightSkyClient` |
 | Sofa-Modus (Spieltag als bildschirmfüllende Bühne, Story r038) | `.board` in `nav.js` |
 | Schaltbarer Abschnitt (Story r100 „Seite anpassen“, nur im Browser gemerkt) | `data-section` / `rr-hidden` |
 | Konferenz nachspielen (Tore des letzten kompletten Spieltags in Minutenfolge, Story r052) | `ConferenceReplay` / `ReplayMatch` / `ReplayGoal` |

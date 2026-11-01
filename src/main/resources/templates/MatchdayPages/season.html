@@ -31,6 +31,8 @@
       {#if page.crossTable}<li data-section-toc="saison-kreuztabelle"><a href="#kreuztabelle">Kreuztabelle</a></li>{/if}
       <li data-section-toc="saison-torminuten"><a href="#torminuten">Wann fallen die Tore?</a></li>
       {#if page.decisions}<li data-section-toc="saison-entscheidung"><a href="#entscheidung">Verlängerung und Elfmeterschießen</a></li>{/if}
+      {#if page.travel}<li data-section-toc="saison-auswaertsfahrten"><a href="#auswaertsfahrten">Auswärtsfahrten</a></li>{/if}
+      {#if page.travel}<li data-section-toc="saison-derbys"><a href="#derbys">Derbys</a></li>{/if}
       {#if !page.cup}<li data-section-toc="saison-heimvorteil"><a href="#heimvorteil">Heimvorteil</a></li>{/if}
     </ol>
   </nav>
@@ -374,6 +376,49 @@
     {/let}
   </section>
   {/if}
+
+{#if page.travel}
+  {! story r060: kilometres to the away grounds, as the crow flies — travelled in ink, still ahead quiet !}
+  {#let t=page.travel}
+  <section class="season-block" id="auswaertsfahrten" data-section="saison-auswaertsfahrten" aria-labelledby="auswaertsfahrten-title">
+    <h2 id="auswaertsfahrten-title">Auswärtsfahrten</h2>
+    <p class="season-sub">Luftlinie vom eigenen Stadion zu allen Auswärtsspielen dieser Saison: schon gefahren und noch zu fahren.</p>
+    {#if t.lead}<p class="season-lead">{t.lead}</p>{/if}
+    <ol class="trips">
+      {#for r in t.trips}
+      <li>
+        <a class="trip-club" href="{r.link}">{r.name}</a>
+        {#if r.known}
+        <span class="trip-total">{r.total} km</span>
+        <span class="trip-bar" aria-hidden="true"><span class="trip-done" style="--w: {r.travelledWidth}"></span><span class="trip-ahead" style="--w: {r.aheadWidth}"></span></span>
+        <span class="trip-detail muted">{r.travelled} km gefahren, {r.ahead} km noch zu fahren{#if r.longest} · am weitesten: {r.longest}{/if}</span>
+        {#else}
+        <span class="trip-detail muted">Entfernung unbekannt</span>
+        {/if}
+      </li>
+      {/for}
+    </ol>
+  </section>
+  <section class="season-block" id="derbys" data-section="saison-derbys" aria-labelledby="derbys-title">
+    <h2 id="derbys-title">Derbys</h2>
+    <p class="season-sub">Paarungen, deren Stadien höchstens 60 km Luftlinie auseinander liegen.</p>
+    {#if t.derbies.isEmpty}
+    <p class="muted">In dieser Saison liegen keine zwei Stadien so nah beieinander.</p>
+    {#else}
+    <ul class="derbies">
+      {#for d in t.derbies}
+      <li>
+        <p class="derby-head"><strong>{d.first} – {d.second}</strong> <span class="muted">{d.km} km zwischen den Stadien</span></p>
+        <ul class="derby-meetings">
+          {#for m in d.meetings}<li><a href="{m.link}">{m.home} – {m.away} <strong>{m.score}</strong> <span class="muted">{#if m.status == 'offen'}{m.date}{#else}{m.date} · {m.status}{/if}</span></a></li>{/for}
+        </ul>
+      </li>
+      {/for}
+    </ul>
+    {/if}
+  </section>
+  {/let}
+{/if}
 
 {#if !page.cup}
   {! story r098: how much the home side really gains — the league as a whole, then the clubs !}

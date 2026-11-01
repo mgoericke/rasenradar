@@ -69,6 +69,9 @@ import de.javamark.matchoracle.matchday.control.MatchCalendar;
 import de.javamark.matchoracle.matchday.control.Stakes;
 import de.javamark.matchoracle.matchday.control.StreakCalculator;
 import de.javamark.matchoracle.matchday.control.TopMatch;
+import de.javamark.matchoracle.matchday.control.TravelCalculator;
+import de.javamark.matchoracle.matchday.control.Stadiums;
+import de.javamark.matchoracle.matchday.control.WeatherService;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
@@ -132,6 +135,8 @@ public class MatchdayPages {
         static native TemplateInstance matchNotFound(MatchNotFoundPage page);
         static native TemplateInstance team(TeamPage page);
         static native TemplateInstance compare(MatchdayPageModels.ComparePage page);
+        static native TemplateInstance weatherLine(WeatherService.Weather weather);
+        static native TemplateInstance weatherCells(Map<Long, WeatherService.Weather> cells);
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
@@ -147,6 +152,9 @@ public class MatchdayPages {
 
     @Inject
     StandingsCalculator standingsCalculator;
+
+    @Inject
+    WeatherService weatherService;
 
     @Inject
     HeadToHeadCalculator headToHeadCalculator;
@@ -738,7 +746,16 @@ public class MatchdayPages {
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
                         League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
                 null,
-                seasonRace(l, season, shortcut)));
+                seasonRace(l, season, shortcut),
+                travel(l, season, shortcut)));
+    }
+
+    /** Story r060: kilometres to the away grounds of the season and the pairings of close grounds. */
+    private static MatchdayPageModels.TravelView travel(League league, int season, String shortcut) {
+        List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
+        all.addAll(Match.findUnplayed(league, season));
+        var ground = TravelCalculator.byExternalId();
+        return MatchdayPageModels.TravelView.of(TravelCalculator.trips(all, ground), TravelCalculator.derbies(all, ground), shortcut);
     }
 
     /**
@@ -791,7 +808,7 @@ public class MatchdayPages {
                 runIn(l, season, leaguePhase, shortcut),
                 MatchdayPageModels.GoalTimingView.ofLeague(extraTime ? GoalTimingCalculator.cup(settled) : GoalTimingCalculator.league(settled)),
                 null,
-                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut), null));
+                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut), null, null));
     }
 
     private TemplateInstance cupSeason(League l) {
@@ -807,7 +824,7 @@ public class MatchdayPages {
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
                 null, null, null,
                 MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.cup(settled)),
-                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut), null));
+                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut), null, null));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */
@@ -872,7 +889,8 @@ public class MatchdayPages {
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
                 stakes(matchday, matches, now), liveTable(matchday, standings, matches, now),
-                splitTables(matchday, playedSoFar), leadLines(matches), tension, tensionOrder(matches, tension));
+                splitTables(matchday, playedSoFar), leadLines(matches), tension, tensionOrder(matches, tension),
+                matches.stream().filter(m -> WeatherService.shown(m, now)).map(m -> m.id).collect(java.util.stream.Collectors.toSet()));
     }
 
     /**
@@ -1129,7 +1147,36 @@ public class MatchdayPages {
                 positionChart(matchday, match.homeTeam, match.awayTeam),
                 standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), standings.includesProvisional(),
                 DataInfo.of(matchday, Instant.now()),
-                Countdown.of(match.kickoff, match.isPlayed(), Instant.now()));
+                Countdown.of(match.kickoff, match.isPlayed(), Instant.now()),
+                MatchdayPageModels.travelLine(match, TravelCalculator.km(match, TravelCalculator.byExternalId()).orElse(null),
+                        Stadiums.of(match.homeTeam.externalId).map(s -> s.city()).orElse(null)),
+                WeatherService.shown(match, Instant.now()) ? "/wetter/spiel/" + match.id : null);
+    }
+
+    /** Story r034: the weather line of a match page (htmx only) — empty when there is nothing to say. */
+    @GET
+    @Path("/wetter/spiel/{id}")
+    public Response weatherLine(@PathParam("id") long id, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        var weather = Match.<Match>findByIdOptional(id).flatMap(m -> weatherService.at(m, now));
+        return Response.ok(Templates.weatherLine(weather.orElse(null))).build();
+    }
+
+    /** Story r034: the short weather values of a matchday's fixtures, swapped out of band (htmx only). */
+    @GET
+    @Path("/wetter/spieltag")
+    public Response weatherCells(@QueryParam("match") List<Long> matchIds, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        Map<Long, WeatherService.Weather> cells = new java.util.LinkedHashMap<>();
+        matchIds.stream().limit(MAX_LIVE_SCORES).distinct().forEach(id -> Match.<Match>findByIdOptional(id)
+                .flatMap(m -> weatherService.at(m, now)).ifPresent(w -> cells.put(id, w)));
+        return Response.ok(Templates.weatherCells(cells)).build();
     }
 
     /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */

@@ -64,6 +64,8 @@
       {! story r053: the course of a finished match; a tap opens the goals (minute, scorer, own goal or penalty) !}
       {#let line=page.leadLineOf(m.id)}{#if line}{#leadLine line=line /}{/if}{/let}
       {#let t=page.tensionOf(m.id)}{#if t}<p class="tension"><span class="tension-steps" aria-hidden="true">{#for i in 5}<span{#if i <= t} class="on"{/if}></span>{/for}</span><span class="tension-label">Spannung</span><span class="sr-only"> {t} von 5</span></p>{/if}{/let}
+      {! story r034: the line is there from the start, so the value fills it without moving anything !}
+      {#if page.weatherOf(m.id)}<p class="fixture-weather-line"><span id="weather-{m.id}" class="fixture-weather"></span></p>{/if}
       {#let stake=page.stakeOf(m.id)}{#if stake}<p class="stakes"><span class="muted">Es geht um:</span> {stake}</p>{/if}{/let}
       {#if page.current && !m.played && !m.live}<p class="good-for" hidden></p>{/if}
       {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
@@ -186,6 +188,7 @@
   <ol class="board-tiles" data-board-tiles></ol>
 </div>
 {/if}
+{#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="none"></div>{/if}
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {/include}

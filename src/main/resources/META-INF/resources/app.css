@@ -838,6 +838,8 @@ h2 { font-size: 1.35rem; }
 /* story r028: the print button needs script, so it shows only once the head script set .js */
 .print-button { display: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
 .js .print-button { display: inline-block; }
+/* stories r038/r052: the board buttons look like the links beside them */
+[data-sofa-open], [data-replay-open] { font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
 .print-note { display: none; }
 
 /* --- landing page, spec 01 "Spieltags-Strom": one stream by day and kickoff block across both
@@ -1213,6 +1215,28 @@ h2 { font-size: 1.35rem; }
 .outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+/* stories r034/r060: weather and trip as plain text in neutral ink — no icon, no colour */
+.match-facts { margin: 0 0 1rem; color: var(--ink-soft); font-size: .95rem; }
+.match-facts p { margin: .2rem 0; }
+.fixture-weather-line { flex-basis: 100%; order: 2; margin: 0; padding-left: 4.85rem; min-height: 1.3em; font-size: .85rem; color: var(--ink-soft); }
+.rr-compact .fixture-weather-line { display: none; }
+/* story r060: Auswärtsfahrten — one bar per club, travelled in ink, still ahead quiet; Derbys as a plain list */
+.trips { list-style: none; margin: .6rem 0 0; padding: 0; }
+.trips > li { display: grid; grid-template-columns: minmax(6rem, 9rem) 5.5rem 1fr; grid-template-areas: "club total bar" ". detail detail";
+  align-items: center; gap: .1rem .75rem; padding: .4rem 0; border-bottom: 1px solid var(--line); }
+.trip-club { grid-area: club; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trip-total { grid-area: total; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.trip-bar { grid-area: bar; display: flex; height: .6rem; }
+.trip-done, .trip-ahead { display: block; height: 100%; width: calc(var(--w) * 1%); }
+.trip-done { background: var(--ink); border-radius: 2px 0 0 2px; }
+.trip-ahead { background: var(--ink-mute); opacity: .35; border-radius: 0 2px 2px 0; }
+.trip-detail { grid-area: detail; font-size: .85rem; }
+@media (max-width: 500px) { .trips > li { grid-template-columns: 1fr auto; grid-template-areas: "club total" "bar bar" "detail detail"; } }
+.derbies { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .75rem; }
+.derby-head { margin: 0 0 .2rem; }
+.derby-meetings { list-style: none; margin: 0; padding: 0; }
+.derby-meetings a { color: var(--ink); text-decoration: none; font-size: .95rem; }
+.derby-meetings a:hover { text-decoration: underline; }
 /* story r026: Vereinsvergleich — mirrored bars, the better value of a pair in full ink, the other quiet; no crest colours */
 .compare { grid-column: 1 / -1; max-width: 56rem; }
 .compare-pick { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .6rem 0 0; }

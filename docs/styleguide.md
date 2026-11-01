@@ -214,6 +214,16 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Auswärtsfahrten und Derbys** (`.trips`, `.derbies`, Saisonseite der Bundesligen, Story r060): je
+  Verein ein Balken der Luftlinien-Kilometer zu allen Auswärtsstadien der Saison, gefahren in `--ink`,
+  noch zu fahren gedämpft, darunter die Zahlen und die weiteste Fahrt; Vereine ohne Stadion am Ende
+  mit „Entfernung unbekannt“. Derbys: Paarungen mit höchstens 60 km zwischen den Stadien, mit beiden
+  Begegnungen. Auf der Spielseite eine Textzeile („Derby: …“ oder „Anreise für …: … km Luftlinie
+  nach …“). Immer „Luftlinie“, nie Fahrstrecke.
+- **Wetter am Spielort** (Spieltagsseite und Spielseite, Story r034): nur Text in neutraler Tinte,
+  kein Symbol, keine Farbe. Spieltag: eine freigehaltene Zeile je kommendem Spiel („6 °C, bewölkt“),
+  die sich ohne Verschieben füllt. Spielseite: „Wetter zur Halbzeit: …“, Regenwahrscheinlichkeit ab
+  30 %, Wind ab 30 km/h, dahinter „Wetterdaten: Deutscher Wetterdienst (DWD) via Bright Sky“.
 - **Bereiche** (`.area-tabs`, unter der Navigation, Story r020): drei Reiter „Spieltag“, „Saison“,
   „KI-Bilanz“ der aktuellen Liga, jeder eine eigene Adresse. Der aktuelle Reiter fett mit 3-px-Linie
   in `--ink` darunter und `aria-current`, nie nur Farbe. Zur Saison gehören Saisonseite,

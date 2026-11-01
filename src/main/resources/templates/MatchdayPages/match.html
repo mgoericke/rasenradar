@@ -33,6 +33,14 @@
 
   {#goals goals=page.goals matchId=page.match.id /}
 
+  {! stories r060 and r034: the trip and the weather at the ground, text only !}
+  {#if page.travelLine || page.weatherLink}
+  <div class="match-facts">
+    {#if page.travelLine}<p class="travel-line">{page.travelLine}</p>{/if}
+    {#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="outerHTML"></div>{/if}
+  </div>
+  {/if}
+
   <div class="match-layout">
     <div class="match-main">
       <section class="situations">
