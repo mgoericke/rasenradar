@@ -477,3 +477,267 @@ document.addEventListener('click', function (e) {
   document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('htmx:afterSettle', init);
 })();
+
+// Stories r038 "Sofa-Modus" and r052 "Konferenz nachspielen": one board, the dark stage in full
+// size. The Sofa-Modus reads the matchday list of this page — the live poll keeps its scores fresh,
+// the board copies them after every poll and marks a changed tile with a static "Neu". The
+// Konferenz plays the last complete matchday back from /{league}/konferenz: 0' to 90'+ in about a
+// minute, every goal at its minute, the real results at the end. Reduced motion: no running clock,
+// one goal per "Nächstes Tor". No sound, nothing flashes.
+(function () {
+  var MINUTE_MS = 620;
+  var HALF_TIME_MS = 1800;
+  var board, opener, mode, lock, replay;
+
+  function $(sel) { return board.querySelector(sel); }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function text(el) { return el ? el.textContent.trim() : ''; }
+  function goalsOf(score) { var m = /(\d+):(\d+)/.exec(score || ''); return m ? +m[1] + +m[2] : 0; }
+
+  function tile(t) {
+    var li = document.createElement('li');
+    li.className = 'board-tile';
+    li.innerHTML = '<a><span class="bt-status"></span><span class="bt-team bt-home"></span>' +
+        '<span class="bt-score"></span><span class="bt-team bt-away"></span><span class="bt-line"></span>' +
+        '<span class="bt-new" hidden>Neu</span></a>';
+    var a = li.querySelector('a');
+    a.href = t.link;
+    [['.bt-home', t.homeIcon, t.homeShort], ['.bt-away', t.awayIcon, t.awayShort]].forEach(function (side) {
+      var box = li.querySelector(side[0]);
+      if (side[1]) { var img = document.createElement('img'); img.src = side[1]; img.alt = ''; img.className = 'crest'; box.appendChild(img); }
+      var name = document.createElement('span'); name.className = 'bt-name'; name.textContent = side[2]; box.appendChild(name);
+    });
+    return li;
+  }
+  function set(li, status, score, line, state) {
+    li.querySelector('.bt-status').textContent = status;
+    li.querySelector('.bt-score').textContent = score;
+    var l = li.querySelector('.bt-line');
+    l.textContent = line ? line.text : '';
+    l.className = 'bt-line' + (line && line.ki ? ' bt-ki' : '');
+    li.classList.remove('is-live', 'is-played', 'is-open');
+    li.classList.add(state);
+  }
+  function mark(li) {
+    board.querySelectorAll('.board-tile.is-changed').forEach(function (o) { o.classList.remove('is-changed'); o.querySelector('.bt-new').hidden = true; });
+    li.classList.add('is-changed');
+    li.querySelector('.bt-new').hidden = false;
+  }
+
+  // --- Sofa-Modus: the page's own list is the source ---
+  function sofaRows() {
+    var seen = {};
+    return Array.prototype.slice.call(document.querySelectorAll('li[data-watch]')).filter(function (li) {
+      var id = li.getAttribute('data-watch');
+      if (seen[id] || !li.querySelector('a.fixture')) return false;
+      return (seen[id] = true);
+    });
+  }
+  function sofaBuild() {
+    var list = $('[data-board-tiles]');
+    list.textContent = '';
+    sofaRows().forEach(function (row) {
+      var a = row.querySelector('a.fixture');
+      var crest = function (side) { var img = a.querySelector(side + ' img'); return img ? img.getAttribute('src') : null; };
+      var li = tile({ link: a.getAttribute('href'), homeShort: text(a.querySelector('.home .team-name.short')) || text(a.querySelector('.home .team-name')),
+        awayShort: text(a.querySelector('.away .team-name.short')) || text(a.querySelector('.away .team-name')),
+        homeIcon: crest('.home'), awayIcon: crest('.away') });
+      li.setAttribute('data-board-match', row.getAttribute('data-watch'));
+      li.setAttribute('data-time', text(a.querySelector('.time')));
+      list.appendChild(li);
+    });
+    sofaSync(false);
+  }
+  function sofaSync(markChanges) {
+    var running = 0, goals = 0;
+    var rank = { 'is-live': 0, 'is-played': 1, 'is-open': 2 };
+    board.querySelectorAll('[data-board-match]').forEach(function (li) {
+      var id = li.getAttribute('data-board-match');
+      var score = document.querySelector('.score[data-match="' + id + '"]');
+      if (!score) return;
+      var live = score.classList.contains('is-live'), played = score.classList.contains('is-played');
+      var shown = played || (live && score.classList.contains('has-score')) ? text(score) : live ? '0:0' : '–:–';
+      var state = live ? 'is-live' : played ? 'is-played' : 'is-open';
+      var status = live ? 'Läuft' : played ? (score.classList.contains('is-provisional') ? 'Ende · vorläufig' : 'Ende') : li.getAttribute('data-time');
+      var marker = document.getElementById('forecast-marker-' + id);
+      // "KI-Richtwert 2:1: Tendenz getroffen" (settled) or "KI-Richtwert 2:1: Tendenz zum …" (not yet)
+      var f = played && marker ? /KI-Richtwert (\d+:\d+)(?:: Tendenz (getroffen|daneben))?/.exec(marker.getAttribute('title') || '') : null;
+      var ki = f ? { text: 'KI-Vorschau ' + f[1] + (f[2] ? ' · Tendenz ' + f[2] : ''), ki: true } : null;
+      var before = li.querySelector('.bt-score').textContent;
+      set(li, status, shown, ki, state);
+      if (markChanges && before && before !== shown) mark(li);
+      li.style.order = rank[state];
+      if (live) running++;
+      if (live || played) goals += goalsOf(shown);
+    });
+    $('[data-board-summary]').textContent = (running ? plural(running, 'Spiel läuft', 'Spiele laufen') : 'Keine Spiele laufen') +
+        ', ' + plural(goals, 'Tor', 'Tore') + ' bisher';
+  }
+
+  // --- Konferenz: a fetched matchday played back ---
+  function replayStart(data) {
+    var list = $('[data-board-tiles]');
+    list.textContent = '';
+    var events = [];
+    data.matches.forEach(function (m, i) {
+      var li = tile(m);
+      li.setAttribute('data-replay', i);
+      list.appendChild(li);
+      m.goals.forEach(function (g) { events.push({ match: i, goal: g }); });
+    });
+    events.sort(function (a, b) { return a.goal.minute - b.goal.minute; });
+    var end = Math.max(90, events.length ? events[events.length - 1].goal.minute : 90);
+    replay = { data: data, events: events, next: 0, minute: 0, end: end, timer: null, paused: false,
+               stepwise: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches };
+    data.matches.forEach(function (m, i) { set(tileAt(i), "0'", '0:0', null, 'is-live'); });
+    $('[data-board-ticker]').hidden = false;
+    $('[data-board-ticker]').textContent = replay.stepwise ? 'Anpfiff. Weiter mit „Nächstes Tor“.' : 'Anpfiff.';
+    $('[data-board-controls]').hidden = false;
+    $('[data-replay-step]').hidden = !replay.stepwise;
+    $('[data-replay-pause]').hidden = replay.stepwise;
+    $('[data-replay-pause]').textContent = 'Pause';
+    summary();
+    if (!replay.stepwise) tick();
+  }
+  function tileAt(i) { return board.querySelector('[data-replay="' + i + '"]'); }
+  function summary() {
+    var goals = replay.events.slice(0, replay.next).length;
+    $('[data-board-summary]').textContent = (replay.minute >= replay.end ? 'Abpfiff' : replay.minute + '. Minute') + ', ' + plural(goals, 'Tor', 'Tore');
+  }
+  function score(e) {
+    var m = replay.data.matches[e.match], g = e.goal, li = tileAt(e.match);
+    var who = g.scorer ? g.scorer : 'Tor';
+    var line = g.minute + '. ' + who + (g.note ? ' (' + g.note + ')' : '');
+    set(li, g.minute + "'", g.score, { text: line }, 'is-live');
+    mark(li);
+    $('[data-board-ticker]').textContent = 'Tor für ' + (g.forHome ? m.homeShort : m.awayShort) + '! ' + m.homeShort + ' ' + g.score +
+        ' ' + m.awayShort + (g.scorer ? ' – ' + g.scorer + ' (' + g.minute + '.)' : '');
+  }
+  function advanceTo(minute) {
+    replay.minute = minute;
+    while (replay.next < replay.events.length && replay.events[replay.next].goal.minute <= minute) score(replay.events[replay.next++]);
+    replay.data.matches.forEach(function (m, i) { tileAt(i).querySelector('.bt-status').textContent = minute + "'"; });
+    summary();
+    if (minute >= replay.end) finish();
+  }
+  function finish() {
+    clearTimeout(replay.timer);
+    replay.minute = replay.end;
+    replay.data.matches.forEach(function (m, i) {
+      var li = tileAt(i);
+      set(li, 'Ende', m.result, { text: li.querySelector('.bt-line').textContent }, 'is-played');
+    });
+    $('[data-board-ticker]').textContent = 'Abpfiff. ' + plural(replay.data.goals, 'Tor', 'Tore') + ' an diesem Spieltag.';
+    $('[data-board-summary]').textContent = 'Abpfiff, ' + plural(replay.data.goals, 'Tor', 'Tore');
+    $('[data-replay-pause]').hidden = true;
+    $('[data-replay-step]').hidden = true;
+  }
+  function tick() {
+    if (replay.paused || replay.minute >= replay.end) return;
+    replay.timer = setTimeout(function () {
+      advanceTo(replay.minute + 1);
+      if (replay.minute === 45) {
+        $('[data-board-summary]').textContent = 'Halbzeit, ' + plural(replay.next, 'Tor', 'Tore');
+        replay.timer = setTimeout(tick, HALF_TIME_MS);
+      } else {
+        tick();
+      }
+    }, MINUTE_MS);
+  }
+  function stop() { if (replay) { clearTimeout(replay.timer); replay = null; } }
+
+  // --- the board itself ---
+  function wake() {
+    if (!('wakeLock' in navigator)) {
+      var note = $('[data-board-note]');
+      note.textContent = 'Dieses Gerät lässt den Bildschirm nicht wach halten – er kann sich wie gewohnt abschalten.';
+      note.hidden = false;
+      return;
+    }
+    navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {});
+  }
+  function open(kind, button) {
+    board = document.querySelector('[data-board]');
+    if (!board) return;
+    opener = button; mode = kind;
+    $('[data-board-note]').hidden = true;
+    $('[data-board-controls]').hidden = true;
+    $('[data-board-ticker]').hidden = true;
+    board.hidden = false;
+    document.documentElement.classList.add('board-open');
+    if (board.requestFullscreen) board.requestFullscreen().catch(function () {});
+    wake();
+    $('[data-board-close]').focus();
+    if (kind === 'sofa') {
+      $('[data-board-title]').textContent = text(document.querySelector('.matchday-title')) + ' · ' + text(document.querySelector('.matchday-season'));
+      sofaBuild();
+    } else {
+      $('[data-board-title]').textContent = 'Konferenz';
+      $('[data-board-summary]').textContent = 'Wird geladen …';
+      $('[data-board-tiles]').textContent = '';
+      fetch(button.getAttribute('data-replay-open'), { headers: { Accept: 'application/json' } })
+          .then(function (r) { if (!r.ok) throw r; return r.json(); })
+          .then(function (data) { if (mode !== 'replay' || board.hidden) return; $('[data-board-title]').textContent = 'Konferenz · ' + data.title; replayStart(data); })
+          .catch(function () { $('[data-board-summary]').textContent = 'Noch kein Spieltag komplett beendet.'; });
+    }
+  }
+  function close() {
+    if (!board || board.hidden) return;
+    stop();
+    board.hidden = true;
+    document.documentElement.classList.remove('board-open');
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+    if (lock) { lock.release().catch(function () {}); lock = null; }
+    if (opener) opener.focus();
+    mode = null;
+  }
+
+  document.addEventListener('click', function (e) {
+    var sofa = e.target.closest('[data-sofa-open]');
+    if (sofa) { open('sofa', sofa); return; }
+    var conf = e.target.closest('[data-replay-open]');
+    if (conf) { open('replay', conf); return; }
+    if (!board || board.hidden) return;
+    if (e.target.closest('[data-board-close]')) { close(); return; }
+    if (e.target.closest('[data-replay-again]') && replay) { var d = replay.data; stop(); replayStart(d); return; }
+    if (e.target.closest('[data-replay-step]') && replay) {
+      if (replay.next < replay.events.length) advanceTo(replay.events[replay.next].goal.minute); else advanceTo(replay.end);
+      return;
+    }
+    var pause = e.target.closest('[data-replay-pause]');
+    if (pause && replay) {
+      replay.paused = !replay.paused;
+      pause.textContent = replay.paused ? 'Weiter' : 'Pause';
+      if (replay.paused) clearTimeout(replay.timer); else tick();
+      return;
+    }
+    // a tile leads to its match page: leave the board first, so the page underneath is as it was
+    if (e.target.closest('.board-tile a')) close();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!board || board.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+    if (e.key !== 'Tab') return;
+    var items = Array.prototype.slice.call(board.querySelectorAll('button:not([hidden]), a[href]'))
+        .filter(function (el) { return !el.closest('[hidden]'); });
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement && board && !board.hidden) close();
+  });
+  document.addEventListener('visibilitychange', function () {
+    // the browser drops a wake lock while the tab is hidden; take it again on return
+    if (board && !board.hidden && document.visibilityState === 'visible') wake();
+  });
+  // the live poll swaps the page's score cells; the Sofa-Modus copies what changed
+  document.addEventListener('htmx:afterSettle', function () { if (board && !board.hidden && mode === 'sofa') sofaSync(true); });
+  document.addEventListener('htmx:oobAfterSwap', function () { if (board && !board.hidden && mode === 'sofa') sofaSync(true); });
+  function init() { document.querySelectorAll('[data-sofa-open], [data-replay-open]').forEach(function (b) { b.hidden = false; }); }
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('htmx:afterSettle', init);
+  // an hx-boost navigation away swaps the page: the board goes with it
+  document.addEventListener('htmx:beforeSwap', function (e) { if (e.detail && e.detail.target === document.body) close(); });
+})();

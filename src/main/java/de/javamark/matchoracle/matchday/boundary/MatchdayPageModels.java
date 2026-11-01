@@ -842,6 +842,47 @@ public final class MatchdayPageModels {
         }
     }
 
+    /**
+     * Story r052 "Konferenz nachspielen": the last complete matchday of a league, FINAL results only,
+     * each match with its goals in the order they fell — the board in nav.js plays them back. No
+     * KI-Vorschau in here. A goal without a minute counts as a 90th-minute goal.
+     */
+    record ConferenceReplay(String title, int goals, List<ReplayMatch> matches) {
+
+        static ConferenceReplay of(String title, List<Match> matches, String shortcut) {
+            List<ReplayMatch> rows = matches.stream()
+                    .sorted(java.util.Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.homeTeam.name))
+                    .map(m -> ReplayMatch.of(m, shortcut)).toList();
+            int goals = matches.stream().mapToInt(m -> m.fullTimeScore.home + m.fullTimeScore.away).sum();
+            return new ConferenceReplay(title, goals, rows);
+        }
+    }
+
+    record ReplayMatch(String home, String away, String homeShort, String awayShort, String homeIcon, String awayIcon,
+                       String link, String result, List<ReplayGoal> goals) {
+
+        static ReplayMatch of(Match m, String shortcut) {
+            List<ReplayGoal> goals = new java.util.ArrayList<>();
+            int prevHome = 0;
+            for (Goal g : m.matchGoals()) {
+                if (g.scoreAfter == null) {
+                    continue;
+                }
+                boolean forHome = g.scoreAfter.home > prevHome;
+                prevHome = g.scoreAfter.home;
+                goals.add(new ReplayGoal(g.minute == null ? 90 : g.minute, forHome, g.scorerName,
+                        g.penalty ? "Elfmeter" : g.ownGoal ? "Eigentor" : null, g.scoreAfter.home + ":" + g.scoreAfter.away));
+            }
+            return new ReplayMatch(m.homeTeam.name, m.awayTeam.name, shortOrName(m.homeTeam), shortOrName(m.awayTeam),
+                    crestLink(m.homeTeam), crestLink(m.awayTeam), "/" + shortcut + "/matches/" + m.id,
+                    m.fullTimeScore.home + ":" + m.fullTimeScore.away, List.copyOf(goals));
+        }
+    }
+
+    /** {@code forHome}: the home side's score went up — an own goal counts for the side it helped. */
+    record ReplayGoal(int minute, boolean forHome, String scorer, String note, String score) {
+    }
+
     /** Story r005: the page for a match link that leads nowhere, with the way to the league's current matchday. */
     record MatchNotFoundPage(Nav nav, String currentLink) {
     }

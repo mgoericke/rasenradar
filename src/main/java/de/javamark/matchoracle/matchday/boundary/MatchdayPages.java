@@ -1073,6 +1073,30 @@ public class MatchdayPages {
         return Response.ok(Templates.liveScores(new LiveScoresFragment(rows, detail, goals, keepPolling, countdown))).build();
     }
 
+    /**
+     * Story r052: the last complete matchday of a Bundesliga — every match FINAL — as data for the
+     * "Konferenz nachspielen" board. 404 while no matchday of the season is complete yet.
+     */
+    @GET
+    @Path("/{league}/konferenz")
+    @Produces(MediaType.APPLICATION_JSON)
+    public MatchdayPageModels.ConferenceReplay conference(@PathParam("league") String league) {
+        League l = league(league);
+        if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
+            throw new NotFoundException("no conference for " + league);
+        }
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> played = Match.findPlayedBefore(l, season, Integer.MAX_VALUE);
+        java.util.Set<Integer> incomplete = new java.util.HashSet<>();
+        Match.findUnplayed(l, season).forEach(m -> incomplete.add(m.matchday.number));
+        played.stream().filter(m -> m.resultStatus != ResultStatus.FINAL).forEach(m -> incomplete.add(m.matchday.number));
+        int last = played.stream().mapToInt(m -> m.matchday.number).filter(n -> !incomplete.contains(n)).max()
+                .orElseThrow(() -> new NotFoundException("no complete matchday yet"));
+        List<Match> matches = played.stream().filter(m -> m.matchday.number == last).toList();
+        return MatchdayPageModels.ConferenceReplay.of(last + ". Spieltag · " + MatchdayPageModels.leagueName(l), matches,
+                l.sourceShortcut());
+    }
+
     /** More than any page shows at once (two Bundesligas, one matchday each); caps what a crafted URL can ask for. */
     private static final int MAX_LIVE_SCORES = 40;
 

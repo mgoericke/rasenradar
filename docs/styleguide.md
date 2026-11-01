@@ -214,6 +214,16 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Bühne in groß** (`.board`, Spieltagsseite, Stories r038 „Sofa-Modus“ und r052 „Konferenz
+  nachspielen“): die dunkle Bühne bildschirmfüllend (Vollbild, sonst fensterfüllend), nur
+  Stage-Tokens, kein Messing, kein zweites Dunkel-Thema. Kopf mit Marke, Titel, Zusammenfassung
+  („2 Spiele laufen, 12 Tore bisher“) und „Beenden“; darunter je Spiel eine große Kachel mit
+  Wappen, Kurznamen, Spielstand in der Display-Schrift und Status („Läuft“, „Ende · vorläufig“,
+  Anstoßzeit). Laufende zuerst, dann beendete, dann offene. Eine geänderte Kachel bekommt einen
+  dicken Rand und ein statisches „Neu“, nichts blinkt. Die KI-Zeile beendeter Spiele in
+  `--ki-on-turf`, als „KI-Vorschau“ benannt. Die Konferenz: Uhr von 0' bis Abpfiff in rund einer
+  Minute, Tickerzeile „Tor für …!“, Knöpfe „Pause“/„Weiter“ und „Nochmal“; bei reduzierter
+  Bewegung keine laufende Uhr, sondern „Nächstes Tor“. Escape schließt, der Fokus kehrt zurück.
 - **Saisonrennen** (`.race`, Saisonseite, Story r019): der Tabellenplatz jedes Vereins nach jedem
   Spieltag als Linie, Platz 1 oben, am Linienende der Kurzname. Alle Linien neutral (`--ink-mute`,
   gedämpft); Zeigen, Tippen oder Fokus legt eine Kopie der Linie in `--ink`, 3 px, mit Platzziffern
