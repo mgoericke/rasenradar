@@ -1308,15 +1308,15 @@ public final class MatchdayPageModels {
 
         /** Null for an unplayed match or one whose goal list does not add up to its final score. */
         static LeadLine of(Match m) {
-            if (m.fullTimeScore == null || m.goals.size() != m.fullTimeScore.home + m.fullTimeScore.away
-                    || m.goals.stream().anyMatch(g -> g.minute == null || g.scoreAfter == null)) {
+            if (m.fullTimeScore == null || m.matchGoals().size() != m.fullTimeScore.home + m.fullTimeScore.away
+                    || m.matchGoals().stream().anyMatch(g -> g.minute == null || g.scoreAfter == null)) {
                 return null;
             }
             double end = m.decision != null && m.decision != Decision.REGULAR ? LAST_EXTRA_MINUTE : LAST_MINUTE;
             StringBuilder path = new StringBuilder("M0 12");
             List<GoalRow> rows = new java.util.ArrayList<>();
             Score before = new Score(0, 0);
-            for (Goal g : m.goals) {
+            for (Goal g : m.matchGoals()) {
                 boolean forHome = g.scoreAfter.home > before.home;
                 before = g.scoreAfter;
                 int lead = Math.max(-CLAMP, Math.min(CLAMP, g.scoreAfter.home - g.scoreAfter.away));
@@ -1324,7 +1324,7 @@ public final class MatchdayPageModels {
                 rows.add(GoalRow.of(g, forHome));
             }
             path.append(" H100");
-            String label = m.goals.isEmpty() ? "Spielverlauf: keine Tore"
+            String label = m.matchGoals().isEmpty() ? "Spielverlauf: keine Tore"
                     : "Spielverlauf: " + rows.stream().map(r -> r.minute() + " " + r.score()).collect(java.util.stream.Collectors.joining(", "));
             return new LeadLine(path.toString(), label, List.copyOf(rows), end);
         }

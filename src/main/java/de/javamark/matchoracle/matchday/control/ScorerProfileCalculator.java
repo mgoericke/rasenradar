@@ -80,7 +80,7 @@ public final class ScorerProfileCalculator {
             int before = 0;
             List<ScorerGoal> ofMatch = new ArrayList<>();
             List<String> names = new ArrayList<>();
-            for (Goal g : m.goals) {
+            for (Goal g : m.matchGoals()) {
                 int after = home ? g.scoreAfter.home : g.scoreAfter.away;
                 if (after > before && !g.ownGoal && g.scorerName != null) {
                     ofMatch.add(new ScorerGoal(m, home, home ? m.awayTeam : m.homeTeam, g.minute, after,

@@ -51,7 +51,7 @@ public final class ComebackCalculator {
             counted++;
             // the largest deficit each side faced at any moment (home minus away, from both sides)
             int worstForHome = 0, worstForAway = 0;
-            for (Goal g : m.goals) {
+            for (Goal g : m.matchGoals()) {
                 int diff = g.scoreAfter.home - g.scoreAfter.away;
                 worstForHome = Math.max(worstForHome, -diff);
                 worstForAway = Math.max(worstForAway, diff);
@@ -88,9 +88,9 @@ public final class ComebackCalculator {
 
     /** The goal list adds up to the final score, so the course of the match is known. */
     static boolean complete(Match m) {
-        if (m.goals.size() != m.fullTimeScore.home + m.fullTimeScore.away) return false;
-        if (m.goals.isEmpty()) return true;
-        Goal last = m.goals.getLast();
+        if (m.matchGoals().size() != m.fullTimeScore.home + m.fullTimeScore.away) return false;
+        if (m.matchGoals().isEmpty()) return true;
+        Goal last = m.matchGoals().getLast();
         return last.scoreAfter.home == m.fullTimeScore.home && last.scoreAfter.away == m.fullTimeScore.away;
     }
 }

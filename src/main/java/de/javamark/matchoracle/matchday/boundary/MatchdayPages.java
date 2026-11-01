@@ -622,7 +622,7 @@ public class MatchdayPages {
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
         var scorers = scorerCalculator.leagueScorersFor(l, season);
         Map<String, ClubLook> clubs = new HashMap<>();
-        Match.findPlayedBefore(l, season, Integer.MAX_VALUE).forEach(m -> {
+        ScorerCalculator.seasonMatches(l, season).forEach(m -> {
             for (Team t : List.of(m.homeTeam, m.awayTeam)) {
                 clubs.putIfAbsent(t.name, new ClubLook(t.shortName == null ? t.name : t.shortName, MatchdayPageModels.crestLink(t)));
             }
@@ -898,7 +898,7 @@ public class MatchdayPages {
     private static List<GoalRow> goalRows(Match match) {
         List<GoalRow> goals = new ArrayList<>();
         int prevHome = 0;
-        for (Goal g : match.goals) {
+        for (Goal g : match.matchGoals()) {
             goals.add(GoalRow.of(g, g.scoreAfter.home > prevHome));
             prevHome = g.scoreAfter.home;
         }

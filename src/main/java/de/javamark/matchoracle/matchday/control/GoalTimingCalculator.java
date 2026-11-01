@@ -32,7 +32,7 @@ public class GoalTimingCalculator {
         int[] goals = new int[LABELS.length];
         for (Match match : matches) {
             if (match.fullTimeScore == null || match.resultStatus != ResultStatus.FINAL) continue;
-            for (Goal goal : match.goals) {
+            for (Goal goal : match.matchGoals()) {
                 if (goal.minute != null) goals[window(goal.minute)]++;
             }
         }
@@ -50,7 +50,7 @@ public class GoalTimingCalculator {
         for (Match match : matches) {
             boolean home = match.homeTeam.equals(team);
             Score before = new Score(0, 0);
-            for (Goal goal : match.goals) {
+            for (Goal goal : match.matchGoals()) {
                 boolean homeScored = goal.scoreAfter.home > before.home;
                 before = goal.scoreAfter;
                 if (goal.minute == null) {

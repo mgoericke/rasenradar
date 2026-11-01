@@ -84,4 +84,17 @@ class LeadLineTest {
         assertEquals("72.0", line.fullTime());
         assertNull(LeadLine.of(match(0, 0)).fullTime());
     }
+
+    @Test
+    void theKicksOfAPenaltyShootoutAreNotGoalsOfTheMatch() {
+        Match m = match(1, 1);
+        m.decision = de.javamark.matchoracle.matchday.entity.Decision.PENALTIES;
+        goal(m, 0, 2, 1).penalty = true; // the source lists the shootout first, counting on from 1:1
+        goal(m, 0, 2, 2).penalty = true;
+        goal(m, 7, 1, 0);
+        goal(m, 48, 1, 1);
+
+        assertEquals(2, m.matchGoals().size());
+        assertEquals("1:1", LeadLine.of(m).goals().getLast().score());
+    }
 }
