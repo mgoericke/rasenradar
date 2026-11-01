@@ -1,0 +1,15 @@
+{! Design r102: the KI line on the start page's stage — one marked line under the chalk line, the
+   chances under the clubs' own names, the forecaster's reasoning clipped to one line. !}
+{#if fragment.forecast}
+{#let f=fragment.forecast v=fragment.verdict}
+<p class="stage-ki-figures"><span class="ki-chip">KI</span> <strong><span class="sr-only">Richtwert </span>{f.expectedScore}</strong>
+  <span>{fragment.home} {f.homeWin} % · Remis {f.draw} % · {fragment.away} {f.awayWin} %</span>
+  {#if v.hit != null}<span class="stage-ki-verdict{#if v.hit} is-hit{/if}">{#if v.exact}exakt getroffen{#else if v.hit}getroffen{#else}daneben{/if}{#if v.provisional} · vorläufig{/if}</span>{/if}
+</p>
+<p class="stage-ki-text">{f.reasoning}</p>
+{/let}
+{#else if fragment.running}
+<p class="stage-ki-figures"><span class="ki-chip">KI</span> KI-Vorschau wird gerade erstellt …</p>
+{#else}
+<p class="stage-ki-figures"><span class="ki-chip">KI</span> Noch keine KI-Vorschau zu diesem Spiel.</p>
+{/if}

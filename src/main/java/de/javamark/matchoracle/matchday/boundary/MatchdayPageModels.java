@@ -402,9 +402,55 @@ public final class MatchdayPageModels {
 
     /**
      * The start page's stage: one match on the pitch, the second place the styleguide allows it.
-     * {@code label} is "Topspiel" or "Mein Verein"; {@code reason} names both places, empty without.
+     * {@code label} is "Topspiel" or "Mein Verein", empty for a match the visitor browsed to;
+     * {@code reason} names both places, empty without. {@code status} stands above the score
+     * ("Endstand", "Läuft", "Anstoß"). {@code kiLink} loads the KI line, null where there is no
+     * KI-Vorschau. {@code browse} is the way through the start page's matches, null without.
      */
-    record TopStage(String label, String leagueName, String when, String reason, MatchRow match) {
+    record TopStage(String label, String leagueName, String when, String reason, String status, MatchRow match,
+                    StageTeam home, StageTeam away, String kiLink, StageBrowse browse) {
+        /** Both clubs' facts, home first; empty without a table. */
+        public List<StageTeam> clubs() {
+            return home == null ? List.of() : List.of(home, away);
+        }
+    }
+
+    /** Design r102: a club's facts on the stage — place and points before the match, the form, newest first. */
+    record StageTeam(Integer position, int points, List<FormChip> form) {
+    }
+
+    /** One result of the form as a letter: S, U or N, with what it was in words. */
+    record FormChip(String letter, String result, String title) {
+        static FormChip of(TeamMatchView v) {
+            String letter = switch (v.result()) {
+                case WIN -> "S";
+                case DRAW -> "U";
+                case LOSS -> "N";
+            };
+            return new FormChip(letter, v.result().name().toLowerCase(),
+                    DAY_SHORT.format(v.match().kickoff.atZone(DISPLAY_ZONE)) + " " + (v.home() ? "gegen " : "bei ")
+                            + v.opponent().name + " " + v.goalsFor() + ":" + v.goalsAgainst());
+        }
+    }
+
+    /** Design r102: browsing the stage through the start page's matches — "Spiel 11 von 18". */
+    record StageBrowse(long previous, long next, int position, int count) {
+        /**
+         * The way from {@code current} through {@code order}, round at both ends. {@code position} is 0
+         * when the stage shows a match that is not on the page ("Mein Verein" in another competition) —
+         * the arrows then lead to the page's first and last match. Null with fewer than two matches.
+         */
+        static StageBrowse of(List<Long> order, long current) {
+            int count = order.size();
+            int at = order.indexOf(current);
+            if (count < 2) {
+                return null;
+            }
+            if (at < 0) {
+                return new StageBrowse(order.getLast(), order.getFirst(), 0, count);
+            }
+            return new StageBrowse(order.get((at - 1 + count) % count), order.get((at + 1) % count), at + 1, count);
+        }
     }
 
     /**

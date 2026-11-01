@@ -57,6 +57,7 @@ public class ForecastPages {
         static native TemplateInstance matchdayForecasts(MatchdayForecastsPage page);
         static native TemplateInstance howItWorks(HowItWorksPage page);
         static native TemplateInstance summary(SummaryFragment fragment);
+        static native TemplateInstance stage(StageFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
         static native TemplateInstance streamForecasts(List<StreamCell> cells, List<SlotSummary> slots);
     }
@@ -307,6 +308,25 @@ public class ForecastPages {
         Settlement settlement = forecast.map(f -> Settlement.of(f, score)).orElse(null);
         return Templates.summary(new SummaryFragment(link, played, latest == null && queue.isQueuedOrRunning(matchId), latest, verdict,
                 settlement));
+    }
+
+    /**
+     * Design r102: the KI line on the start page's stage — guide score, the three chances under the
+     * clubs' names, the forecaster's reasoning as one clipped line and, once played, the verdict.
+     * No reasoning out of band: the stage has no place for it, the forecast page has.
+     */
+    @GET
+    @Path("/{league}/matches/{id}/forecast/buehne")
+    public TemplateInstance stageFragment(@PathParam("league") String league, @PathParam("id") long matchId,
+                                          @QueryParam("home") @DefaultValue("Heim") String home,
+                                          @QueryParam("away") @DefaultValue("Auswärts") String away) {
+        Optional<Forecast> forecast = Forecast.latestBeforeKickoff(Forecast.findByMatch(matchId));
+        MatchdayFacade.MatchScore score = matchday.scoresOf(List.of(matchId)).get(matchId);
+        return Templates.stage(new StageFragment(home, away, forecast.map(ForecastView::of).orElse(null),
+                StreamCell.of(matchId, forecast, score), forecast.isEmpty() && queue.isQueuedOrRunning(matchId)));
+    }
+
+    record StageFragment(String home, String away, ForecastView forecast, StreamCell verdict, boolean running) {
     }
 
     /**

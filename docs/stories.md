@@ -44,7 +44,7 @@ All decided in [FEEDBACK.md](FEEDBACK.md); the stories are written accordingly.
 | r070 Es geht um | Spitzenspiel / Kellerduell | both on places 1–4 / both on places 15–18 |
 | r073 Spannendste zuerst | "close in points" | at most 3 points apart |
 | r068 Serien | a streak counts from | 3 wins, 4 unbeaten, 3 defeats |
-| r071 Schluss nach 80 | cut-off | goals up to and including minute 80 |
+| r071 Schluss nach 80 | cut-off | dropped on 1 Nov 2026 (Mark); only „Halbzeit“ stays |
 | r091 Aufholjagden | "after trailing" | behind at any time in the match |
 | r078 Gut für den eigenen Verein | table neighbours | up to 3 places away |
 | r016 Torminuten | text finding shown from | 5 goals |
@@ -869,7 +869,7 @@ Lab reference: [CHANGELOG entry](../monitoring/CHANGELOG.md#r070--es-geht-um) ·
 ---
 
 ### r071 – Schluss nach 80
-Lab reference: [CHANGELOG entry](../monitoring/CHANGELOG.md#r071--schluss-nach-80) · [Snapshot](../snapshots/r071/) · Triage: keep
+Lab reference: [CHANGELOG entry](../monitoring/CHANGELOG.md#r071--schluss-nach-80) · [Snapshot](../snapshots/r071/) · Triage: keep · **1 Nov 2026: „Schluss nach 80“ dropped (Mark), only „Halbzeit“ stays**
 
 **Title:** Table at half-time and after 80 minutes
 **Story:** As a fan, I want to see the table as it would be if all matches had ended at half-time or after 80 minutes, so that I can see which clubs win or lose points late.

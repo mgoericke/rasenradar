@@ -218,9 +218,11 @@ document.addEventListener('click', function (e) {
     var id = c ? String(c.id) : '';
     if (!force && slot.dataset.club === id) return;
     slot.dataset.club = id;
-    if (!c) { slot.innerHTML = slot.rrTop; return; }
+    // the kept top match goes back as plain markup; htmx.process wires its KI line and arrows again
+    function restore() { slot.innerHTML = slot.rrTop; htmx.process(slot); }
+    if (!c) { restore(); return; }
     htmx.ajax('GET', '/mein-verein/' + c.id + '/topspiel', { target: slot, swap: 'innerHTML' })
-      .then(function () { if (!slot.children.length) slot.innerHTML = slot.rrTop; });
+      .then(function () { if (!slot.children.length) restore(); });
   }
   document.addEventListener('DOMContentLoaded', function () { loadStage(read()); });
   document.addEventListener('htmx:afterSettle', function (e) {
@@ -392,4 +394,28 @@ document.addEventListener('click', function (e) {
   document.addEventListener('htmx:beforeSwap', function () { close(false); });
   document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('htmx:afterSettle', init);
+})();
+
+// design r102: the search in the navigation. "/" jumps into the field from anywhere but another
+// field; the arrow keys walk from the field through the hits and back, Escape empties and leaves it.
+(function () {
+  function typing(el) { return el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
+  document.addEventListener('keydown', function (e) {
+    var field = document.getElementById('site-search-q');
+    if (!field) return;
+    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !typing(document.activeElement)) {
+      e.preventDefault(); field.focus(); field.select(); return;
+    }
+    var form = field.form;
+    if (!form.contains(document.activeElement)) return;
+    var links = Array.prototype.slice.call(form.querySelectorAll('.search-hits a'));
+    var at = links.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' && links.length) {
+      e.preventDefault(); links[Math.min(at + 1, links.length - 1)].focus();
+    } else if (e.key === 'ArrowUp' && at >= 0) {
+      e.preventDefault(); if (at === 0) field.focus(); else links[at - 1].focus();
+    } else if (e.key === 'Escape') {
+      field.value = ''; document.getElementById('site-search-hits').innerHTML = ''; field.blur();
+    }
+  });
 })();

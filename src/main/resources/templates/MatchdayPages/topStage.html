@@ -1,13 +1,40 @@
-{! The start page's stage: one match on the pitch, the same turf as the match head, smaller. The
-   whole stage links to the match page. The score is the shared tag, so the live poller updates it.
-   nav.js swaps in the club's own match for "Mein Verein" (data-top-stage). !}
-<a class="scoreboard top-stage" href="{stage.match.link}" data-top-stage="{stage.match.id}">
+{! The start page's stage (design r102): one match on the pitch over the full width. The clubs and the
+   score link to the match page, so does "Alles zum Spiel". The score is the shared tag, so the live
+   poller updates it. Below: place, points and form of both clubs before the match, then the KI line
+   (loaded by htmx where there is a KI-Vorschau). The arrows browse the start page's matches — links to
+   the start page without script, swapped in place with it. nav.js swaps in the club's own match for
+   "Mein Verein" (data-top-stage). !}
+<div class="scoreboard top-stage" data-top-stage="{stage.match.id}">
   <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
-  <span class="top-stage-label"><b>{stage.label}</b> {stage.leagueName}{#if stage.reason} · <span class="top-stage-reason">{stage.reason}</span>{/if}</span>
-  <span class="teams">
+  <p class="top-stage-label">{#if stage.label}<b>{stage.label}</b> {/if}{stage.leagueName} · {stage.when}{#if stage.reason} · <span class="top-stage-reason">{stage.reason}</span>{/if}</p>
+  <a class="teams" href="{stage.match.link}">
     <span class="home">{stage.match.home} {#crest src=stage.match.homeIcon size="large" /}</span>
-    {#score m=stage.match /}
+    <span class="top-stage-score"><small>{stage.status}</small>{#score m=stage.match /}</span>
     <span class="away">{#crest src=stage.match.awayIcon size="large" /} {stage.match.away}</span>
-  </span>
-  <span class="top-stage-when">{stage.when}</span>
-</a>
+  </a>
+  {#if stage.clubs}
+  <div class="top-stage-facts">
+    {#for t in stage.clubs}
+    <div class="top-stage-club">
+      <p>{#if t.position}<b>{t.position}.</b> Platz · {t.points} {#if t.points == 1}Punkt{#else}Punkte{/if}{#else}noch ohne Spiel{/if}</p>
+      {#if t.form}
+      <ol class="stage-form" aria-label="Form, letzte Spiele, neuestes links">
+        {#for r in t.form}<li class="{r.result}" title="{r.title}"><span aria-hidden="true">{r.letter}</span><span class="sr-only">{r.title}</span></li>{/for}
+      </ol>
+      {/if}
+    </div>
+    {/for}
+  </div>
+  {/if}
+  <div class="top-stage-foot">
+    {#if stage.kiLink}<div class="top-stage-ki" hx-get="{stage.kiLink}" hx-trigger="load" hx-swap="innerHTML"></div>{#else}<span></span>{/if}
+    <a class="stage-button" href="{stage.match.link}">Alles zum Spiel</a>
+  </div>
+  {#if stage.browse}
+  {#let b=stage.browse}
+  <a class="stage-nav prev" href="/?spiel={b.previous}" hx-get="/topspiel/{b.previous}" hx-target="#top-stage" hx-swap="innerHTML" hx-push-url="false" aria-label="Vorheriges Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <a class="stage-nav next" href="/?spiel={b.next}" hx-get="/topspiel/{b.next}" hx-target="#top-stage" hx-swap="innerHTML" hx-push-url="false" aria-label="Nächstes Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  {#if b.position > 0}<p class="stage-pos">Spiel {b.position} von {b.count}</p>{/if}
+  {/let}
+  {/if}
+</div>

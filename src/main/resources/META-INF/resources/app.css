@@ -544,38 +544,96 @@ h2 { font-size: 1.35rem; }
   .scoreboard .home { flex-direction: column-reverse; }
   .scoreboard .score { justify-self: center; }
 }
-/* the start page's stage (design r102): the pitch over the full width, straight under the navigation,
-   the match large in its middle — crest over name, the score between. One link to the match page. */
+/* the start page's stage (design r102): the pitch over the full width, straight under the navigation.
+   The match large in its middle — crest over name, the score between, place, points and form below,
+   then the KI line beside "Alles zum Spiel". Arrows on the touchline browse the start page's matches. */
 #top-stage { margin: -2rem calc(50% - 50vw) 2rem; }
 .top-stage {
-  display: block; border-radius: 0; text-decoration: none;
-  padding: 2.6rem max(clamp(2rem, 7vw, 6rem), (100% - 1280px) / 2) 2.4rem;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.2rem; border-radius: 0;
+  padding: 2.6rem max(clamp(3.6rem, 8vw, 7rem), (100% - 1280px) / 2) 4rem;
+  --stage-cols: minmax(0, 1fr) 10rem minmax(0, 1fr);
 }
-.top-stage::before { inset: 1.4rem clamp(1rem, 3vw, 3rem); }
+.top-stage::before { inset: 1.4rem clamp(1rem, 3vw, 3rem) 2.6rem; }
 .top-stage .box { top: calc(50% - 5rem); height: 10rem; width: clamp(3rem, 9%, 10rem); }
 .top-stage .box-home { left: clamp(1rem, 3vw, 3rem); }
 .top-stage .box-away { right: clamp(1rem, 3vw, 3rem); }
-.top-stage:hover .teams .home, .top-stage:hover .teams .away,
-.top-stage:focus-visible .teams .home, .top-stage:focus-visible .teams .away { text-decoration: underline; text-underline-offset: .12em; text-decoration-thickness: 3px; }
-.top-stage .teams { font-size: clamp(2rem, 5.2vw, 4.6rem); line-height: .9; gap: clamp(1rem, 3vw, 2.6rem); margin: 1.4rem 0 0; }
-.top-stage .home, .top-stage .away { flex-direction: column; justify-content: center; text-align: center; gap: .9rem; }
-.top-stage .home { flex-direction: column-reverse; }
-.top-stage .score { font-size: clamp(2.8rem, 7vw, 6rem); min-width: 7rem; }
-.top-stage .score.is-live.has-score { font-size: clamp(2.8rem, 7vw, 6rem); }
-.top-stage .crest.large { width: clamp(3.4rem, 6vw, 5.6rem); height: clamp(3.4rem, 6vw, 5.6rem); padding: .45rem; }
-.top-stage-label, .top-stage-when { display: block; color: var(--turf-soft); }
+.top-stage-label { margin: 0; color: var(--turf-soft); }
 .top-stage-label b { color: var(--turf-ink); margin-right: .3rem; }
 .top-stage-reason { white-space: nowrap; }
-.top-stage-when { margin-top: 1.4rem; }
+.top-stage .teams {
+  display: grid; grid-template-columns: var(--stage-cols); align-items: center; gap: 0;
+  font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 5.2vw, 4.6rem); line-height: .9;
+  color: inherit; text-decoration: none;
+}
+.top-stage .teams:hover .home, .top-stage .teams:hover .away,
+.top-stage .teams:focus-visible .home, .top-stage .teams:focus-visible .away { text-decoration: underline; text-underline-offset: .12em; text-decoration-thickness: 3px; }
+.top-stage .home, .top-stage .away { flex-direction: column; justify-content: center; text-align: center; gap: .9rem; }
+.top-stage .home { flex-direction: column-reverse; }
+.top-stage-score { display: grid; justify-items: center; gap: .5rem; }
+.top-stage-score small { font: 600 .95rem/1 var(--text); color: var(--turf-soft); }
+.top-stage .score { font-size: clamp(2.8rem, 6vw, 5.4rem); min-width: 7rem; }
+.top-stage .score.is-live.has-score { font-size: clamp(2.8rem, 6vw, 5.4rem); }
+.top-stage .crest.large { width: clamp(3.4rem, 6vw, 5.6rem); height: clamp(3.4rem, 6vw, 5.6rem); padding: .45rem; }
+.top-stage-facts { display: grid; grid-template-columns: var(--stage-cols); }
+.top-stage-club { display: grid; justify-items: center; gap: .5rem; }
+.top-stage-club:last-child { grid-column: 3; }
+.top-stage-club p { margin: 0; font-size: 1.15rem; color: var(--turf-soft); }
+.top-stage-club b { font: 800 1.6rem/1 var(--display); color: var(--turf-ink); }
+/* the form on turf: one letter per result, the meaning in fixed day colours, which hold white text in both themes */
+.stage-form { list-style: none; display: flex; gap: .3rem; margin: 0; padding: 0; }
+.stage-form li {
+  display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 3px;
+  font: 800 .85rem/1 var(--text); color: #fff; border: 1.5px solid var(--turf-line);
+}
+.stage-form .win { background: #1E7038; }
+.stage-form .draw { background: #66726A; }
+.stage-form .loss { background: #A5321F; }
+.top-stage-foot {
+  display: flex; align-items: center; gap: 1rem 2rem;
+  border-top: 2px solid var(--turf-line); padding-top: 1.2rem; text-align: left;
+}
+.top-stage-ki { flex: 1; min-width: 0; min-height: 3.2em; }
+.top-stage-ki p { margin: 0; }
+.stage-ki-figures { color: var(--turf-soft); }
+.stage-ki-figures strong { font: 800 1.35rem/1 var(--display); color: var(--ki-on-turf); margin-right: .4rem; }
+.stage-ki-verdict { margin-left: .4rem; font-weight: 700; color: var(--turf-ink); }
+.stage-ki-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--turf-ink); }
+.stage-button {
+  flex: none; padding: .6rem 1.3rem; border: 2px solid var(--turf-ink); border-radius: 999px;
+  font-weight: 700; color: var(--turf-ink); text-decoration: none;
+}
+.stage-button:hover { background: var(--turf-ink); color: var(--turf-a); }
+.stage-nav {
+  position: absolute; top: calc(50% - 1.4rem); display: grid; place-items: center; width: 2.8rem; height: 2.8rem;
+  border-radius: 50%; background: rgba(10, 26, 16, .55); color: var(--turf-ink);
+}
+.stage-nav:hover { background: rgba(10, 26, 16, .8); }
+.stage-nav.prev { left: clamp(.3rem, 1.2vw, 1.2rem); }
+.stage-nav.next { right: clamp(.3rem, 1.2vw, 1.2rem); }
+.top-stage a:focus-visible { outline-color: var(--turf-ink); }
+.stage-pos { position: absolute; left: 0; right: 0; bottom: .55rem; margin: 0; font-size: .85rem; color: var(--turf-soft); }
+@media (max-width: 720px) {
+  .top-stage-foot { flex-direction: column; align-items: stretch; text-align: center; }
+  .stage-button { align-self: center; }
+  .stage-ki-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
 @media (max-width: 560px) {
   #top-stage { margin-bottom: 1.4rem; }
-  .top-stage { padding: 2rem 1.4rem 1.6rem; }
-  .top-stage .teams { grid-template-columns: 1fr auto 1fr; font-size: clamp(1.3rem, 6vw, 1.7rem); gap: .5rem; margin-top: 1rem; }
+  .top-stage { padding: 2rem 1.4rem 3.4rem; gap: 1rem; --stage-cols: minmax(0, 1fr) 4.6rem minmax(0, 1fr); }
+  .top-stage .teams { font-size: clamp(1.3rem, 6vw, 1.7rem); }
   .top-stage .home, .top-stage .away { gap: .4rem; }
-  .top-stage .home { flex-direction: column-reverse; }
   .top-stage .crest.large { width: 2.6rem; height: 2.6rem; padding: .25rem; }
-  .top-stage .score { font-size: 2.2rem; min-width: 4rem; padding: 0 .4rem; }
-  .top-stage .score.is-live.has-score { font-size: 2.2rem; }
+  .top-stage .score { font-size: 2rem; min-width: 4rem; padding: 0 .4rem; }
+  .top-stage .score.is-live.has-score { font-size: 2rem; }
+  .top-stage-score small { font-size: .78rem; }
+  .top-stage-club p { font-size: .9rem; }
+  .top-stage-club b { font-size: 1.2rem; }
+  .stage-form li { width: 1.2rem; height: 1.2rem; font-size: .7rem; }
+  .stage-form { gap: .2rem; }
+  .stage-nav { top: auto; bottom: .5rem; width: 2.4rem; height: 2.4rem; }
+  .stage-nav.prev { left: 1.4rem; }
+  .stage-nav.next { right: 1.4rem; }
+  .stage-pos { bottom: 1.1rem; }
 }
 .scoreboard .forecast-summary { border-top: 2px solid var(--turf-line); margin-top: 1.4rem; padding-top: 1.1rem; }
 /* the KI line is loaded after the page: hold its height while the placeholder is there, so the goals below do not jump */
@@ -1457,16 +1515,75 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 .theme-options button:hover { background: var(--mow-a); color: var(--ink); }
 .theme-options button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+/* design r102: the search in the navigation — a field on the turf band, its hits in a panel below it
+   (turf like the theme menu). On phones it is a magnifier the size of the other controls that
+   opens over the first row while in use. The same hit list stands on chalk on /suche. */
+.topnav-inner { position: relative; }
+.site-search { position: relative; order: 0; display: flex; align-items: center; }
+.site-search input {
+  width: clamp(9rem, 16vw, 15rem); height: 2.5rem; padding: 0 2rem 0 2.1rem;
+  font: inherit; color: var(--ink); background: rgba(0, 0, 0, .18);
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.site-search input::placeholder { color: var(--ink-soft); opacity: 1; }
+.site-search input:focus { outline: 3px solid var(--ink); outline-offset: 2px; }
+.site-search input::-webkit-search-cancel-button { display: none; }
+.site-search-icon { position: absolute; left: .75rem; color: var(--ink-soft); pointer-events: none; }
+.site-search kbd {
+  position: absolute; right: .55rem; padding: 0 .35rem; border: 1px solid var(--line); border-radius: 4px;
+  font: 600 .75rem/1.4 var(--text); color: var(--ink-soft); pointer-events: none;
+}
+.site-search:focus-within kbd { display: none; }
+.site-search-hits {
+  display: none; position: absolute; right: 0; top: calc(100% + .4rem); z-index: 20;
+  width: min(26rem, calc(100vw - 2rem)); padding: .35rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.site-search:focus-within .site-search-hits:not(:empty) { display: block; }
+.search-hits { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+.search-hits a {
+  display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto; align-items: center; gap: .7rem;
+  padding: .45rem .6rem; min-height: 2.75rem; border-radius: 6px; color: var(--ink);
+}
+.search-hits a:hover, .search-hits a:focus-visible { background: var(--mow-a); outline-offset: -3px; }
+.search-hits .crest { width: 1.6rem; height: 1.6rem; }
+.search-hit-text { display: grid; min-width: 0; }
+.search-hit-text b, .search-hit-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-hit-text small { color: var(--ink-soft); font-size: .85rem; }
+.search-hits em { font-style: normal; font-size: .8rem; color: var(--ink-mute); }
+.search-empty { margin: 0; padding: .6rem; color: var(--ink-soft); }
+.search-page { grid-column: 1 / -1; max-width: 44rem; }
+.search-page-form { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .7rem; margin: 1rem 0 1.4rem; }
+.search-page-form label { width: 100%; font-weight: 600; }
+.search-page-form input {
+  flex: 1; min-width: 12rem; height: 2.75rem; padding: 0 .8rem; font: inherit; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.search-page .search-hits a { background: var(--mow-a); }
+.search-page .search-hits li:nth-child(even) a { background: var(--mow-b); }
+@media (max-width: 560px) {
+  .site-search input { width: 2.5rem; padding: 0; color: transparent; cursor: pointer; }
+  .site-search input::placeholder { color: transparent; }
+  .site-search kbd { display: none; }
+  .site-search:focus-within .site-search-icon { left: 1.75rem; }
+  .site-search:focus-within { position: absolute; inset: 0 0 auto; z-index: 5; padding: .5rem 1rem .7rem; background: var(--turf-a); }
+  .site-search:focus-within input { width: 100%; padding: 0 .8rem 0 2.1rem; color: var(--ink); cursor: text; background: var(--turf-a); }
+  .site-search-hits { left: 1rem; right: 1rem; width: auto; }
+}
+
 /* story r003: with "Mein Verein" the header no longer fits one row even at full width — brand,
    "Mein Verein" and the theme share the first row, the competitions get the second to themselves */
 .topnav-inner .brand { flex: 1; }
 .theme-menu, .my-club-link { order: 0; }
 .nav-links { order: 4; }
 @media (min-width: 561px) { .nav-links { width: 100%; } }
-/* design r102: on wide screens the full-width band has room for one row — brand, competitions, then the controls */
-@media (min-width: 1180px) {
-  .topnav-inner .brand { flex: none; margin-right: 1rem; }
+/* design r102: on wide screens the full-width band has room for one row — brand, competitions, then
+   search and the controls; below that the competitions get the second row as before */
+@media (min-width: 1560px) {
+  .topnav-inner { column-gap: 1.1rem; }
+  .topnav-inner .brand { flex: none; margin-right: .6rem; }
   .nav-links { order: 0; width: auto; margin-right: auto; }
+  .site-search input { width: 12.5rem; }
 }
 @media (max-width: 560px) {
   .brand { width: auto; }

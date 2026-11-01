@@ -26,8 +26,17 @@ entwickelt und gemessen).
   darüber hinaus genau ein Spiel auf demselben Rasen, als Link zur Spielseite und über die volle Breite
   direkt unter der Navigation, Wappen über dem Namen, das Ergebnis dazwischen: das Topspiel
   (laufend vor anstehend vor beendet, je die beste Paarung nach Tabellenplatz) oder mit „Mein Verein"
-  dessen laufendes bzw. nächstes Spiel. Mehr Bühnen gibt es nicht; Listen, Tabellen und Karten bleiben
+  dessen laufendes bzw. nächstes Spiel. Unter den Namen stehen Platz und Punkte vor dem Spiel und die
+  Form als S/U/N-Kacheln (neuestes links; Sieg/Remis/Niederlage in den festen Tagesfarben von `--win`,
+  `--draw`, `--loss`, damit die weiße Schrift in beiden Themen trägt). Unter einer Kreidelinie folgt die
+  KI-Zeile (Richtwert, drei Wahrscheinlichkeiten unter den Vereinsnamen, Begründung in einer gekürzten
+  Zeile), daneben „Alles zum Spiel". Pfeile auf der Seitenlinie blättern durch alle Spiele der
+  Startseite („Spiel 11 von 18"). Mehr Bühnen gibt es nicht; Listen, Tabellen und Karten bleiben
   auf Kreide.
+- **Suche** (`.site-search`, Entwurf r102): Feld im Rasenband, findet Vereine, Spiele der Startseite und
+  Torjäger beider Bundesligen. Die Treffer stehen in einem Feld wie das Menü „Darstellung", `/`
+  springt hinein. Ohne Skript führt das Feld auf die Seite `/suche`. Auf dem Telefon ist es eine Lupe in
+  der Größe der anderen Schalter, die sich beim Antippen über die erste Zeile legt.
 - **Keine Anzeigetafel-Optik.** Keine LED- oder Klappziffern, kein tickender Sekunden-Countdown, keine
   Laufschrift. Eine Anstoßzeit steht in Worten da („in 5 Std 11 Min").
 - **Wertigkeit durch Verzicht.** Keine Schatten, keine weichen Verläufe, keine Icons als Dekoration.

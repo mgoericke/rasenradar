@@ -50,6 +50,14 @@
         <li><a class="nav-link {#if l.active}is-active{/if}" href="/{l.shortcut}" {#if l.active}aria-current="page"{/if}><span class="badge">{l.badge}</span>{l.name}</a></li>
         {/for}
       </ul>
+      {! design r102: the search — a plain form to /suche; with htmx the hits appear below the field while typing, "/" jumps into it (nav.js) !}
+      <form class="site-search" action="/suche" method="get" role="search">
+        <svg class="site-search-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="site-search-q" type="search" name="q" placeholder="Suchen" autocomplete="off" aria-label="Verein, Spiel oder Torjäger suchen"
+               hx-get="/suche/treffer" hx-trigger="input changed delay:150ms, search" hx-target="#site-search-hits" hx-swap="innerHTML" hx-sync="this:replace">
+        <kbd aria-hidden="true">/</kbd>
+        <div id="site-search-hits" class="site-search-hits" aria-live="polite"></div>
+      </form>
       <a class="my-club-link" href="/mein-verein" data-my-club-link title="Mein Verein wählen">Mein Verein</a>
       <details class="theme-menu">
         <summary aria-label="Darstellung" title="Darstellung"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></summary>

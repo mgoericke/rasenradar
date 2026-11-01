@@ -18,6 +18,9 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayVie
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
 import de.javamark.matchoracle.matchday.control.MatchdayStream;
 import de.javamark.matchoracle.matchday.control.MatchdayStream.StreamDay;
@@ -148,9 +151,12 @@ public class MatchdayPages {
     @ConfigProperty(name = "matchoracle.matchday.live-window", defaultValue = "PT2H30M")
     Duration liveWindow;
 
-    /** Landing page, spec 01 "Spieltags-Strom": both Bundesligas as one stream by day and kickoff block. */
+    /**
+     * Landing page, spec 01 "Spieltags-Strom": both Bundesligas as one stream by day and kickoff block.
+     * {@code spiel} puts that match of the page on the stage — the stage's arrows without script.
+     */
     @GET
-    public TemplateInstance home() {
+    public TemplateInstance home(@QueryParam("spiel") Long spiel) {
         Instant now = Instant.now();
         List<LandingLeague> leagues = new ArrayList<>();
         List<Match> shown = new ArrayList<>();
@@ -176,36 +182,112 @@ public class MatchdayPages {
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
                 MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces),
-                topStage(shown, next, now)));
+                topStage(shown, next, now, spiel)));
     }
 
-    /** The top match of the start page: the 1. Bundesliga first, the 2. Bundesliga when it has nothing. */
-    private TopStage topStage(List<Match> shown, List<Match> next, Instant now) {
+    /**
+     * The top match of the start page: the 1. Bundesliga first, the 2. Bundesliga when it has nothing.
+     * A match of the page the visitor browsed to ({@code spiel}) comes first.
+     */
+    private TopStage topStage(List<Match> shown, List<Match> next, Instant now, Long spiel) {
+        List<Match> page = java.util.stream.Stream.concat(shown.stream(), next.stream()).toList();
+        if (spiel != null) {
+            Optional<Match> chosen = page.stream().filter(m -> m.id.equals(spiel)).findFirst();
+            if (chosen.isPresent()) {
+                return stageOf(chosen.get(), "", page, now);
+            }
+        }
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            List<Match> candidates = java.util.stream.Stream.concat(shown.stream(), next.stream())
-                    .filter(m -> m.matchday.league == l).toList();
+            List<Match> candidates = page.stream().filter(m -> m.matchday.league == l).toList();
             if (candidates.isEmpty()) continue;
             Matchday md = candidates.getFirst().matchday;
             Map<Team, Integer> places = placesOf(l, md.season, Integer.MAX_VALUE);
             Optional<Match> top = TopMatch.pick(candidates, places, now, liveWindow);
             if (top.isPresent()) {
-                return stageOf(top.get(), "Topspiel", places, now);
+                return stageOf(top.get(), "Topspiel", page, now);
             }
         }
         return null;
     }
 
-    /** The stage for one match, with both table places when the competition has a table. */
-    private TopStage stageOf(Match m, String label, Map<Team, Integer> places, Instant now) {
+    /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
+    static List<Match> startPageMatches(Instant now) {
+        List<Match> all = new ArrayList<>();
+        for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
+            Matchday.findDisplayed(l, now).ifPresent(matchday -> {
+                List<Match> matches = Match.findByMatchday(matchday);
+                all.addAll(matches);
+                if (MatchdayStream.showsNext(matches)) {
+                    Matchday.find(matchday.league, matchday.season, matchday.number + 1)
+                            .ifPresent(md -> all.addAll(Match.findByMatchday(md)));
+                }
+            });
+        }
+        return all;
+    }
+
+    /**
+     * The stage for one match (design r102): both clubs' place, points and form before the match when
+     * the competition has a table, the KI line where there is a KI-Vorschau, and the way through
+     * {@code page}, the start page's matches.
+     */
+    private TopStage stageOf(Match m, String label, List<Match> page, Instant now) {
         String shortcut = m.matchday.league.sourceShortcut();
         MatchRow row = MatchRow.of(m, shortcut, now, liveWindow);
-        Integer home = places.get(m.homeTeam);
-        Integer away = places.get(m.awayTeam);
-        String reason = home == null || away == null ? "" : "Platz " + home + " gegen Platz " + away;
-        String when = m.isPlayed() ? "Endstand · " + MatchdayPageModels.dayLabel(m.kickoff)
-                : m.isLive(now, liveWindow) ? "läuft"
+        StageTeam home = null;
+        StageTeam away = null;
+        String reason = "";
+        if (m.matchday.league.hasTable()) {
+            Standings standings = standingsCalculator.standingsBefore(m.matchday);
+            home = stageTeam(m.homeTeam, m.matchday, standings);
+            away = stageTeam(m.awayTeam, m.matchday, standings);
+            if (home.position() != null && away.position() != null) {
+                reason = "Platz " + home.position() + " gegen Platz " + away.position();
+            }
+        }
+        boolean live = m.isLive(now, liveWindow);
+        String status = m.isPlayed() ? (row.provisional() ? "Vorläufig" : "Endstand") : live ? "Läuft" : "Anstoß";
+        String when = m.isPlayed() || live
+                ? MatchdayPageModels.dayLabel(m.kickoff) + ", " + MatchdayPageModels.time(m.kickoff) + " Uhr"
                 : NextMatchBar.when(m.kickoff, now) + " Uhr";
-        return new TopStage(label, MatchdayPageModels.leagueName(m.matchday.league), when, reason, row);
+        String kiLink = "bl1".equals(shortcut) || "bl2".equals(shortcut)
+                ? "/" + shortcut + "/matches/" + m.id + "/forecast/buehne?home=" + urlEncode(m.homeTeam.shortName)
+                        + "&away=" + urlEncode(m.awayTeam.shortName)
+                : null;
+        List<Long> order = page.stream()
+                .sorted(Comparator.comparing((Match x) -> x.kickoff).thenComparing(x -> x.matchday.league).thenComparing(x -> x.id))
+                .map(x -> x.id).toList();
+        return new TopStage(label, MatchdayPageModels.leagueName(m.matchday.league), when, reason, status, row,
+                home, away, kiLink, StageBrowse.of(order, m.id));
+    }
+
+    private StageTeam stageTeam(Team team, Matchday matchday, Standings standings) {
+        var standing = standings.of(team);
+        return new StageTeam(standing.map(s -> s.position()).orElse(null),
+                standing.map(s -> s.balance().points()).orElse(0),
+                formCalculator.formBefore(team, matchday).lastMatches().stream().map(FormChip::of).toList());
+    }
+
+    private static String urlEncode(String s) {
+        return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Design r102: the stage's arrows — another match of the start page on the stage, swapped in by htmx.
+     * Without htmx the start page itself shows it.
+     */
+    @GET
+    @Path("/topspiel/{id}")
+    public Response browseStage(@PathParam("id") long id, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/?spiel=" + id)).build();
+        }
+        Instant now = Instant.now();
+        List<Match> page = startPageMatches(now);
+        TopStage stage = page.stream().filter(m -> m.id == id).findFirst()
+                .map(m -> stageOf(m, "", page, now)).orElse(null);
+        return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
+                .header("Cache-Control", "no-store").build();
     }
 
     private Map<Team, Integer> placesOf(League league, int season, int beforeMatchday) {
@@ -231,7 +313,7 @@ public class MatchdayPages {
         Instant now = Instant.now();
         TopStage stage = Team.<Team>findByIdOptional(id)
                 .map(team -> nextMatchOf(team, now))
-                .map(m -> stageOf(m, "Mein Verein", placesOf(m.matchday.league, m.matchday.season, Integer.MAX_VALUE), now))
+                .map(m -> stageOf(m, "Mein Verein", startPageMatches(now), now))
                 .orElse(null);
         return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
                 .header("Cache-Control", "no-store").build();
@@ -587,16 +669,12 @@ public class MatchdayPages {
             tables.add(new SplitTable(key, label, note,
                     s.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList()));
         }
-        // story r071: the same season as if every match had ended at half time, or after 80 minutes
+        // story r071: the same season as if every match had ended at half time ("Schluss nach 80" was dropped on 1 Nov 2026)
         List<Match> finals = ordered.stream().filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
         Standings real = standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, finals);
         var half = de.javamark.matchoracle.matchday.control.ScenarioScores.atHalfTime(finals);
         tables.add(scenarioTable("halbzeit", "Halbzeit", matchday, real, half,
                 "Jedes beendete Spiel zählt mit dem Halbzeitstand. ± zeigt die Plätze gegenüber der Tabelle aus endgültigen Ergebnissen."));
-        var eighty = de.javamark.matchoracle.matchday.control.ScenarioScores.afterEighty(finals);
-        tables.add(scenarioTable("nach-80", "Schluss nach 80", matchday, real, eighty,
-                "Jedes beendete Spiel zählt mit dem Stand nach der 80. Minute (Tore bis einschließlich Minute 80). "
-                        + lateSwing(real, standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, eighty.matches()))));
         return List.copyOf(tables);
     }
 
@@ -610,30 +688,6 @@ public class MatchdayPages {
                 : " " + rescored.excluded() + (rescored.excluded() == 1 ? " Spiel fehlt" : " Spiele fehlen") + ", weil dafür die Angaben in den Daten fehlen.";
         return new SplitTable(key, label, note + " Vorläufige Ergebnisse zählen nicht mit." + left,
                 s.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), moves);
-    }
-
-    /** Story r071: who won and who lost the most points after minute 80 — the real points against those after 80. */
-    private static String lateSwing(Standings real, Standings eighty) {
-        Team gainer = null, loser = null;
-        int most = 0, least = 0;
-        for (StandingPosition p : real.positions()) {
-            int then = eighty.of(p.team()).map(e -> e.balance().points()).orElse(0);
-            int diff = p.balance().points() - then;
-            if (diff > most) { most = diff; gainer = p.team(); }
-            if (diff < least) { least = diff; loser = p.team(); }
-        }
-        if (gainer == null && loser == null) {
-            return "Nach der 80. Minute hat sich an den Punkten nichts verschoben.";
-        }
-        StringBuilder text = new StringBuilder("Nach der 80. Minute");
-        if (gainer != null) text.append(" am meisten dazugewonnen: ").append(name(gainer)).append(" (+").append(most).append(most == 1 ? " Punkt)" : " Punkte)");
-        if (gainer != null && loser != null) text.append(";");
-        if (loser != null) text.append(" am meisten abgegeben: ").append(name(loser)).append(" (\u2212").append(-least).append(least == -1 ? " Punkt)" : " Punkte)");
-        return text.append(".").toString();
-    }
-
-    private static String name(Team t) {
-        return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
     }
 
     /**
