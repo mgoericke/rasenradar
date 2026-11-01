@@ -4,7 +4,7 @@
 
 # User stories: lab features for the real rasen-radar repo
 
-61 stories: 59 for the features the [triage](TRIAGE.md) marked keep or adapt (r083 is part of r009; r064 has a new story because its season wall exists but must open the match) plus 2 new ones from [Mark's review](FEEDBACK.md) (N01, N02). Every lab story links its CHANGELOG entry and snapshot. The tickets are in English and the quoted UI text is in German.
+61 stories: 59 for the features the [triage](TRIAGE.md) marked keep or adapt (r083 is part of r009; r064 has a new story because its season wall exists but must open the match) plus 2 new ones from [Mark's review](FEEDBACK.md) (N01, N02). Three AI ideas (A01–A03, 1 Nov 2026) follow at the end. Every lab story links its CHANGELOG entry and snapshot. The tickets are in English and the quoted UI text is in German.
 
 No Definition of Ready or Done exists in the reference repo, so the stories follow the style of the specs' Abnahmekriterien. They describe what and why, not how. Implementation follows the real repo's CLAUDE.md: BCE packages, Qute + htmx, and its glossary terms.
 
@@ -1341,3 +1341,76 @@ Lab reference: [CHANGELOG entry](../monitoring/CHANGELOG.md#r100--seite-anpassen
 - Decision (Mark, 31 Oct 2026): keep, browser-only and only if it works without login.
 - Sections that no longer exist in the product (own calls, friends' duel, bingo) are not listed.
 - Which sections per page are switchable is for product to decide; the lab offered all sections except the matches.
+---
+
+## AI ideas (1 Nov 2026)
+
+Three AI features Mark picked from a brainstorm. They follow the product principles above. The AI text is always marked with the word "KI", is loaded only on a click (principle 1), states only what the repo's own data supports, and contains no odds and no "Tipp". Like the forecast, each text is generated once, stored, and never changed. A new text is a new entry.
+
+### A01 – Die Geschichte der Saison
+
+**Title:** AI-written season story on the club page
+**Story:** As a fan of a club, I want the season so far told as a short story in chapters, so that I can relive the turning points instead of reading them off charts.
+**Acceptance Criteria:**
+- Given a TeamPage of a Bundesliga club with at least 5 played matches in the season, When I open it, Then a closed section "Die Geschichte der Saison" with the label "KI" offers a button "Geschichte erzählen"; no text is generated before the click.
+- Given I click the button, When the story is ready, Then it shows 3 to 6 chapters, each with a short heading naming a period (e.g. "Oktober") and at most 3 sentences.
+- Given the story, When I check each statement, Then every result, table position, streak, comeback or derby mentioned can be found on the TeamPage, the SeasonRace or the match detail page (N01) of the same season; each mentioned match links to its match detail page.
+- Given a story was generated for a club, When another visitor opens the same TeamPage before the next match of that club has a FINAL result, Then the stored story is shown at once without a new AI call.
+- Given the next match of the club becomes FINAL, When the story is requested again, Then a new story is generated and stored as a new entry; the earlier one is not changed.
+- Given the AI model is unavailable, When I click the button, Then the section says "Die Geschichte kann gerade nicht erzählt werden. Später noch einmal versuchen." and the rest of the page works.
+- Given PROVISIONAL results, When the story is built, Then they are not used.
+**QA Notes:**
+- Fact-check one story per tier: champion contender, mid-table, relegation candidate, promoted club.
+- Boundary: exactly 5 played matches; matchday 34 (season finished, story becomes a season review).
+- Clubs that changed league between seasons: the story covers only the current season and league.
+- Tone check: no mocking of clubs or players, no betting language, no direct address ("du").
+- 375 px: chapters readable without horizontal scroll; screen reader announces the "KI" label.
+**Open Questions / Assumptions:**
+- Assumption: Bundesliga clubs only (bl1, bl2), because the data base (SeasonRace, streaks) exists only there. Cups and Nations League can follow.
+- Cost: one story per club and matchday at most, so about 36 calls per matchday as an upper bound. Is that budget acceptable, or should the story only be generated on request?
+- Is a "Saisonrückblick" at season end (all 34 matchdays) a separate, longer variant?
+
+### A02 – Konferenz-Kommentar
+
+**Title:** Radio-style AI commentary for "Konferenz nachspielen"
+**Story:** As a fan replaying the last complete matchday in "Konferenz nachspielen" (r052), I want short commentary lines like in the Saturday radio conference, so that the replay feels like listening to the Bundesliga on the radio.
+**Acceptance Criteria:**
+- Given the replay board (r052), When it is shown, Then a switch "Kommentar (KI)" is off by default; with the switch off the replay behaves exactly as before.
+- Given the switch is on, When a goal appears in the replay, Then one commentary line of at most 2 sentences appears next to it, marked "KI", e.g. "Tor in Köln! Der FC zieht damit in der Live-Tabelle an Union vorbei."
+- Given a commentary line, When I check it, Then the scorer, minute, score and any table movement it mentions match the goal data and the live table at that minute of the replay.
+- Given the replay has ended, When the closing summary is shown, Then one commentary line sums up the matchday (e.g. the biggest table move), again marked "KI".
+- Given the commentary for a matchday or round was generated once, When any visitor turns it on later, Then the stored lines are used without a new AI call; the lines are never changed afterwards.
+- Given the AI model is unavailable or the lines are not ready yet, When the switch is on, Then the replay runs without commentary and a short note says "Kommentar gerade nicht verfügbar."
+- Given the replay of a cup round or a Nations League matchday (since #119), When the switch is on, Then the lines use the round or group context ("weiter in die nächste Runde", "Gruppe A") instead of a league table.
+**QA Notes:**
+- Fact-check own goals, penalties, goals without a minute (shown at 90'), and two goals in the same minute in different stadiums.
+- Speed of the replay: lines must not pile up or cover the scores when many goals fall close together.
+- Sofa mode (r038) on a TV-sized screen: lines readable from a distance, no overlap with the board.
+- Reduced motion: lines appear without animation.
+- Tone: lively but fair, no mocking, no betting language.
+**Open Questions / Assumptions:**
+- Optional voice (text-to-speech) is out of scope for this story; it would be a follow-up with its own cost and privacy check.
+- Assumption: the commentary is generated once per complete matchday or round, right after it is complete, not live during matches (principle 6: no realtime push).
+
+### A03 – Mein-Verein-Wochenbrief
+
+**Title:** Weekly AI letter for the club chosen as "Mein Verein"
+**Story:** As a visitor who has chosen a club as "Mein Verein" (r003), I want a short weekly letter about that club, so that I catch up on the last week and the next match in one minute.
+**Acceptance Criteria:**
+- Given a club is chosen as "Mein Verein" in this browser, When I open "/mein-verein", Then a section "Wochenbrief" with the label "KI" offers a button "Wochenbrief lesen"; no text is generated before the click.
+- Given I click the button, When the letter is ready, Then it has at most 6 sentences covering: the last match with its result, the table position and its change, what is at stake in the next match ("Es geht um", Stakes), and, for Bundesliga clubs, one sentence from the SeasonOutlook.
+- Given the letter, When I check it, Then every fact it mentions can be found on the club's TeamPage or the match detail pages; each mentioned match links to its match detail page.
+- Given a letter for a club was generated in a calendar week, When any visitor with the same club opens it in the same week, Then the stored letter is shown without a new AI call.
+- Given no club is chosen, When I open "/mein-verein", Then no Wochenbrief section is shown.
+- Given the feature, When I use it, Then no login is needed, the server learns nothing about the visitor, and the letter is the same for every visitor with that club.
+- Given the club has no match in the past week and none in the next, When the letter is built, Then it says so in one sentence and covers only the table (e.g. during a break for internationals).
+**QA Notes:**
+- Week boundary: letter generated Sunday night vs Monday morning; English vs German week start (assume Monday).
+- Break for internationals and winter break; a club eliminated from the DFB-Pokal in that week.
+- PROVISIONAL results in the last match: the letter must mark them as provisional or wait.
+- Clubs from the cup or Nations League without SeasonOutlook: the outlook sentence is left out.
+- Blocked storage: without a remembered club the section stays hidden, the page still works.
+**Open Questions / Assumptions:**
+- Assumption: the letter is per club and calendar week, never per visitor, so it needs no personal data.
+- Should the letter also mention the club's cup match (DFB-Pokal) of that week? Assumed yes, when there is one.
+- Cost: at most one letter per club and week, about 36 for the Bundesligen plus cup clubs.
