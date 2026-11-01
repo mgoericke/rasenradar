@@ -132,7 +132,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Besser als vor einem Jahr? (Punkte nach gleich vielen Spielen wie in der Vorsaison) | `LastYear` / `LastYearCalculator` |
 | Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
-| Pokalbühne (Spiel der Runde / Überraschung der Runde über der Pokalseite) | `MatchdayPages.cupStage` / `stagePick`, `StageRoute` |
+| Pokalbühne (Paarung von „Mein Verein" über der Pokalseite, nur mit gewähltem Verein) | `MatchdayPages.cupStage`, `StageRoute`, nav.js `loadStage` |
 | Noch im Wettbewerb (verbliebene Vereine nach Spielklasse, Ausgeschiedene mit Runde, Pokalsieger) | `CupField` / `MatchdayPages.cupField` |
 | Spannung (offenes Spiel, 1–5, aus Tabelle und Form, Story r073 „Spannendste zuerst") | `TensionCalculator` |
 | Punktestrahl (Tabelle als Punkteachse, Story r022) | `PointsAxis` / `AxisRow` |
@@ -148,7 +148,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Typische Punktzahl (Median der Endpunkte eines Tabellenplatzes über die simulierten Restsaisons, Story r039 „Was braucht {Verein}?“) | `SeasonThreshold` / `SeasonTargets` |
 | Was wäre, wenn (Tabelle mit den offenen Spielen beim KI-Richtwert, Story r007) | `MatchdayFacade.Projection` / `StandingsCalculator.Assumed` |
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
-| Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |
+| Bühne der Nations-League-Seite (nur mit „Mein Verein" und dessen Spiel am Spieltag) | `MatchdayPages.groupStage` |
 | Titelverteidiger (Sieger der vorigen Ausgabe mit seinem Weg durch die Endrunde) | `Holder` / `HolderStep` |
 | Versionsstempel (Commit und Bauzeit im Footer, vom Build in GitHub Actions geschrieben) | `BuildStamp` / `BuildInfo` |
 

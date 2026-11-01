@@ -18,7 +18,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-/** The cup page: which pairing goes on the stage, and who is still in the competition. */
+/** The cup page: who is still in the competition. */
 class CupStageTest {
 
     private static final Team BAYERN = team("FC Bayern München");
@@ -58,35 +58,6 @@ class CupStageTest {
     }
 
     @Test
-    void beforeTheRoundTheStageShowsThePairingOfTheHighestDivisions() {
-        Matchday r = round(2, "2. Runde");
-        Match amateurs = match(r, JEDDELOH, BAYERN, null, null, 7);
-        Match top = match(r, MAINZ, BOCHUM, null, null, 8);
-
-        var pick = MatchdayPages.stagePick(List.of(amateurs, top), TIER_OF);
-
-        assertEquals(top, pick.match());
-        assertEquals("Spiel der Runde", pick.label());
-    }
-
-    @Test
-    void afterTheRoundTheBiggestSurpriseWinsElseTheMostGoals() {
-        Matchday r = round(2, "2. Runde");
-        Match small = match(r, BOCHUM, MAINZ, 2, 0, 7);     // 2. Liga beats 1. Liga
-        Match big = match(r, JEDDELOH, ESSEN, 1, 0, 7);     // amateurs beat 3. Liga — also a gap of one
-        Match bigger = match(r, ESSEN, BAYERN, 3, 2, 8);    // 3. Liga beats 1. Liga
-
-        assertEquals(bigger, MatchdayPages.stagePick(List.of(small, big, bigger), TIER_OF).match());
-        assertEquals("Überraschung der Runde", MatchdayPages.stagePick(List.of(small, big, bigger), TIER_OF).label());
-
-        Match goals = match(r, BAYERN, MAINZ, 4, 3, 7);
-        Match quiet = match(r, BOCHUM, ESSEN, 1, 0, 8);
-        var noSurprise = MatchdayPages.stagePick(List.of(quiet, goals), TIER_OF);
-        assertEquals(goals, noSurprise.match());
-        assertEquals("Torreichstes Spiel der Runde", noSurprise.label());
-    }
-
-    @Test
     void theFieldKeepsEveryClubThatHasNotLostAndNamesTheRoundTheOthersWentOutIn() {
         Matchday first = round(1, "1. Runde");
         Matchday second = round(2, "2. Runde");
@@ -114,6 +85,5 @@ class CupStageTest {
         CupField field = MatchdayPages.cupField(List.of(fin), List.of(f), TIER_OF, "dfb");
 
         assertEquals("FC Bayern München", field.winner());
-        assertEquals("Endspiel", MatchdayPages.stagePick(List.of(f), TIER_OF).label());
     }
 }
