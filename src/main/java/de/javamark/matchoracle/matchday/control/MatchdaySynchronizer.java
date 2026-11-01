@@ -14,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
@@ -116,7 +117,17 @@ public class MatchdaySynchronizer {
      */
     @Transactional
     public List<Long> syncMatchday(League league, int season, int sectionNumber) {
-        Instant sourceLastChange = OpenLigaDb.toInstant(client.lastChange(league.sourceShortcut(), season, sectionNumber));
+        Instant sourceLastChange;
+        try {
+            sourceLastChange = OpenLigaDb.toInstant(client.lastChange(league.sourceShortcut(), season, sectionNumber));
+        } catch (WebApplicationException e) {
+            if (e.getResponse() == null || e.getResponse().getStatus() != 404) {
+                throw e;
+            }
+            // a cup round not drawn yet: the source has no change date for it, so nothing to load
+            LOG.debugf("%s %d/%d has no change date at the source yet", league, season, sectionNumber);
+            return List.of();
+        }
         Instant now = Instant.now();
         if (isUnchanged(league, season, sectionNumber, sourceLastChange, now)) {
             LOG.debugf("%s %d/%d unchanged since %s", league, season, sectionNumber, sourceLastChange);

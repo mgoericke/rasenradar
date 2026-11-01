@@ -229,7 +229,9 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   in `--ink` darunter und `aria-current`, nie nur Farbe. Zur Saison gehören Saisonseite,
   Torschützenliste und Vereinsvergleich; zur KI-Bilanz Trefferbilanz und „So entsteht eine Prognose“;
   eine Vereinsseite gehört zu keinem Reiter. Unter 560 px entfallen die Reiter, die Daumenleiste
-  trägt dieselben Bereiche plus „Verein“ (die Tabelle steckt im Spieltag).
+  trägt dieselben Bereiche mit denselben Zielen plus „Verein“ (die Tabelle steckt im Spieltag); nur
+  auf der Startseite bleibt „Spieltag“ dort. Die Nations League hat keine Saisonseite, ihre
+  Daumenleiste zeigt drei Bereiche.
 - **Vereinsvergleich** (`.compare`, eigene Seite `/{liga}/vergleich/{a}/{b}`, Story r026): auf der
   Vereinsseite „Vergleichen mit“ (ein einfaches Formular, Auswahl nur aus derselben Liga). Gespiegelte
   Balken für Punkte, Siege, Tore, Gegentore, Tordifferenz; der bessere Wert eines Paars (bei

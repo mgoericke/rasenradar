@@ -1967,6 +1967,7 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
     display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
     background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
   }
+  .thumb-bar-three { grid-template-columns: repeat(3, 1fr); }
   .thumb-bar a {
     display: grid; place-items: center; min-height: 3rem; padding: 0 .2rem; font-size: .88rem; color: var(--ink-soft);
     text-align: center; box-shadow: inset 0 3px 0 transparent;
