@@ -18,6 +18,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayVie
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayStep;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
@@ -81,6 +82,7 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.NotFoundException;
@@ -154,26 +156,37 @@ public class MatchdayPages {
     /**
      * Landing page, spec 01 "Spieltags-Strom": both Bundesligas as one stream by day and kickoff block.
      * {@code spiel} puts that match of the page on the stage — the stage's arrows without script.
+     * {@code versatz} steps both Bundesligas back or ahead by that many matchdays (design r102,
+     * "‹ Aktueller Spieltag ›"); away from the current one the page leaves out what only belongs to
+     * now: "Seit dem letzten Besuch" and the next matchday.
      */
     @GET
-    public TemplateInstance home(@QueryParam("spiel") Long spiel) {
+    public TemplateInstance home(@QueryParam("spiel") Long spiel, @QueryParam("versatz") @DefaultValue("0") int versatz) {
         Instant now = Instant.now();
+        int offset = Math.clamp(versatz, -MAX_STEPS, MAX_STEPS);
         List<LandingLeague> leagues = new ArrayList<>();
         List<Match> shown = new ArrayList<>();
         List<Match> next = new ArrayList<>();
         List<String> finalPlaces = new ArrayList<>();
+        boolean[] steps = new boolean[2];
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            Matchday.findDisplayed(l, now).ifPresent(matchday -> {
+            Matchday.findDisplayed(l, now)
+                    .flatMap(current -> offset == 0 ? Optional.of(current) : Matchday.find(l, current.season, current.number + offset))
+                    .ifPresent(matchday -> {
                 List<Match> matches = Match.findByMatchday(matchday);
                 shown.addAll(matches);
                 leagues.add(landingLeague(matchday));
                 finalPlaces.add(MatchdayPageModels.finalPlaces(finalTable(matchday.league, matchday.season)));
-                if (MatchdayStream.showsNext(matches)) {
+                if (offset == 0 && MatchdayStream.showsNext(matches)) {
                     Matchday.find(matchday.league, matchday.season, matchday.number + 1)
                             .ifPresent(md -> next.addAll(Match.findByMatchday(md)));
                 }
+                steps[0] |= Matchday.find(l, matchday.season, matchday.number - 1).isPresent();
+                steps[1] |= Matchday.find(l, matchday.season, matchday.number + 1).isPresent();
             });
         }
+        MatchdayStep step = new MatchdayStep(offset,
+                steps[0] && offset > -MAX_STEPS ? offset - 1 : null, steps[1] && offset < MAX_STEPS ? offset + 1 : null);
         List<StreamDay> days = MatchdayStream.of(shown);
         List<StreamDayView> dayViews = streamViews(days, now);
         List<StreamDayView> nextViews = streamViews(MatchdayStream.of(next), now);
@@ -181,8 +194,8 @@ public class MatchdayPages {
         int live = (int) shown.stream().filter(m -> m.isLive(now, liveWindow)).count();
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
-                MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces),
-                topStage(shown, next, now, spiel)));
+                MatchdayPageModels.LEADERBOARD_LINK, offset == 0 ? sinceRows(now) : List.of(), String.join(";", finalPlaces),
+                topStage(shown, next, now, spiel), step));
     }
 
     /**
@@ -209,6 +222,9 @@ public class MatchdayPages {
         }
         return null;
     }
+
+    /** How far "‹ Aktueller Spieltag ›" reaches either way — a season has at most 38 matchdays. */
+    private static final int MAX_STEPS = 40;
 
     /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
     static List<Match> startPageMatches(Instant now) {

@@ -398,6 +398,36 @@ public final class MatchdayPageModels {
     /** One league in the landing page header and table rail: badge, name, the matchday shown, where its full page is. */
     record LandingLeague(String shortcut, String badge, String name, int matchdayNumber, String matchdayLink,
                          List<StandingRow> table, boolean tableProvisional) {
+        /** "1. Liga", "2. Liga" — the short name in the matchday head and the league switch (design r102). */
+        public String shortName() {
+            return badge + ". Liga";
+        }
+    }
+
+    /**
+     * Design r102, "‹ Aktueller Spieltag ›": how many matchdays the start page stands away from the
+     * current one, and where the arrows lead — null at the end of the season either way.
+     */
+    record MatchdayStep(int offset, Integer previous, Integer next) {
+        static String link(int offset) {
+            return offset == 0 ? "/" : "/?versatz=" + offset;
+        }
+
+        /** "Aktueller Spieltag", "Ein Spieltag zurück", "In 3 Spieltagen" — the label between the arrows. */
+        public String label() {
+            if (offset == 0) return "Aktueller Spieltag";
+            if (offset == -1) return "Ein Spieltag zurück";
+            if (offset == 1) return "Nächster Spieltag";
+            return offset < 0 ? -offset + " Spieltage zurück" : "In " + offset + " Spieltagen";
+        }
+
+        public String previousLink() {
+            return previous == null ? null : link(previous);
+        }
+
+        public String nextLink() {
+            return next == null ? null : link(next);
+        }
     }
 
     /**
@@ -535,7 +565,7 @@ public final class MatchdayPageModels {
      */
     record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
                        List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink,
-                       List<SinceRow> recent, String finalPlaces, TopStage top) {
+                       List<SinceRow> recent, String finalPlaces, TopStage top, MatchdayStep step) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())
@@ -545,6 +575,11 @@ public final class MatchdayPageModels {
         /** "Bundesliga, 9.–11. Oktober" — the period, since each league keeps its own matchday counter (spec 01). */
         public String heading() {
             return dateRange == null ? "Bundesliga" : "Bundesliga, " + dateRange;
+        }
+
+        /** Whether the page shows the current matchdays — "Seit dem letzten Besuch" and the next matchday belong only there. */
+        public boolean current() {
+            return step == null || step.offset() == 0;
         }
     }
 

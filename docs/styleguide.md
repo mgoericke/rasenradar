@@ -165,15 +165,21 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Baustein (`{#score}`), damit Seite und Nachladen gleich aussehen. Läuft nichts mehr,
   hört die Seite auf zu fragen.
 - **Landingpage: Spieltags-Strom** (Spec 1). Kein Kopfbereich mit Schriftzug — die Marke steht
-  in der Navigation. H1 „Bundesliga, 23.–25. Oktober", darunter beide Spieltage verlinkt.
+  in der Navigation. **Spieltagskopf** (Entwurf r102) über dem Strom: H1 „Spieltag", in derselben
+  Zeile der Ligaschalter Alle | 1. Liga | 2. Liga (`.stream-leagues`, schließt aus, die Tabelle
+  daneben folgt) und das Menü „Mehr zum Spieltag" (`details.md-menu`: Status Alle/Live/Beendet/
+  Anstehend, je Liga Spieltag und Tabelle, Torschützen, Saison in Zahlen, dazu KI-Bilanz).
+  Darunter beide Spieltage verlinkt und der Zeitraum, dann zwischen zwei 2 px-Kreidelinien die
+  Werkzeugleiste (`.md-tools`): „‹ Aktueller Spieltag ›" als Links (`/?versatz=-1`, ohne Skript
+  bedienbar, am Saisonrand ausgegraut, „Zurück zu jetzt" abseits von heute) und Liste | Kompakt
+  (`rr-view`). Abseits von heute fallen „Seit dem letzten Besuch" und der nächste Spieltag weg.
   Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
   (`.stream-slot`, Mähstreifen, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
   trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):
   Richtwert in Display-Schrift in `--ki` mit 2 px-Linie in `--ki`, davor die Tendenz mit Wahrscheinlichkeit,
   danach das Urteil — „getroffen" in `--ink` 600 mit gefülltem `--win`-Punkt, „daneben" in
-  `--ink-soft` mit leerem Ring, bei vorläufigem Ergebnis „· vorläufig". Darüber eine klebende
-  Filterleiste (Segment Alle/Live/Beendet/Anstehend, Liga-Chips; `stream.js`, ohne Skript
-  unsichtbar). Rechts eine klebende Spalte (21 rem) mit Tabelle (Tabs je Liga, Kurznamen)
+  `--ink-soft` mit leerem Ring, bei vorläufigem Ergebnis „· vorläufig". Ligaschalter und Status
+  brauchen `stream.js` und bleiben ohne Skript unsichtbar. Rechts eine klebende Spalte (21 rem) mit Tabelle (Tabs je Liga, Kurznamen)
   und KI-Bilanz. Unter 1000 px fällt die Spalte weg und ein Segment Spiele | Tabelle |
   KI-Bilanz schaltet um; unter 720 px rutscht die KI-Zelle zentriert unter die Paarung.
 - **Radio-Umschalter ohne Skript** (Ansicht auf dem Telefon, Tabellen-Tabs): versteckte, aber

@@ -841,11 +841,39 @@ h2 { font-size: 1.35rem; }
 .chip[aria-pressed="false"] { color: var(--ink-mute); }
 .chip .badge { border-color: currentColor; color: currentColor; }
 
-.stream-filters { position: sticky; top: 3.6rem; z-index: 6; background: var(--ground); display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; padding: .55rem 0 .7rem; border-bottom: 1px solid var(--line); }
-.stream-filters[hidden] { display: none; }
-/* with script, stream.js shows the bar: hold its place from the first paint, so the stream below does not jump when it appears */
-.js .stream-filters[hidden] { display: flex; visibility: hidden; }
-.stream-leagues { display: flex; gap: .4rem; flex-wrap: wrap; }
+/* design r102: the matchday head — title, league switch and "Mehr zum Spieltag" in one row, below
+   between two chalk lines the matchday step and the view */
+.stream .landing-head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .7rem 1rem; margin-bottom: 1.1rem; }
+.stream .landing-heading { grid-column: 1; grid-row: 1; }
+.stream .landing-sub { grid-column: 1 / -1; grid-row: 2; margin: -.4rem 0 0; }
+.stream-leagues { grid-column: 2; grid-row: 1; }
+.stream-leagues[hidden], .md-menu-status[hidden] { display: none; }
+/* with script, stream.js shows the switch: hold its place from the first paint, so nothing jumps */
+.js .stream-leagues[hidden] { display: inline-flex; visibility: hidden; }
+.md-menu { grid-column: 3; grid-row: 1; position: relative; }
+.md-menu summary { list-style: none; cursor: pointer; font: 600 .88rem var(--text); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: .4rem .9rem; display: inline-flex; align-items: center; gap: .45rem; }
+.md-menu summary::-webkit-details-marker { display: none; }
+.md-menu summary::after { content: ""; width: .45rem; height: .45rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-.15rem) rotate(45deg); }
+.md-menu[open] summary::after { transform: translateY(.1rem) rotate(-135deg); }
+.md-menu-panel { position: absolute; right: 0; top: calc(100% + .4rem); z-index: 8; width: max-content; min-width: 15rem; max-width: min(22rem, calc(100vw - 2rem)); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .4rem 1rem .8rem; box-shadow: 0 10px 24px rgb(0 0 0 / .14); }
+.md-menu-label { font-size: .78rem; font-weight: 600; color: var(--ink-mute); margin: .7rem 0 .25rem; }
+.md-menu-panel ul { list-style: none; margin: 0; padding: 0; }
+.md-menu-panel li a { display: block; padding: .3rem 0; color: var(--ink); }
+.md-menu-panel li a:hover { text-decoration: underline; }
+.md-menu-panel .seg { flex-wrap: wrap; }
+.md-tools { grid-column: 1 / -1; grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; padding: .5rem 0; border-block: 2px solid var(--line); }
+.md-step { display: flex; align-items: center; gap: .2rem; }
+.md-step > a:not(.md-now), .md-step > span[aria-hidden] { display: inline-grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1px solid var(--line); border-radius: 6px; font-size: 1.35rem; line-height: 1; color: var(--ink); }
+.md-step > a:not(.md-now):hover { border-color: var(--ink); }
+.md-step > span[aria-hidden] { color: var(--ink-mute); opacity: .5; }
+.md-step-label { font-weight: 700; padding: 0 .7rem; }
+.stream-leagues button, .md-step-label, .md-step .md-now { white-space: nowrap; }
+.md-step .md-now { margin-left: .5rem; font-size: .88rem; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.md-tools .view-choice { margin: 0; }
+/* Kompakt on the start page: one line per match, the KI cell tucked away */
+.rr-compact .stream-row { grid-template-columns: minmax(0, 1fr); }
+.rr-compact .stream-row .fixture { padding-top: .3rem; padding-bottom: .3rem; }
+.rr-compact .stream-ki { display: none; }
 .view-switch { display: none; }
 /* the radios only switch the phone view; above 1000px all views show, so they leave the tab order and the a11y tree */
 @media (min-width: 1001px) { .view-input { display: none; } }
@@ -920,12 +948,19 @@ h2 { font-size: 1.35rem; }
   .view-input:focus-visible ~ .view-switch { outline: 3px solid var(--win); outline-offset: 2px; }
   #view-spiele:checked ~ .landing-layout .landing-rail { display: none; }
   #view-tabelle:checked ~ .landing-layout .stream, #view-bilanz:checked ~ .landing-layout .stream { display: none; }
-  #view-tabelle:checked ~ .stream-filters, #view-bilanz:checked ~ .stream-filters { display: none; }
   #view-tabelle:checked ~ .landing-layout .rail-bilanz { display: none; }
   #view-bilanz:checked ~ .landing-layout .rail-table { display: none; }
 }
 @media (max-width: 720px) {
-  .stream-filters { top: 5.6rem; }
+  .stream .landing-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .stream-leagues { grid-column: 1; grid-row: 3; }
+  .md-menu { grid-column: 2; grid-row: 3; }
+  .md-tools { grid-row: 4; }
+  .md-step { flex: 1 1 100%; flex-wrap: wrap; }
+  .md-step .md-now { order: 1; margin: .4rem auto 0; }
+  .md-step-label { flex: 1; text-align: center; }
+  .md-tools .view-choice { flex: 1; }
+  .md-tools .view-choice button { flex: 1; }
   .stream-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
   .stream-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .45rem; padding: .55rem .7rem .2rem; }
   .stream-row .badge, .stream-row .crest { display: none; }
