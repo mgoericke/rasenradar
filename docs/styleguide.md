@@ -228,6 +228,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
   Elfmeterschießen" als gestreifte Liste (`.cup-decisions`). Ohne Tabelle, Serien, Vorjahr,
   Kreuztabelle und Heimvorteil; die Sprungmarken folgen.
+- **Champions League: Saison in Zahlen** (`/ucl/saison`, dieselbe Vorlage): Tabellenabschnitte
+  („Rechnerisch noch möglich" mit Platz 8 · Achtelfinale und Platz 24 · Play-offs, Restprogramm) aus
+  der Ligaphase, alle übrigen Zahlen aus der ganzen Ausgabe; „Verlängerung und Elfmeterschießen" und
+  das Fenster 91.–120. erst, wenn K.-o.-Spiele beendet sind. Ohne Kreuztabelle (36 Vereine, je acht
+  Spiele) und ohne Vorjahr (das Feld wechselt jedes Jahr). Die Abschnitte schalten danach, was die
+  Seite hat, nicht nach dem Wettbewerb.
 - **Spielseite: der Spielkopf** (`.scoreboard`, `.board-ai`, `.board-verdict`): gestreifter Rasen
   mit Seitenlinie und zwei Strafräumen als Rahmen; Wappen auf weißer Scheibe, Namen und Ergebnis in
   Display-Schrift 800. Unter einer Kreidelinie eine KI-Zeile — KI-Plakette, Richtwert und Tendenz

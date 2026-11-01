@@ -968,7 +968,7 @@ public final class MatchdayPageModels {
                       CupDecisionView decisions) {
         /** The cup's numbers page: no table, so no reach, run-in, streaks, cross table, last year or home advantage. */
         public boolean cup() {
-            return decisions != null;
+            return reach == null;
         }
     }
 

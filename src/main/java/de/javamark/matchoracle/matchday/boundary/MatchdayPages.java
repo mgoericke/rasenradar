@@ -48,6 +48,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StandingRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TeamPage;
 import jakarta.ws.rs.QueryParam;
 import de.javamark.matchoracle.matchday.entity.Tier;
+import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.UpsetRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.RoundSection;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FunnelFigures;
@@ -681,8 +682,9 @@ public class MatchdayPages {
     }
 
     /**
-     * The season page of a Bundesliga: figures of the season so far, final results only. Only the two
-     * Bundesligas have one — cup and Nations League have no season of their own to count (Spec 06).
+     * The season page of a Bundesliga: figures of the season so far, final results only. The cup has its
+     * own figures ("Pokal in Zahlen"), the Champions League those that fit its league phase; the Nations
+     * League has none yet.
      */
     @GET
     @Path("/{league}/saison")
@@ -690,6 +692,9 @@ public class MatchdayPages {
         League l = league(league);
         if (l == League.DFB_POKAL) {
             return cupSeason(l);
+        }
+        if (l == League.CHAMPIONS_LEAGUE) {
+            return championsSeason(l);
         }
         if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
             throw new NotFoundException("no season page for " + league);
@@ -726,6 +731,36 @@ public class MatchdayPages {
      * frequent results, special goals, the biggest comeback, when the goals fall (with extra time), and
      * how often a pairing went to extra time or penalties. Final results only.
      */
+    private TemplateInstance championsSeason(League l) {
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        // the whole edition counts for the figures, the league phase alone for the table sections
+        List<Match> settled = Match.findPlayedInSeason(l, season).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        List<Match> leaguePhase = settled.stream().filter(Match::countsTowardsTable).toList();
+        List<Match> knockout = settled.stream().filter(m -> !Match.countsTowardsTable(m)).toList();
+        String shortcut = l.sourceShortcut();
+        var streaks = de.javamark.matchoracle.matchday.control.StreakCalculator.of(settled);
+        var homeAdvantage = de.javamark.matchoracle.matchday.control.HomeAdvantageCalculator.of(settled);
+        boolean extraTime = knockout.stream().anyMatch(m -> m.decision != Decision.REGULAR);
+        return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), List.of(),
+                settled.size(),
+                MatchdayPageModels.HomeAdvantageView.of(homeAdvantage, shortcut),
+                streaks.going().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
+                streaks.stuck().stream().map(st -> MatchdayPageModels.StreakRow.of(st, shortcut)).toList(),
+                MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut),
+                de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
+                        .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
+                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
+                // 36 clubs with eight matches each: a cross table would be mostly empty; the field turns
+                // over every year, so there is no "last year" either
+                null,
+                reach(l, season, leaguePhase, shortcut),
+                runIn(l, season, leaguePhase, shortcut),
+                MatchdayPageModels.GoalTimingView.ofLeague(extraTime ? GoalTimingCalculator.cup(settled) : GoalTimingCalculator.league(settled)),
+                null,
+                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut)));
+    }
+
     private TemplateInstance cupSeason(League l) {
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
         List<Match> settled = ScorerCalculator.seasonMatches(l, season).stream()
