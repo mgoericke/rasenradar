@@ -214,6 +214,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Was braucht {Verein}?** (`.season-targets`, Vereinsseite, Story r039): je Platzierungsziel eine
+  Karte mit „typisch N Punkte“ (Median des Tabellenplatzes aus der Saisonaussicht), fehlenden Punkten,
+  Restspielen und nötigem gegen bisheriges Tempo, darunter der Anteil der simulierten Saisons. Linke
+  Kante und Satz grün nur für „das bisherige Tempo reicht“, rot nur für „rechnerisch nicht mehr
+  erreichbar“; „bereits sicher“ bleibt in Tinte, fett. Kein Messing. Darunter ein Satz, woher der
+  typische Wert kommt („Eine Einschätzung, kein Rat.“).
 - **Wegweiser** (`.season-toc`, Saisonseite): ab sieben Abschnitten direkt unter dem Seitenkopf eine
   Zeile mit einem Link je Abschnitt, Linktext gleich Überschrift, in Seitenreihenfolge. Einfache
   Anker, also auch ohne Skript nutzbar. Mit Skript klebt die Zeile unter der Navigation (deren Höhe

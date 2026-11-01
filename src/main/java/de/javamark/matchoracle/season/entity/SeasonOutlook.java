@@ -33,6 +33,12 @@ public class SeasonOutlook extends PanacheEntity {
     @Column(nullable = false)
     public Instant computedAt;
 
+    /** Story r039: the team's points when the run started; null for a row from before the story. */
+    public Integer points;
+
+    /** Story r039: the team's matches still to play when the run started; null for a row from before the story. */
+    public Integer remaining;
+
     /** Placement-goal label (e.g. "Meisterschaft") to its probability, 0..1. */
     @ElementCollection
     @CollectionTable(name = "season_outlook_probability", joinColumns = @JoinColumn(name = "season_outlook_id"))

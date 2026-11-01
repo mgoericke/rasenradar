@@ -1213,6 +1213,20 @@ h2 { font-size: 1.35rem; }
 .outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+/* story r039: Was braucht {Verein}? — green only for "the pace so far is enough", red only for "out of reach" */
+.season-targets { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.season-targets .target { padding: .6rem .75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; background: var(--surface); }
+.season-targets .target-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+.season-targets .label { font-weight: 600; }
+.season-targets .target-points { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.season-targets .target-verdict { margin: .25rem 0 0; }
+.season-targets .target-share { margin: .15rem 0 0; font-size: .85rem; }
+.season-targets .target-on-pace { border-left-color: var(--win); }
+.season-targets .target-on-pace .target-verdict { color: var(--win); font-weight: 600; }
+.season-targets .target-out-of-reach { border-left-color: var(--loss); }
+.season-targets .target-out-of-reach .target-verdict { color: var(--loss); font-weight: 600; }
+.season-targets .target-secured .target-verdict { font-weight: 600; }
+.target-note { font-size: .8rem; margin: .5rem 0 0; }
 .standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
 
 /* story r063: a scorer's name opens the profile — a plain-looking button, the profile a card in the middle */

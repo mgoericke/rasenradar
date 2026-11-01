@@ -1,0 +1,25 @@
+{#if fragment.available}
+<ul class="season-targets">
+  {#for t in fragment.targets}
+  <li class="target target-{t.status}">
+    <div class="target-head">
+      <span class="label">{t.label}</span>
+      <span class="target-points">typisch {t.typicalPoints} Punkte</span>
+    </div>
+    <p class="target-verdict">
+      {#when t.status}
+      {#is 'secured'}bereits sicher
+      {#is 'out-of-reach'}rechnerisch nicht mehr erreichbar
+      {#is 'on-pace'}{#if t.missing == 0}Typische Punktzahl schon erreicht{#else}{t.gap} – das bisherige Tempo von {t.current} Punkten pro Spiel reicht{/if}
+      {#is 'beyond-typical'}{t.gap} – mehr als möglich, das geht nur, wenn die Konkurrenz ungewöhnlich wenig punktet
+      {#else}{t.gap}: nötig sind {t.required} Punkte pro Spiel, bisher {t.current}
+      {/when}
+    </p>
+    <p class="target-share muted">In {t.percent} % der simulierten Saisons erreicht</p>
+  </li>
+  {/for}
+</ul>
+<p class="muted target-note">Typische Punktzahl: der mittlere Wert (Median) des jeweiligen Tabellenplatzes über 10.000 simulierte Restsaisons der Saisonaussicht. Eine Einschätzung, kein Rat.</p>
+{#else}
+<p class="muted">Noch zu wenig Daten – erscheint, sobald der erste Spieltag gespielt und die Saisonaussicht berechnet ist.</p>
+{/if}

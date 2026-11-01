@@ -121,6 +121,13 @@
           <p class="muted">Wird geladen …</p>
         </div>
       </div>
+      {! story r039: the goals' typical points, from the same simulation run as the outlook above !}
+      <div class="facts-block">
+        <h2>Was braucht {page.name}?</h2>
+        <div hx-get="{page.outlookLink}/targets" hx-trigger="load" hx-swap="innerHTML">
+          <p class="muted">Wird geladen …</p>
+        </div>
+      </div>
       {/if}
     </div>
 
