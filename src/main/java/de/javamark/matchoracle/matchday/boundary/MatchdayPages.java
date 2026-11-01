@@ -23,6 +23,11 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BriefLine;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupRound;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageRoute;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupField;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupTierGroup;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupClub;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupExit;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamSlot;
 import de.javamark.matchoracle.matchday.control.MatchdayStream;
@@ -376,7 +381,7 @@ public class MatchdayPages {
                 .sorted(Comparator.comparing((Match x) -> x.kickoff).thenComparing(x -> x.matchday.league).thenComparing(x -> x.id))
                 .map(x -> x.id).toList();
         return new TopStage(label, MatchdayPageModels.leagueName(m.matchday.league), when, reason, status, row,
-                home, away, kiLink, StageBrowse.of(order, m.id));
+                home, away, kiLink, StageBrowse.of(order, m.id), StageRoute.HOME);
     }
 
     private StageTeam stageTeam(Team team, Matchday matchday, Standings standings) {
@@ -404,6 +409,27 @@ public class MatchdayPages {
         List<Match> page = startPageMatches(now);
         TopStage stage = page.stream().filter(m -> m.id == id).findFirst()
                 .map(m -> stageOf(m, "", page, now)).orElse(null);
+        return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
+                .header("Cache-Control", "no-store").build();
+    }
+
+    /**
+     * The cup stage's arrows: another pairing of the same round on the stage, swapped in by htmx.
+     * Without htmx the cup page itself shows it.
+     */
+    @GET
+    @Path("/{league}/topspiel/{id}")
+    public Response browseCupStage(@PathParam("league") String league, @PathParam("id") long id,
+                                   @HeaderParam("HX-Request") String htmxRequest) {
+        League l = league(league);
+        Match m = Match.<Match>findByIdOptional(id)
+                .filter(x -> x.matchday.league == l && l.format() == CompetitionFormat.KNOCKOUT)
+                .orElseThrow(() -> new NotFoundException("no cup match " + id));
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/" + l.sourceShortcut() + "?saison=" + m.matchday.season + "&spiel=" + id)).build();
+        }
+        List<Match> round = Match.findByMatchday(m.matchday);
+        TopStage stage = cupStage(round, m.matchday.season, id, Instant.now());
         return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
                 .header("Cache-Control", "no-store").build();
     }
@@ -481,12 +507,13 @@ public class MatchdayPages {
     @GET
     @Path("/{league}")
     public TemplateInstance currentMatchday(@PathParam("league") String league,
-                                            @QueryParam("saison") Integer season) {
+                                            @QueryParam("saison") Integer season,
+                                            @QueryParam("spiel") Long spiel) {
         League l = league(league);
         if (l.format() == CompetitionFormat.KNOCKOUT) {
             int edition = season != null ? season
                     : Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
-            return Templates.knockout(knockoutPage(l, edition));
+            return Templates.knockout(knockoutPage(l, edition, spiel));
         }
         if (l.format() == CompetitionFormat.GROUPS) {
             Matchday.SeasonMatchday current = Matchday.currentNumber(l)
@@ -644,13 +671,8 @@ public class MatchdayPages {
         League l = league(league);
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
         var scorers = scorerCalculator.leagueScorersFor(l, season);
-        Map<String, ClubLook> clubs = new HashMap<>();
-        ScorerCalculator.seasonMatches(l, season).forEach(m -> {
-            for (Team t : List.of(m.homeTeam, m.awayTeam)) {
-                clubs.putIfAbsent(t.name, new ClubLook(t.shortName == null ? t.name : t.shortName, MatchdayPageModels.crestLink(t)));
-            }
-        });
-        List<LeagueScorerRow> rows = MatchdayPageModels.topScorers(scorers, MatchdayPageModels.TOP_SCORER_PLACES, clubs);
+        List<LeagueScorerRow> rows = MatchdayPageModels.topScorers(scorers, MatchdayPageModels.TOP_SCORER_PLACES,
+                clubLooks(ScorerCalculator.seasonMatches(l, season)));
         // story r014: switch between the two Bundesligas; the address carries the league
         List<NavLeague> switcher = l == League.BUNDESLIGA_1 || l == League.BUNDESLIGA_2
                 ? Nav.of(l).leagues().stream().filter(n -> n.shortcut().equals("bl1") || n.shortcut().equals("bl2")).toList()
@@ -1062,7 +1084,7 @@ public class MatchdayPages {
      * pairings; below it the surprises of that edition. No bracket: the competition is drawn
      * anew after every round, so there are no paths to draw.
      */
-    private KnockoutPage knockoutPage(League league, int season) {
+    private KnockoutPage knockoutPage(League league, int season, Long spiel) {
         String shortcut = league.sourceShortcut();
         List<Matchday> rounds = Matchday.<Matchday>list("league = ?1 and season = ?2", league, season);
         if (rounds.isEmpty()) {
@@ -1080,9 +1102,17 @@ public class MatchdayPages {
 
         List<RoundSection> sections = new ArrayList<>();
         List<UpsetRow> upsets = new ArrayList<>();
+        List<Match> edition = new ArrayList<>();
+        List<Match> stageRound = List.of();
         for (Matchday round : rounds) {
             List<Match> matches = Match.findByMatchday(round);
             matches.sort(Comparator.comparing((Match m) -> m.kickoff));
+            edition.addAll(matches);
+            // the stage shows the open round — or the round of the match the visitor browsed to
+            boolean browsed = spiel != null && matches.stream().anyMatch(m -> m.id.equals(spiel));
+            if (browsed || (round.number == openRound && stageRound.isEmpty())) {
+                stageRound = matches;
+            }
             sections.add(new RoundSection(round.displayName(), matches.size(), dateRange(matches),
                     matches.stream().map(m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow,
                             TeamTier.of(m.homeTeam, season).label(), TeamTier.of(m.awayTeam, season).label())).toList(),
@@ -1101,8 +1131,139 @@ public class MatchdayPages {
                 .toList();
 
         CupFunnel funnel = cupFunnelCalculator.funnelFor(league, season);
+        // ties can make the first five places longer — the rail keeps five rows
+        List<LeagueScorerRow> scorers = MatchdayPageModels.topScorers(scorerCalculator.leagueScorersFor(league, season),
+                RAIL_SCORER_PLACES, clubLooks(edition)).stream().limit(RAIL_SCORER_PLACES).toList();
         return new KnockoutPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, otherEditions,
-                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel), lines);
+                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel), lines,
+                cupStage(stageRound, season, spiel, now), cupField(rounds, edition, tierOf(season), shortcut), scorers);
+    }
+
+    /** The cup page's rail lists five rows of the scorers; the full list is one click away. */
+    private static final int RAIL_SCORER_PLACES = 5;
+
+    private static Map<String, ClubLook> clubLooks(List<Match> matches) {
+        Map<String, ClubLook> clubs = new HashMap<>();
+        matches.forEach(m -> {
+            for (Team t : List.of(m.homeTeam, m.awayTeam)) {
+                clubs.putIfAbsent(t.name, new ClubLook(t.shortName == null ? t.name : t.shortName, MatchdayPageModels.crestLink(t)));
+            }
+        });
+        return clubs;
+    }
+
+    /**
+     * The cup stage: one pairing of {@code round} on the pitch over the full width. While the round
+     * is still to be played it is "Spiel der Runde", the pairing of the two highest divisions; once
+     * it is over the biggest surprise, or the match with the most goals when there was none. A match
+     * the visitor browsed to ({@code spiel}) takes its place; the arrows browse the round.
+     */
+    private TopStage cupStage(List<Match> round, int season, Long spiel, Instant now) {
+        if (round.isEmpty()) {
+            return null;
+        }
+        StageRoute route = StageRoute.cup(round.get(0).matchday.league.sourceShortcut());
+        Optional<Match> browsed = spiel == null ? Optional.empty()
+                : round.stream().filter(m -> m.id.equals(spiel)).findFirst();
+        if (browsed.isPresent()) {
+            Match m = browsed.get();
+            return stageOf(m, "", round, now).on(route, m.matchday.displayName(), cupReason(m, season));
+        }
+        StagePick pick = stagePick(round, tierOf(season));
+        return stageOf(pick.match(), "", round, now).on(route, pick.label(), cupReason(pick.match(), season));
+    }
+
+    record StagePick(Match match, String label) {
+    }
+
+    /**
+     * Which pairing of a round the cup stage shows: while matches are still open the one of the two
+     * highest divisions (the earlier kickoff on a tie); once the round is over the biggest surprise
+     * (more goals on a tie), else the match with the most goals. A round of one match is named by itself.
+     */
+    static StagePick stagePick(List<Match> round, java.util.function.Function<Team, Tier> tierOf) {
+        List<Match> open = round.stream().filter(m -> !m.isPlayed()).toList();
+        if (!open.isEmpty()) {
+            Match pick = open.stream().min(Comparator.comparingInt((Match m) ->
+                    tierOf.apply(m.homeTeam).level() + tierOf.apply(m.awayTeam).level())
+                    .thenComparing(m -> m.kickoff)).orElseThrow();
+            return new StagePick(pick, round.size() == 1 ? pick.matchday.displayName() : "Spiel der Runde");
+        }
+        java.util.function.ToIntFunction<Match> gap = m -> m.winner().map(won -> {
+            Team lost = won.equals(m.homeTeam) ? m.awayTeam : m.homeTeam;
+            return TeamTier.gap(tierOf.apply(won), tierOf.apply(lost));
+        }).orElse(0);
+        Optional<Match> surprise = round.stream().filter(m -> gap.applyAsInt(m) > 0)
+                .max(Comparator.comparingInt(gap).thenComparingInt(MatchdayPages::goalsOf));
+        Match pick = surprise.orElseGet(() -> round.stream().max(Comparator.comparingInt(MatchdayPages::goalsOf)).orElseThrow());
+        String label = round.size() == 1 ? pick.matchday.displayName()
+                : surprise.isPresent() ? "Überraschung der Runde" : "Torreichstes Spiel der Runde";
+        return new StagePick(pick, label);
+    }
+
+    /** Why the pairing matters: who beat whom across divisions once it is decided, the divisions before. */
+    private static String cupReason(Match m, int season) {
+        Tier home = TeamTier.of(m.homeTeam, season);
+        Tier away = TeamTier.of(m.awayTeam, season);
+        Optional<Team> winner = m.winner();
+        if (winner.isPresent()) {
+            boolean homeWon = winner.get().equals(m.homeTeam);
+            Team won = homeWon ? m.homeTeam : m.awayTeam;
+            Team lost = homeWon ? m.awayTeam : m.homeTeam;
+            return shortName(won) + " (" + (homeWon ? home : away).label() + ") schlägt "
+                    + shortName(lost) + " (" + (homeWon ? away : home).label() + ")";
+        }
+        return home.label() + " gegen " + away.label();
+    }
+
+    private static int goalsOf(Match m) {
+        return m.fullTimeScore == null ? 0 : m.fullTimeScore.home + m.fullTimeScore.away;
+    }
+
+    /**
+     * "Noch im Wettbewerb": every club of the edition that has not lost a decided pairing, by
+     * division; the clubs that went out under the round they lost in, the latest round first.
+     */
+    private static java.util.function.Function<Team, Tier> tierOf(int season) {
+        Map<Team, Tier> tiers = new HashMap<>();
+        return t -> tiers.computeIfAbsent(t, x -> TeamTier.of(x, season));
+    }
+
+    static CupField cupField(List<Matchday> rounds, List<Match> edition, java.util.function.Function<Team, Tier> tierOf,
+                             String shortcut) {
+        Map<Team, String> outIn = new HashMap<>();
+        java.util.LinkedHashSet<Team> clubs = new java.util.LinkedHashSet<>();
+        for (Match m : edition) {
+            clubs.add(m.homeTeam);
+            clubs.add(m.awayTeam);
+            m.winner().ifPresent(won -> {
+                Team lost = won.equals(m.homeTeam) ? m.awayTeam : m.homeTeam;
+                outIn.put(lost, m.matchday.displayName());
+            });
+        }
+        List<CupTierGroup> remaining = new ArrayList<>();
+        for (Tier tier : Tier.values()) {
+            List<CupClub> inTier = clubs.stream()
+                    .filter(t -> !outIn.containsKey(t) && tierOf.apply(t) == tier)
+                    .sorted(Comparator.comparing(MatchdayPages::shortName))
+                    .map(t -> new CupClub(t.name, MatchdayPageModels.crestLink(t), MatchdayPageModels.teamLink(t, shortcut)))
+                    .toList();
+            if (!inTier.isEmpty()) {
+                remaining.add(new CupTierGroup(tier.label(), "tier-" + tier.name().toLowerCase(java.util.Locale.ROOT), inTier));
+            }
+        }
+        List<CupExit> out = rounds.stream()
+                .map(Matchday::displayName).distinct()
+                .map(name -> new CupExit(name, outIn.entrySet().stream().filter(e -> e.getValue().equals(name))
+                        .map(e -> shortName(e.getKey())).sorted().toList()))
+                .filter(e -> !e.clubs().isEmpty())
+                .toList();
+        // the final is played: one club left, the winner of the edition
+        boolean over = !rounds.isEmpty() && edition.stream()
+                .filter(m -> m.matchday.number == rounds.get(0).number).allMatch(m -> m.winner().isPresent())
+                && remaining.stream().mapToInt(g -> g.clubs().size()).sum() == 1;
+        CupClub winner = over ? remaining.get(0).clubs().get(0) : null;
+        return new CupField(remaining, out, winner == null ? null : winner.name(), winner == null ? null : winner.icon());
     }
 
     /**

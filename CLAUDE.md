@@ -132,6 +132,8 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Besser als vor einem Jahr? (Punkte nach gleich vielen Spielen wie in der Vorsaison) | `LastYear` / `LastYearCalculator` |
 | Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
+| Pokalbühne (Spiel der Runde / Überraschung der Runde über der Pokalseite) | `MatchdayPages.cupStage` / `stagePick`, `StageRoute` |
+| Noch im Wettbewerb (verbliebene Vereine nach Spielklasse, Ausgeschiedene mit Runde, Pokalsieger) | `CupField` / `MatchdayPages.cupField` |
 
 Neue Fachbegriffe hier ergänzen, bevor sie im Code verwendet werden.
 
