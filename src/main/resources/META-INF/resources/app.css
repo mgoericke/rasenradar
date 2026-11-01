@@ -1089,6 +1089,21 @@ h2 { font-size: 1.35rem; }
 .good-for[hidden] { display: none; }
 @media (max-width: 560px) { .good-for { padding-left: .9rem; } }
 @media print { .good-for { display: none !important; } }
+/* story r053: the lead line under a finished match — ink on the stripe, a tap opens the goals */
+.fixtures > li:has(> .lead-line) { flex-wrap: wrap; }
+.lead-line { order: 3; flex-basis: 100%; margin: -.45rem 0 0; padding: 0 .9rem .45rem 4.85rem; }
+.lead-line summary { display: block; list-style: none; cursor: pointer; max-width: 22rem; min-height: 24px; }
+.lead-line summary::-webkit-details-marker { display: none; }
+.lead-line svg { display: block; width: 100%; height: 2rem; overflow: visible; }
+.lead-line path { fill: none; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.lead-line .zero { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.lead-line .ht { stroke: var(--ink-mute); stroke-width: 1; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.lead-line summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.lead-line ol { list-style: none; margin: .3rem 0 0; padding: 0; font-size: .85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.lead-line .min { display: inline-block; min-width: 2.6rem; color: var(--ink-mute); }
+.lead-legend { color: var(--ink-mute); font-size: .85rem; max-width: 70ch; margin: .6rem 0 0; }
+@media (max-width: 560px) { .lead-line { padding-left: .9rem; } }
+@media print { .lead-line, .lead-legend { display: none !important; } }
 /* story r070: "Es geht um" under an open match — from the table as it stands, plain ink */
 .fixtures > li:has(> .stakes) { flex-wrap: wrap; }
 .stakes { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; font-size: .85rem; }

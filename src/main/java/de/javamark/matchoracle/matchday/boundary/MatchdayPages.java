@@ -552,7 +552,17 @@ public class MatchdayPages {
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
                 stakes(matchday, matches, now), liveTable(matchday, standings, matches, now),
-                splitTables(matchday, playedSoFar));
+                splitTables(matchday, playedSoFar), leadLines(matches));
+    }
+
+    /** Story r053: a lead line for every finished match of the matchday whose goal list is complete. */
+    private static Map<Long, MatchdayPageModels.LeadLine> leadLines(List<Match> matches) {
+        Map<Long, MatchdayPageModels.LeadLine> lines = new HashMap<>();
+        for (Match m : matches) {
+            MatchdayPageModels.LeadLine line = MatchdayPageModels.LeadLine.of(m);
+            if (line != null) lines.put(m.id, line);
+        }
+        return lines;
     }
 
     /** Story r041: Heim, Auswärts and Letzte 5 beside the full table — final results only, no zones. */
