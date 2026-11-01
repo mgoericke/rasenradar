@@ -245,8 +245,8 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Spiele selbst bleiben immer da.“ und „Alles zeigen“. Schaltbar ist nur, was `data-section` trägt;
   Spiellisten, Spieltagsliste und Spielkern nie. Ein ausgeschalteter Abschnitt fehlt auch im Wegweiser
   (`data-section-toc`) und wird schon vor dem ersten Zeichnen ausgeblendet (Kopf-Skript, `rr-hidden`).
-- **Bühne in groß** (`.board`, Spieltagsseite, Stories r038 „Sofa-Modus“ und r052 „Konferenz
-  nachspielen“): die dunkle Bühne bildschirmfüllend (Vollbild, sonst fensterfüllend), nur
+- **Bühne in groß** (`.board`, Spieltags-, Pokal- und Nations-League-Seite, Stories r038 „Sofa-Modus“
+  und r052 „Konferenz nachspielen“): die dunkle Bühne bildschirmfüllend (Vollbild, sonst fensterfüllend), nur
   Stage-Tokens, kein Messing, kein zweites Dunkel-Thema. Kopf mit Marke, Titel, Zusammenfassung
   („2 Spiele laufen, 12 Tore bisher“) und „Beenden“; darunter je Spiel eine große Kachel mit
   Wappen, Kurznamen, Spielstand in der Display-Schrift und Status („Läuft“, „Ende · vorläufig“,
@@ -255,7 +255,11 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   `--ki-on-turf`, als „KI-Vorschau“ benannt. Die Konferenz: Uhr von 0' bis Abpfiff in rund einer
   Minute, Tickerzeile „Tor für …!“, Knöpfe „Pause“/„Weiter“ und „Nochmal“; bei reduzierter
   Bewegung keine laufende Uhr, sondern „Nächstes Tor“. Escape schließt, der Fokus kehrt zurück.
-- **Saisonrennen** (`.race`, Saisonseite, Story r019): der Tabellenplatz jedes Vereins nach jedem
+  Im Pokal zeigt der Sofa-Modus die aktuelle Runde, die Konferenz spielt die letzte komplette Runde
+  nach (Tore der Verlängerung bis 120'; „n. V.“ oder „n. E. 5:4“ steht am Ende unter dem
+  Ergebnis); in der Nations League alle Gruppen eines Spieltags zusammen.
+- **Saisonrennen** (`.race`, Saisonseiten der Bundesligen und der Champions League, je Gruppe
+  zugeklappt als „Platz je Spieltag“ in der Nations League, Story r019): der Tabellenplatz jedes Vereins nach jedem
   Spieltag als Linie, Platz 1 oben, am Linienende der Kurzname. Alle Linien neutral (`--ink-mute`,
   gedämpft); Zeigen, Tippen oder Fokus legt eine Kopie der Linie in `--ink`, 3 px, mit Platzziffern
   je Spieltag über alle anderen (die Reihenfolge der Linien und damit die Tab-Reihenfolge bleibt die

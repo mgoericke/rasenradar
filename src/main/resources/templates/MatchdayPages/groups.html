@@ -11,6 +11,13 @@
   <div class="matchday-head">
     <h1 class="matchday-title"><span class="number">{page.number}.</span> Spieltag</h1>
     <p class="matchday-season">{page.nav.leagueName} {page.season}</p>
+    {#if page.groups}
+    {! stories r038/r052: this matchday of all groups on the stage, the last complete one played back !}
+    <p class="matchday-actions">
+      <button type="button" class="link-button" data-sofa-open hidden>Sofa-Modus</button>
+      <button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>
+    </p>
+    {/if}
     <nav class="pager" aria-label="Spieltag wechseln">
       {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
       {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
@@ -45,11 +52,18 @@
       </tbody>
     </table>
 
+    {#if g.race && g.race.drawn}
+    <details class="group-race">
+      <summary>Platz je Spieltag</summary>
+      {#let r=g.race}{#include MatchdayPages/race r=r /}{/let}
+    </details>
+    {/if}
+
     {#for day in g.days}
       <h3 class="day">{day.label}</h3>
       <ol class="fixtures">
         {#for m in day.matches}
-        <li>
+        <li data-board-row="{m.id}">
           <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
             <span class="time">{m.time}</span>
             <span class="home">
@@ -104,7 +118,7 @@
   <aside class="knockout-rail">
     {#if page.holder}
     {#let h=page.holder}
-    <section class="rail-card holder" aria-labelledby="rail-holder">
+    <section class="rail-card holder" data-section="nl-titelverteidiger" aria-labelledby="rail-holder">
       <h2 id="rail-holder">Titelverteidiger</h2>
       <p class="cup-winner">{#crest src=h.icon size="large" /} <strong>{h.team}</strong></p>
       <p class="round-meta">Sieger der Ausgabe {h.season}, der Weg durch die Endrunde:</p>
@@ -118,7 +132,7 @@
     {/if}
 
     {#if page.scorers}
-    <section class="rail-card rail-scorers" aria-labelledby="rail-scorers">
+    <section class="rail-card rail-scorers" data-section="nl-torjaeger" aria-labelledby="rail-scorers">
       <h2 id="rail-scorers">Torjäger</h2>
       <table class="stream-table">
         <caption class="sr-only">Die ersten fünf der Torschützenliste</caption>
@@ -134,7 +148,7 @@
     {/if}
 
     {#if page.figures.matches}
-    <section class="rail-card" aria-labelledby="rail-figures">
+    <section class="rail-card" data-section="nl-zahlen" aria-labelledby="rail-figures">
       <h2 id="rail-figures">In Zahlen</h2>
       <p class="funnel-figures">
         <span><strong>{page.figures.matches}</strong> Gruppenspiele</span>
@@ -146,6 +160,7 @@
   </aside>
   </div>
 </section>
+{#include MatchdayPages/board /}
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {/include}

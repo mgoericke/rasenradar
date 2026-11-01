@@ -766,6 +766,11 @@ public class MatchdayPages {
     private MatchdayPageModels.SeasonRace seasonRace(League league, int season, String shortcut, boolean finalOnly) {
         List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE).stream()
                 .filter(m -> !finalOnly || m.resultStatus == ResultStatus.FINAL).toList();
+        return raceOf(league, season, played, shortcut);
+    }
+
+    /** The race over the given played matches — a league, or one group of a group competition. */
+    private MatchdayPageModels.SeasonRace raceOf(League league, int season, List<Match> played, String shortcut) {
         int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
         List<Standings> afterEach = new ArrayList<>();
         for (int n = 1; n <= last; n++) {
@@ -810,7 +815,8 @@ public class MatchdayPages {
                 runIn(l, season, leaguePhase, shortcut),
                 MatchdayPageModels.GoalTimingView.ofLeague(extraTime ? GoalTimingCalculator.cup(settled) : GoalTimingCalculator.league(settled)),
                 null,
-                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut), null, null));
+                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut),
+                seasonRace(l, season, shortcut, true), null));
     }
 
     private TemplateInstance cupSeason(League l) {
@@ -1095,27 +1101,24 @@ public class MatchdayPages {
     }
 
     /**
-     * Story r052: the last complete matchday of a Bundesliga — every match FINAL — as data for the
-     * "Konferenz nachspielen" board. 404 while no matchday of the season is complete yet.
+     * Story r052: the last complete section of a competition — every match FINAL — as data for the
+     * "Konferenz nachspielen" board: a matchday (all groups of it in the Nations League) or a cup
+     * round. 404 while nothing of the season is complete yet.
      */
     @GET
     @Path("/{league}/konferenz")
     @Produces(MediaType.APPLICATION_JSON)
     public MatchdayPageModels.ConferenceReplay conference(@PathParam("league") String league) {
         League l = league(league);
-        if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
-            throw new NotFoundException("no conference for " + league);
-        }
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
-        List<Match> played = Match.findPlayedBefore(l, season, Integer.MAX_VALUE);
-        java.util.Set<Integer> incomplete = new java.util.HashSet<>();
-        Match.findUnplayed(l, season).forEach(m -> incomplete.add(m.matchday.number));
-        played.stream().filter(m -> m.resultStatus != ResultStatus.FINAL).forEach(m -> incomplete.add(m.matchday.number));
-        int last = played.stream().mapToInt(m -> m.matchday.number).filter(n -> !incomplete.contains(n)).max()
+        List<Match> all = new ArrayList<>(Match.findPlayedInSeason(l, season));
+        all.addAll(Match.findUnplayed(l, season));
+        List<Match> matches = MatchdayPageModels.ConferenceReplay.lastComplete(all)
                 .orElseThrow(() -> new NotFoundException("no complete matchday yet"));
-        List<Match> matches = played.stream().filter(m -> m.matchday.number == last).toList();
-        return MatchdayPageModels.ConferenceReplay.of(last + ". Spieltag · " + MatchdayPageModels.leagueName(l), matches,
-                l.sourceShortcut());
+        Matchday section = matches.getFirst().matchday;
+        boolean round = section.label != null;
+        return MatchdayPageModels.ConferenceReplay.of(section.displayName() + " · " + MatchdayPageModels.leagueName(l),
+                round ? "in dieser Runde" : "an diesem Spieltag", matches, l.sourceShortcut());
     }
 
     /** More than any page shows at once (two Bundesligas, one matchday each); caps what a crafted URL can ask for. */
@@ -1238,7 +1241,8 @@ public class MatchdayPages {
             sections.add(new MatchdayPageModels.GroupSection(group.groupName,
                     standings.positions().stream().map(p -> StandingRow.of(p, league)).toList(),
                     byDay(matches, m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)),
-                    possible, groupLead(reach)));
+                    possible, groupLead(reach),
+                    raceOf(league, season, Match.findPlayedBefore(league, season, group.groupName, Integer.MAX_VALUE), shortcut)));
         }
         // spec 06: sections of the final round are rounds, not groups — no table
         rounds.addAll(roundSections(league, season, shortcut, now));
@@ -1447,7 +1451,8 @@ public class MatchdayPages {
                 RAIL_SCORER_PLACES, clubLooks(edition)).stream().limit(RAIL_SCORER_PLACES).toList();
         return new KnockoutPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, otherEditions,
                 sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel), lines,
-                cupStage(stageRound, season, spiel, now), cupField(rounds, edition, tierOf(season), shortcut), scorers);
+                cupStage(stageRound, season, spiel, now), cupField(rounds, edition, tierOf(season), shortcut), scorers,
+                edition.stream().filter(m -> WeatherService.shown(m, now)).map(m -> m.id).collect(java.util.stream.Collectors.toSet()));
     }
 
     /** The cup page's rail lists five rows of the scorers; the full list is one click away. */

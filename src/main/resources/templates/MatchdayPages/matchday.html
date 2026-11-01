@@ -15,7 +15,7 @@
       {#if page.days}<button type="button" class="link-button print-button" data-print>Spieltag drucken</button>{/if}
       {! stories r038/r052: the dark stage in full size; nav.js shows the buttons, without script there is nothing to open !}
       {#if page.days}<button type="button" class="link-button" data-sofa-open hidden>Sofa-Modus</button>{/if}
-      {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2'}<button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>{/if}
+      {#if page.days}<button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>{/if}
     </p>
     {#if page.days}
     {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
@@ -79,7 +79,7 @@
   {/if}
 </section>
 
-<aside class="standings">
+<aside class="standings" data-section="spieltag-tabelle" data-section-label="Tabelle">
   {#if page.live}
   {! story r059: while a match runs, the live view comes first; without CSS both tables simply follow each other !}
   <input class="table-view-input sr-only" type="radio" name="table-view" id="table-view-live" checked>
@@ -180,22 +180,7 @@
 </section>
 {/if}
 {#if page.days}
-<div class="board" data-board hidden role="dialog" aria-modal="true" aria-labelledby="board-title">
-  <div class="board-head">
-    <p class="board-brand">Rasen-Radar</p>
-    <h2 class="board-title" id="board-title" data-board-title></h2>
-    <p class="board-summary" data-board-summary></p>
-    <p class="board-controls" data-board-controls hidden>
-      <button type="button" data-replay-pause>Pause</button>
-      <button type="button" data-replay-step hidden>Nächstes Tor</button>
-      <button type="button" data-replay-again>Nochmal</button>
-    </p>
-    <button type="button" class="board-close" data-board-close>Beenden</button>
-  </div>
-  <p class="board-note" data-board-note hidden></p>
-  <p class="board-ticker" data-board-ticker aria-live="polite" hidden></p>
-  <ol class="board-tiles" data-board-tiles></ol>
-</div>
+{#include MatchdayPages/board /}
 {/if}
 {#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="none"></div>{/if}
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}

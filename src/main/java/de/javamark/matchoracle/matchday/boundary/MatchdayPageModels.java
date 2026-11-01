@@ -22,9 +22,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /** View models for the HTML pages: everything pre-formatted so templates stay logic-free. */
 public final class MatchdayPageModels {
@@ -96,6 +99,12 @@ public final class MatchdayPageModels {
 
     /** Story r034: the weather values of a matchday's fixtures, out of band; {@code /wetter/spiel/{id}} for one match page. */
     static final String WEATHER_LINK = "/wetter/spieltag";
+
+    /** Story r034: one request for all fixtures with a weather line, answered out of band; null without any. */
+    static String weatherLink(java.util.Set<Long> matchIds) {
+        return matchIds.isEmpty() ? null : WEATHER_LINK + "?" + matchIds.stream().sorted().map(id -> "match=" + id)
+                .collect(java.util.stream.Collectors.joining("&"));
+    }
 
     /** Story r060: the line on a match page — a derby, or the away side's trip. Null when a ground is unknown. */
     static String travelLine(Match m, Integer km, String awayCity) {
@@ -280,7 +289,16 @@ public final class MatchdayPageModels {
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
                         List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data,
                         List<FunnelRow> funnel, FunnelFigures figures, Map<Long, LeadLine> leadLines,
-                        TopStage stage, CupField field, List<LeagueScorerRow> scorers) {
+                        TopStage stage, CupField field, List<LeagueScorerRow> scorers, java.util.Set<Long> weather) {
+
+        /** Story r034 in the cup: an open pairing whose host has a known stadium gets a weather line. */
+        public boolean weatherOf(long matchId) {
+            return weather.contains(matchId);
+        }
+
+        public String weatherLink() {
+            return MatchdayPageModels.weatherLink(weather);
+        }
 
         /** Story r053 in the cup: the course of every finished pairing whose goal list is complete. */
         public LeadLine leadLineOf(long matchId) {
@@ -301,8 +319,9 @@ public final class MatchdayPageModels {
      * Spec 06: one group of a group competition — its own table and its matches of the shown matchday,
      * by day like on the matchday page (the time alone does not say when).
      */
+    /** {@code race}: story r019 for the group, its place after each matchday (provisional results dashed). */
     record GroupSection(String name, List<StandingRow> table, List<DayGroup> days, Map<Long, String> stillPossible,
-                        String lead) {
+                        String lead, SeasonRace race) {
         /** "Was noch geht": the places a team can still finish on, e.g. "1.–3." or "1. fest"; null without a range. */
         public String possibleOf(long teamId) {
             return stillPossible.get(teamId);
@@ -445,8 +464,7 @@ public final class MatchdayPageModels {
 
         /** Story r034: one request for all fixtures with a weather line, answered out of band; null without any. */
         public String weatherLink() {
-            return weather.isEmpty() ? null : WEATHER_LINK + "?" + weather.stream().sorted().map(id -> "match=" + id)
-                    .collect(java.util.stream.Collectors.joining("&"));
+            return MatchdayPageModels.weatherLink(weather);
         }
 
         /** Story r073: the Spannung of an open match, 1 to 5, or null for a started or finished one. */
@@ -871,19 +889,37 @@ public final class MatchdayPageModels {
      * each match with its goals in the order they fell — the board in nav.js plays them back. No
      * KI-Vorschau in here. A goal without a minute counts as a 90th-minute goal.
      */
-    record ConferenceReplay(String title, int goals, List<ReplayMatch> matches) {
+    /** {@code closing}: how the last line names the section, "an diesem Spieltag" or "in dieser Runde". */
+    record ConferenceReplay(String title, int goals, String closing, List<ReplayMatch> matches) {
 
-        static ConferenceReplay of(String title, List<Match> matches, String shortcut) {
+        static ConferenceReplay of(String title, String closing, List<Match> matches, String shortcut) {
             List<ReplayMatch> rows = matches.stream()
                     .sorted(java.util.Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.homeTeam.name))
                     .map(m -> ReplayMatch.of(m, shortcut)).toList();
             int goals = matches.stream().mapToInt(m -> m.fullTimeScore.home + m.fullTimeScore.away).sum();
-            return new ConferenceReplay(title, goals, rows);
+            return new ConferenceReplay(title, goals, closing, rows);
+        }
+
+        /**
+         * The section of a season played last whose matches all have a final result: a matchday (in a
+         * group competition all groups of that matchday together) or a round of a knockout phase.
+         * Empty while none is complete.
+         */
+        static Optional<List<Match>> lastComplete(List<Match> season) {
+            Map<String, List<Match>> sections = new LinkedHashMap<>();
+            for (Match m : season) {
+                String key = m.matchday.label != null ? "round:" + m.matchday.label : "matchday:" + m.matchday.number;
+                sections.computeIfAbsent(key, k -> new ArrayList<>()).add(m);
+            }
+            return sections.values().stream()
+                    .filter(ms -> ms.stream().allMatch(m -> m.fullTimeScore != null && m.resultStatus == ResultStatus.FINAL))
+                    .max(java.util.Comparator.comparing(ms -> ms.stream().map(m -> m.kickoff).max(Instant::compareTo).orElseThrow()));
         }
     }
 
+    /** {@code decision}: "n. V." or "n. E. 4:3" in a knockout match, else empty. */
     record ReplayMatch(String home, String away, String homeShort, String awayShort, String homeIcon, String awayIcon,
-                       String link, String result, List<ReplayGoal> goals) {
+                       String link, String result, String decision, List<ReplayGoal> goals) {
 
         static ReplayMatch of(Match m, String shortcut) {
             List<ReplayGoal> goals = new java.util.ArrayList<>();
@@ -899,7 +935,8 @@ public final class MatchdayPageModels {
             }
             return new ReplayMatch(m.homeTeam.name, m.awayTeam.name, shortOrName(m.homeTeam), shortOrName(m.awayTeam),
                     crestLink(m.homeTeam), crestLink(m.awayTeam), "/" + shortcut + "/matches/" + m.id,
-                    m.fullTimeScore.home + ":" + m.fullTimeScore.away, List.copyOf(goals));
+                    m.fullTimeScore.home + ":" + m.fullTimeScore.away,
+                    m.decision == null ? "" : decisionLabel(m.decision, m.penaltyScore), List.copyOf(goals));
         }
     }
 

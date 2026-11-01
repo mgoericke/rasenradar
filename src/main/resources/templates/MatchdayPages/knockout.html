@@ -21,6 +21,9 @@
       <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
       {#if page.nav.leagueShortcut == 'dfb'}<a class="link-button" href="/dfb/saison">Pokal in Zahlen</a>{/if}
       <button type="button" class="link-button print-button" data-print>Runde drucken</button>
+      {! stories r038/r052 for the cup: the open round on the stage, the last complete round played back !}
+      {#if page.rounds}<button type="button" class="link-button" data-sofa-open hidden>Sofa-Modus</button>
+      <button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>{/if}
     </p>
     <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
       <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
@@ -44,7 +47,7 @@
       <span class="round-name">{round.name}</span>
       <span class="round-meta">{round.matchCount} {#if round.matchCount == 1}Begegnung{#else}Begegnungen{/if}{#if round.dateRange} · {round.dateRange}{/if}</span>
     </summary>
-    <ol class="fixtures">
+    <ol class="fixtures"{#if round.open} data-board-scope data-board-title="{round.name} · {page.nav.leagueName} {page.season}"{/if}>
       {#for m in round.matches}
       <li data-watch="{m.id}">
         <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
@@ -62,6 +65,7 @@
           </span>
           <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>
         </a>
+        {#if page.weatherOf(m.id)}<p class="fixture-weather-line"><span id="weather-{m.id}" class="fixture-weather"></span></p>{/if}
         {#let line=page.leadLineOf(m.id)}{#if line}{#leadLine line=line /}{/if}{/let}
         {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
       </li>
@@ -73,7 +77,7 @@
 
   {#if page.field.remaining}
   {! "Noch im Wettbewerb": who is left, by division; who went out, in small type below !}
-  <section class="cup-field" aria-labelledby="cup-field">
+  <section class="cup-field" data-section="pokal-feld" aria-labelledby="cup-field">
     {#if page.field.winner}
     <h2 class="round-name" id="cup-field">Pokalsieger</h2>
     <p class="cup-winner">{#crest src=page.field.winnerIcon size="large" /} <strong>{page.field.winner}</strong></p>
@@ -106,7 +110,7 @@
   {! Spec 06: der Trichter — wie sich das Feld von Runde zu Runde ausduennt und wer
      uebrig bleibt. Die Breite traegt die Aussage, die Spielklassen werden allein
      ueber die Tinte unterschieden (Gruen/Rot sind Ergebnisse, Lila ist die KI). !}
-  <section class="rail-card funnel-block">
+  <section class="rail-card funnel-block" data-section="pokal-trichter">
     <h2>Wie sich das Feld ausdünnt</h2>
     <p class="round-meta muted">Mannschaften je Runde, aufgeschlüsselt nach Spielklasse.</p>
 
@@ -146,7 +150,7 @@
   {/if}
 
   {#if page.scorers}
-  <section class="rail-card rail-scorers" aria-labelledby="rail-scorers">
+  <section class="rail-card rail-scorers" data-section="pokal-torjaeger" aria-labelledby="rail-scorers">
     <h2 id="rail-scorers">Torjäger</h2>
     <table class="stream-table">
       <caption class="sr-only">Die ersten fünf der Torschützenliste</caption>
@@ -162,7 +166,7 @@
   {/if}
 
   {#if page.upsets}
-  <section class="rail-card upsets" aria-labelledby="rail-upsets">
+  <section class="rail-card upsets" data-section="pokal-ueberraschungen" aria-labelledby="rail-upsets">
     <h2 id="rail-upsets">Überraschungen</h2>
     <p class="round-meta">Die klassentiefere Mannschaft hat gewonnen, der größte Klassenunterschied zuerst.</p>
     <ol class="upset-list">
@@ -181,6 +185,8 @@
   </aside>
   </div>
 </section>
+{#include MatchdayPages/board /}
+{#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="none"></div>{/if}
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {/include}
