@@ -109,7 +109,7 @@
    Zoom benutzbar bleibt: 16px auf dem Telefon, 17.5px auf grossen Schirmen. */
 html { color-scheme: light dark; font-size: clamp(16px, 0.9rem + 0.35vw, 17.5px); }
 body {
-  margin: 0;
+  margin: 0; overflow-x: clip;
   background: var(--ground);
   color: var(--ink);
   font-family: var(--text);
@@ -123,15 +123,17 @@ h2 { font-size: 1.35rem; }
 .muted { color: var(--ink-mute); font-weight: 400; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
-/* top navigation: the dark stage — brand left, links right, wrapping on narrow screens */
+/* top navigation: a turf band over the full width, like the stage below it (design r102).
+   The header redefines the ink tokens, so every control in it keeps its own rules. */
 .topnav {
   position: sticky; top: 0; z-index: 10;
-  background: var(--chalk); color: var(--ink); border-bottom: 1px solid var(--line);
+  --ink: var(--turf-ink); --ink-soft: var(--turf-soft); --ink-mute: var(--turf-soft); --on-ink: var(--turf-a);
+  --line: var(--turf-line); --paper: var(--turf-a); --mow-a: var(--turf-b); --chalk: var(--turf-a);
+  background: var(--turf-a); color: var(--ink);
 }
 .topnav-inner {
   display: flex; align-items: center; flex-wrap: wrap; gap: .25rem 1.5rem;
   padding: .7rem clamp(1rem, 4vw, 3rem);
-  max-width: 1280px;
 }
 .brand {
   display: inline-flex; flex-wrap: wrap; align-items: baseline; column-gap: .45rem;
@@ -179,7 +181,7 @@ h2 { font-size: 1.35rem; }
   display: grid; gap: 2.5rem;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
-  max-width: 1280px;
+  max-width: 1280px; margin: 0 auto;
 }
 /* minmax(0, 1fr), not plain 1fr — otherwise a wide child (e.g. the probability bars) grows the
    track to fit its content and pushes the whole page wider than the viewport on mobile */
@@ -318,7 +320,8 @@ h2 { font-size: 1.35rem; }
 .scorer-switch a { padding: .35rem .8rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); }
 .scorer-switch a.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 /* the season page of a Bundesliga: one section per figure, each ending in a chalk line like the day heads */
-.season-page { max-width: 52rem; }
+/* design r102: the season page takes the full width of the centred column */
+.forecast-page.season-page { grid-column: 1 / -1; max-width: none; }
 .season-block { margin: 2rem 0 0; scroll-margin-top: 7rem; }
 /* story r085: one link per section, plain anchors; with script it sticks below the top navigation
    (nav.js measures its height into --topnav-h) and marks the section in view like an active tab */
@@ -541,25 +544,38 @@ h2 { font-size: 1.35rem; }
   .scoreboard .home { flex-direction: column-reverse; }
   .scoreboard .score { justify-self: center; }
 }
-/* the start page's stage: the match head, smaller, one link to the match page */
-.top-stage { display: block; padding: 1.5rem 2.2rem 1.2rem; margin: 0 0 1.4rem; text-decoration: none; }
-.top-stage:hover .teams, .top-stage:focus-visible .teams { text-decoration: underline; text-underline-offset: .2em; }
-.top-stage .box { top: 1.6rem; height: 4.4rem; }
-.top-stage .teams { font-size: clamp(1.25rem, 2.6vw, 2rem); gap: 1rem; margin: .5rem 0 0; }
-.top-stage .score { font-size: clamp(2rem, 4.6vw, 3rem); min-width: 4.6rem; }
-.top-stage .score.is-live.has-score { font-size: clamp(2rem, 4.6vw, 3rem); }
-.top-stage .crest.large { width: 2.6rem; height: 2.6rem; }
+/* the start page's stage (design r102): the pitch over the full width, straight under the navigation,
+   the match large in its middle — crest over name, the score between. One link to the match page. */
+#top-stage { margin: -2rem calc(50% - 50vw) 2rem; }
+.top-stage {
+  display: block; border-radius: 0; text-decoration: none;
+  padding: 2.6rem max(clamp(2rem, 7vw, 6rem), (100% - 1280px) / 2) 2.4rem;
+}
+.top-stage::before { inset: 1.4rem clamp(1rem, 3vw, 3rem); }
+.top-stage .box { top: calc(50% - 5rem); height: 10rem; width: clamp(3rem, 9%, 10rem); }
+.top-stage .box-home { left: clamp(1rem, 3vw, 3rem); }
+.top-stage .box-away { right: clamp(1rem, 3vw, 3rem); }
+.top-stage:hover .teams .home, .top-stage:hover .teams .away,
+.top-stage:focus-visible .teams .home, .top-stage:focus-visible .teams .away { text-decoration: underline; text-underline-offset: .12em; text-decoration-thickness: 3px; }
+.top-stage .teams { font-size: clamp(2rem, 5.2vw, 4.6rem); line-height: .9; gap: clamp(1rem, 3vw, 2.6rem); margin: 1.4rem 0 0; }
+.top-stage .home, .top-stage .away { flex-direction: column; justify-content: center; text-align: center; gap: .9rem; }
+.top-stage .home { flex-direction: column-reverse; }
+.top-stage .score { font-size: clamp(2.8rem, 7vw, 6rem); min-width: 7rem; }
+.top-stage .score.is-live.has-score { font-size: clamp(2.8rem, 7vw, 6rem); }
+.top-stage .crest.large { width: clamp(3.4rem, 6vw, 5.6rem); height: clamp(3.4rem, 6vw, 5.6rem); padding: .45rem; }
 .top-stage-label, .top-stage-when { display: block; color: var(--turf-soft); }
 .top-stage-label b { color: var(--turf-ink); margin-right: .3rem; }
 .top-stage-reason { white-space: nowrap; }
-.top-stage-when { margin-top: .6rem; }
+.top-stage-when { margin-top: 1.4rem; }
 @media (max-width: 560px) {
-  .top-stage { padding: 1.2rem 1rem 1rem; }
-  .top-stage .teams { grid-template-columns: 1fr auto 1fr; font-size: 1.05rem; gap: .5rem; }
-  .top-stage .home, .top-stage .away { gap: .3rem; }
-  .top-stage .crest.large { width: 2rem; height: 2rem; padding: .2rem; }
-  .top-stage .score { font-size: 1.7rem; min-width: 3.6rem; padding: 0 .4rem; }
-  .top-stage .score.is-live.has-score { font-size: 1.7rem; }
+  #top-stage { margin-bottom: 1.4rem; }
+  .top-stage { padding: 2rem 1.4rem 1.6rem; }
+  .top-stage .teams { grid-template-columns: 1fr auto 1fr; font-size: clamp(1.3rem, 6vw, 1.7rem); gap: .5rem; margin-top: 1rem; }
+  .top-stage .home, .top-stage .away { gap: .4rem; }
+  .top-stage .home { flex-direction: column-reverse; }
+  .top-stage .crest.large { width: 2.6rem; height: 2.6rem; padding: .25rem; }
+  .top-stage .score { font-size: 2.2rem; min-width: 4rem; padding: 0 .4rem; }
+  .top-stage .score.is-live.has-score { font-size: 2.2rem; }
 }
 .scoreboard .forecast-summary { border-top: 2px solid var(--turf-line); margin-top: 1.4rem; padding-top: 1.1rem; }
 /* the KI line is loaded after the page: hold its height while the placeholder is there, so the goals below do not jump */
@@ -1447,6 +1463,11 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 .theme-menu, .my-club-link { order: 0; }
 .nav-links { order: 4; }
 @media (min-width: 561px) { .nav-links { width: 100%; } }
+/* design r102: on wide screens the full-width band has room for one row — brand, competitions, then the controls */
+@media (min-width: 1180px) {
+  .topnav-inner .brand { flex: none; margin-right: 1rem; }
+  .nav-links { order: 0; width: auto; margin-right: auto; }
+}
 @media (max-width: 560px) {
   .brand { width: auto; }
 }
