@@ -52,7 +52,7 @@ kein `PanacheRepository`. Schema-Historie soll nachvollziehbar und reproduzierba
 
 **Entscheidung:** Alle Entities erben von `PanacheEntity`/`PanacheEntityBase` und tragen
 statische Finder (`Match.findByMatchday(...)`, `Team.findByExternalId(...)`). Das Schema
-gehört ausschließlich Flyway (`src/main/resources/db/migration/V1`–`V7`); Hibernate läuft mit
+gehört ausschließlich Flyway (`src/main/resources/db/migration/`); Hibernate läuft mit
 `quarkus.hibernate-orm.schema-management.strategy=validate`. Spaltentypen sind `double precision`
 (keine `numeric`/`decimal`, z. B. `forecast.home_win`), und jede Entity bekommt eine eigene
 Sequenz (`<entity>_seq`, Schrittweite 50) statt einer gemeinsamen, weil Hibernates
