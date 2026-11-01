@@ -22,6 +22,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Security: Quarkus 3.39.x still pins jackson-databind 2.22.2 (CVE-2026-91776, CVE-2026-91777,
+                 fixed in 2.22.3). Imported before the Quarkus BOM, so it wins. Drop it with the next
+                 Quarkus that brings a fixed Jackson. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.22.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>${quarkus.platform.artifact-id}</artifactId>
