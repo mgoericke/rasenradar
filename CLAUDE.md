@@ -122,7 +122,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Tore der besonderen Art (ab der 90., erste fünf Minuten, Elfmeter, Eigentore) | `SpecialGoals` / `SpecialGoalsCalculator` |
 | Aufholjagd (Punkte nach Rückstand geholt, nach Führung verspielt) | `Comeback` / `ComebackCalculator` |
 | Kreuztabelle (alle Paarungen der Saison, Heim in Zeilen, Gast in Spalten) | `CrossTable` |
-| Wer kann noch? (Punkte heute, höchstens möglich, bei gleichem Tempo) | `Reach` / `ReachCalculator` |
+| Rechnerisch noch möglich (Story r058 „Wer kann noch?“: Punkte heute, höchstens möglich, im bisherigen Tempo) | `Reach` / `ReachCalculator` |
 | Restprogramm (die nächsten Spieltage je Verein, Gegner nach heutigem Platz) | `RunIn` / `RunInCalculator` |
 | Tabelle zur Halbzeit / „Schluss nach 80“ (Saison neu gezählt mit früherem Spielstand) | `ScenarioScores` |
 | Führungslinie (Spielverlauf eines beendeten Spiels als Linie) | `LeadLine` |

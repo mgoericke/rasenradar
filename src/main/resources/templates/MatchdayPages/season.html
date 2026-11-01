@@ -1,6 +1,6 @@
 {#include base nav=page.nav}
 {#title}Saison {page.season} – {page.nav.leagueName}{/title}
-{#description}Die {page.nav.leagueName} {page.season} in Zahlen: Wer kann noch, Restprogramm, Serien, Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
+{#description}Die {page.nav.leagueName} {page.season} in Zahlen: was rechnerisch noch möglich ist, Restprogramm, Serien, Heimvorteil und weitere Auswertungen der ganzen Saison, nur aus endgültigen Ergebnissen.{/description}
 {#body}
 {! The season page of a Bundesliga: one section per figure of the whole season so far. Final results
    only; every section says on how many matches it rests. !}
@@ -13,13 +13,14 @@
 
   {! story r058: what is still possible — points today, the maximum, the pace; a calculation, no forecast !}
   <section class="season-block" id="wer-kann-noch" aria-labelledby="wer-kann-noch-title">
-    <h2 id="wer-kann-noch-title">Wer kann noch?</h2>
+    <h2 id="wer-kann-noch-title">Rechnerisch noch möglich</h2>
+    <p class="season-sub">Punkte heute, höchstens noch möglich – und wo es endet, wenn jeder Verein so weiterpunktet wie bisher.</p>
     {#let w=page.reach}
     {#if !w.rows}
     <p class="muted">Noch kein Spiel beendet.</p>
     {#else}
     <p class="season-lead">{w.lead}</p>
-    <p class="reach-legend"><span class="key now" aria-hidden="true"></span> Punkte heute <span class="key max" aria-hidden="true"></span> höchstens noch möglich <span class="key pace" aria-hidden="true"></span> bei gleichem Tempo{#for l in w.lines} · {l.label}: {l.points}{/for}</p>
+    <p class="reach-legend"><span class="key now" aria-hidden="true"></span> Punkte heute <span class="key max" aria-hidden="true"></span> höchstens noch möglich <span class="key pace" aria-hidden="true"></span> im bisherigen Tempo{#for l in w.lines} · {l.label}: {l.points}{/for}</p>
     <ol class="reach">
       {#for r in w.rows}
       <li>
@@ -30,11 +31,11 @@
           <span class="reach-now" style="width: {r.pointsAt}%"></span>
           {#if r.paceAt != null}<span class="reach-pace" style="left: {r.paceAt}%"></span>{/if}
         </span>
-        <span class="figures">{r.points} Pkt. · höchstens {r.maximum}{#if r.pace != null} · bei gleichem Tempo {r.pace}{/if}{#if r.titleOutOfReach} · <strong>kann Platz 1 nicht mehr erreichen</strong>{/if}</span>
+        <span class="figures">{r.points} Pkt. · höchstens {r.maximum}{#if r.pace != null} · im bisherigen Tempo {r.pace}{/if}{#if r.titleOutOfReach} · <strong>kann Platz 1 nicht mehr erreichen</strong>{/if}</span>
       </li>
       {/for}
     </ol>
-    <p class="note">Höchstens: heutige Punkte plus drei für jedes noch nicht endgültige Spiel. Bei gleichem Tempo: Punkte je Spiel mal alle Saisonspiele. Die senkrechten Linien sind die heutigen Punkte auf den genannten Plätzen.</p>
+    <p class="note">Höchstens: heutige Punkte plus drei für jedes noch nicht endgültige Spiel. Im bisherigen Tempo: Punkte je Spiel mal alle Saisonspiele. Die senkrechten Linien sind die heutigen Punkte auf den genannten Plätzen.</p>
     {/if}
     {/let}
   </section>
