@@ -1024,6 +1024,25 @@ h2 { font-size: 1.35rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
 .standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
 
+/* story r064: the season wall — a tile per matchday, the result letter beside the colour, the next match in a hairline frame */
+.wall-block { margin: 0 0 1.5rem; }
+.wall-key { margin: 0 0 .6rem; font-variant-numeric: tabular-nums; }
+.season-wall { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 4px; }
+.season-wall .tile { display: grid; grid-template-columns: auto auto minmax(0, 1fr); grid-template-rows: auto auto; gap: .1rem .35rem; align-items: center; min-height: 44px; padding: .35rem .5rem; border-radius: 6px; background: var(--mow-a); color: var(--ink); font-size: .85rem; }
+.season-wall li:nth-child(even) .tile { background: var(--mow-b); }
+.season-wall .tile:hover { background: var(--zone); }
+.season-wall .md { color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+.season-wall .opp { grid-column: 3; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.season-wall .venue { grid-column: 1; color: var(--ink-mute); }
+.season-wall .res { grid-column: 2 / -1; font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.season-wall .res b { display: inline-block; min-width: 1.1rem; margin-left: .2rem; border-radius: 3px; text-align: center; color: var(--on-result); font-size: .75rem; }
+.season-wall .win .res b { background: var(--win); }
+.season-wall .draw .res b { background: var(--draw); }
+.season-wall .loss .res b { background: var(--loss); }
+.season-wall .res i { font-family: var(--text); font-style: normal; font-weight: 400; font-size: .75rem; color: var(--ink-mute); }
+.season-wall .is-provisional .res { border-bottom: 1px dashed var(--ink-mute); }
+.season-wall .when { font-family: var(--text); font-weight: 400; color: var(--ink-soft); }
+.season-wall .is-next { box-shadow: inset 0 0 0 1px var(--ink); }
 /* club crests from the source; sized so they never dominate the score cell */
 .crest { width: 1.4rem; height: 1.4rem; object-fit: contain; vertical-align: middle; }
 .crest.small { width: 1.1rem; height: 1.1rem; }

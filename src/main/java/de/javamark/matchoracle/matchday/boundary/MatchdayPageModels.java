@@ -697,6 +697,21 @@ public final class MatchdayPageModels {
         }
     }
 
+    /**
+     * Story r064: the key under the season wall — "3 Siege, 3 Remis, 1 Niederlage, 27 offen". A
+     * provisional result is named apart and counts neither as a result nor as open.
+     */
+    static String wallKey(List<ScheduleRow> schedule) {
+        int w = 0, d = 0, l = 0, open = 0, provisional = 0;
+        for (ScheduleRow r : schedule) {
+            if (r.score() == null) open++;
+            else if (r.provisional()) provisional++;
+            else switch (r.result()) { case WIN -> w++; case DRAW -> d++; case LOSS -> l++; }
+        }
+        String key = w + (w == 1 ? " Sieg, " : " Siege, ") + d + " Remis, " + l + (l == 1 ? " Niederlage, " : " Niederlagen, ") + open + " offen";
+        return provisional == 0 ? key : key + ", " + provisional + " vorläufig";
+    }
+
     /** A past season of the club with its final position, linking to that season's club page. */
     record SeasonChip(String season, String league, Integer position, String link) {
     }
@@ -1302,6 +1317,17 @@ public final class MatchdayPageModels {
         /** Story r024: played matches, newest first. */
         public List<ScheduleRow> results() {
             return schedule.stream().filter(r -> r.score() != null).toList().reversed();
+        }
+
+        /** Story r064: the season wall — the latest played matchday first, then the open ones in date order. */
+        public List<ScheduleRow> wall() {
+            List<ScheduleRow> tiles = new java.util.ArrayList<>(results());
+            tiles.addAll(upcoming());
+            return tiles;
+        }
+
+        public String wallKey() {
+            return MatchdayPageModels.wallKey(schedule);
         }
 
         /** Story r024: the head of the scorer list sits above the tabs; the rest folds away. */
