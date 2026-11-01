@@ -746,7 +746,7 @@ public class MatchdayPages {
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
                         League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
                 null,
-                seasonRace(l, season, shortcut),
+                seasonRace(l, season, shortcut, true),
                 travel(l, season, shortcut)));
     }
 
@@ -759,11 +759,13 @@ public class MatchdayPages {
     }
 
     /**
-     * Story r019: the table after every matchday so far, from one query — every played match, provisional
-     * ones included, so the last step can be drawn dashed while a result is still open.
+     * Story r019: the table after every matchday so far, from one query. With {@code finalOnly} (the
+     * season page, where provisional results do not count) only final results; otherwise provisional
+     * ones too (the club comparison), so the last step is drawn dashed while a result is still open.
      */
-    private MatchdayPageModels.SeasonRace seasonRace(League league, int season, String shortcut) {
-        List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE);
+    private MatchdayPageModels.SeasonRace seasonRace(League league, int season, String shortcut, boolean finalOnly) {
+        List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE).stream()
+                .filter(m -> !finalOnly || m.resultStatus == ResultStatus.FINAL).toList();
         int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
         List<Standings> afterEach = new ArrayList<>();
         for (int n = 1; n <= last; n++) {
@@ -1741,7 +1743,7 @@ public class MatchdayPages {
                 .map(m -> MatchdayPageModels.DuelRow.of(m, shortcut)).toList();
         return Templates.compare(new MatchdayPageModels.ComparePage(Nav.of(l), MatchdayPageModels.seasonLabel(season), clubA, clubB,
                 MatchdayPageModels.CompareRow.of(posA.get().balance(), posB.get().balance()),
-                seasonRace(l, season, shortcut).only(List.of(a, b)), duels, table.includesProvisional(), null));
+                seasonRace(l, season, shortcut, false).only(List.of(a, b)), duels, table.includesProvisional(), null));
     }
 
     private static MatchdayPageModels.CompareClub compareClub(Team t, String shortcut, Integer position) {

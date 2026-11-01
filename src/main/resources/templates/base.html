@@ -140,10 +140,11 @@
   </footer>
   {! story r011: the main areas within thumb reach on phones (CSS shows it below 560 px). The inline
      script marks the current area before the first paint and points "Verein" at the club of this
-     browser. Story r020: the same areas as the tabs above, plus "Verein"; the table lives in "Spieltag". !}
-  <nav class="thumb-bar" aria-label="Bereiche">
-    <a href="/" data-area="spieltag">Spieltag</a>
-    <a href="/{#if nav.leagueShortcut == 'nla'}bl1{#else}{nav.leagueShortcut}{/if}/saison" data-area="saison">Saison</a>
+     browser. Story r020: the same areas and links as the tabs above, plus "Verein"; the table lives in
+     "Spieltag". On the start page "Spieltag" stays there (script below). !}
+  <nav class="thumb-bar{#if nav.leagueShortcut == 'nla'} thumb-bar-three{/if}" aria-label="Bereiche">
+    <a href="/{nav.leagueShortcut}" data-area="spieltag">Spieltag</a>
+    {#if nav.leagueShortcut != 'nla'}<a href="/{nav.leagueShortcut}/saison" data-area="saison">Saison</a>{/if}
     <a href="/trefferbilanz" data-area="bilanz">KI-Bilanz</a>
     <a href="/mein-verein" data-area="verein" data-my-club-href>Verein</a>
   </nav>
@@ -169,6 +170,7 @@
     // on the start page "Spieltag" switches back to the matches instead of loading the page again
     if (path === '/' && table) {
       document.querySelectorAll('.thumb-bar [data-area="spieltag"]').forEach(function (l) {
+        l.setAttribute('href', '/');
         l.addEventListener('click', function (e) {
           e.preventDefault();
           document.getElementById('view-spiele').checked = true;

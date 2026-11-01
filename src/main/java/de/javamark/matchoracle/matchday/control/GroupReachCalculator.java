@@ -38,34 +38,53 @@ public final class GroupReachCalculator {
         if (open.size() > MAX_OPEN) {
             return Map.of();
         }
+        // plain arrays: a group's first matchday leaves 3^10 outcomes per group to play through
         List<Team> teams = List.copyOf(points.keySet());
-        Map<Team, Integer> best = new HashMap<>();
-        Map<Team, Integer> worst = new HashMap<>();
+        int n = teams.size();
+        Map<Team, Integer> index = new HashMap<>();
+        for (int i = 0; i < n; i++) index.put(teams.get(i), i);
+        int[] today = new int[n];
+        for (int i = 0; i < n; i++) today[i] = points.get(teams.get(i));
+        int[] home = open.stream().mapToInt(m -> index.getOrDefault(m.homeTeam, -1)).toArray();
+        int[] away = open.stream().mapToInt(m -> index.getOrDefault(m.awayTeam, -1)).toArray();
+        int[] best = new int[n];
+        int[] worst = new int[n];
+        java.util.Arrays.fill(best, Integer.MAX_VALUE);
+        int[] end = new int[n];
         int outcomes = (int) Math.pow(3, open.size());
         for (int code = 0; code < outcomes; code++) {
-            Map<Team, Integer> end = new HashMap<>(points);
+            System.arraycopy(today, 0, end, 0, n);
             int rest = code;
-            for (Match m : open) {
+            for (int k = 0; k < home.length; k++) {
                 switch (rest % 3) {
-                    case 0 -> end.merge(m.homeTeam, 3, Integer::sum);
+                    case 0 -> add(end, home[k], 3);
                     case 1 -> {
-                        end.merge(m.homeTeam, 1, Integer::sum);
-                        end.merge(m.awayTeam, 1, Integer::sum);
+                        add(end, home[k], 1);
+                        add(end, away[k], 1);
                     }
-                    default -> end.merge(m.awayTeam, 3, Integer::sum);
+                    default -> add(end, away[k], 3);
                 }
                 rest /= 3;
             }
-            for (Team t : teams) {
-                int own = end.get(t);
-                int above = (int) teams.stream().filter(o -> o != t && end.get(o) > own).count();
-                int level = (int) teams.stream().filter(o -> o != t && end.get(o) == own).count();
-                best.merge(t, above + 1, Math::min);
-                worst.merge(t, above + level + 1, Math::max);
+            for (int t = 0; t < n; t++) {
+                int above = 0;
+                int level = 0;
+                for (int o = 0; o < n; o++) {
+                    if (o == t) continue;
+                    if (end[o] > end[t]) above++;
+                    else if (end[o] == end[t]) level++;
+                }
+                best[t] = Math.min(best[t], above + 1);
+                worst[t] = Math.max(worst[t], above + level + 1);
             }
         }
         Map<Team, PlaceRange> ranges = new LinkedHashMap<>();
-        teams.forEach(t -> ranges.put(t, new PlaceRange(best.get(t), worst.get(t))));
+        for (int t = 0; t < n; t++) ranges.put(teams.get(t), new PlaceRange(best[t], worst[t]));
         return ranges;
+    }
+
+    /** A team outside the group (never expected) simply gets no points. */
+    private static void add(int[] end, int team, int points) {
+        if (team >= 0) end[team] += points;
     }
 }
