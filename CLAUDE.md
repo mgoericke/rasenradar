@@ -125,6 +125,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Rechnerisch noch möglich (Story r058 „Wer kann noch?“: Punkte heute, höchstens möglich, im bisherigen Tempo) | `Reach` / `ReachCalculator` |
 | Restprogramm (die nächsten Spieltage je Verein, Gegner nach heutigem Platz) | `RunIn` / `RunInCalculator` |
 | Tabelle zur Halbzeit (Saison neu gezählt mit dem Halbzeitstand) | `ScenarioScores` |
+| Vorbericht (Spiel des Spieltags, Chance von „Mein Verein", Serie auf dem Spiel — über den offenen Spielen der Startseite) | `BriefLine`, `MatchdayPages.brief` |
 | Führungslinie (Spielverlauf eines beendeten Spiels als Linie) | `LeadLine` |
 | Torjäger-Steckbrief (Tore eines Schützen für seinen Verein) | `ScorerProfile` / `ScorerProfileCalculator` |
 | Vereinskalender (Saison eines Vereins als Monatsraster) | `CalendarMonth` / `CalendarDay` |

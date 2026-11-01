@@ -1,7 +1,8 @@
 // Spec 01, "Spieltags-Strom der Startseite": filter the stream by status (live, finished, upcoming)
 // and by league. Empty kickoff blocks, days and stream parts ("Spieltag", "Nächster Spieltag")
-// disappear with their matches. Without this script
-// the filter bar stays hidden and every match shows — nothing depends on it.
+// disappear with their matches. Design r102: one league or both ("Alle / 1. Liga / 2. Liga"), the
+// status inside "Mehr zum Spieltag". Without this script switch and status stay hidden and every
+// match shows — nothing depends on it.
 // The landing page arrives by hx-boost as often as by a full load, so this runs on every swap
 // but binds its click handler only once.
 (function () {
@@ -10,12 +11,10 @@
     return;
   }
 
-  var state = { status: 'alle', hidden: {} };
+  var state = { status: 'alle', league: 'alle' };
 
   function visible(row) {
-    for (var league in state.hidden) {
-      if (state.hidden[league] && row.classList.contains('lg-' + league)) return false;
-    }
+    if (state.league !== 'alle' && !row.classList.contains('lg-' + state.league)) return false;
     if (state.status === 'live') return row.classList.contains('is-live');
     if (state.status === 'beendet') return row.classList.contains('is-played');
     if (state.status === 'anstehend') return row.classList.contains('is-open');
@@ -46,15 +45,14 @@
       part.hidden = !part.querySelector('.stream-day:not([hidden])') && (any || !part.querySelector('.stream-empty'));
     });
     root.querySelectorAll('[data-status]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.status === state.status)); });
-    root.querySelectorAll('[data-league]').forEach(function (b) { b.setAttribute('aria-pressed', String(!state.hidden[b.dataset.league])); });
+    root.querySelectorAll('[data-league]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.league === state.league)); });
   }
 
   function init() {
     var root = document.querySelector('.landing');
     if (!root) return;
-    var bar = root.querySelector('.stream-filters');
-    if (bar) bar.hidden = false;
-    state = { status: 'alle', hidden: {} };
+    root.querySelectorAll('.stream-leagues, .md-menu-status').forEach(function (el) { el.hidden = false; });
+    state = { status: 'alle', league: 'alle' };
     apply(root);
   }
 
@@ -65,14 +63,23 @@
     if (button.dataset.status) {
       state.status = button.dataset.status;
     } else if (button.dataset.league) {
-      var league = button.dataset.league;
-      var shown = root.querySelectorAll('[data-league]').length - Object.keys(state.hidden).filter(function (k) { return state.hidden[k]; }).length;
-      if (!state.hidden[league] && shown <= 1) return; // never filter out every league
-      state.hidden[league] = !state.hidden[league];
+      state.league = button.dataset.league;
+      // the table beside follows the league picked
+      var table = root.querySelector('#table-' + state.league);
+      if (table) table.checked = true;
     } else {
-      state = { status: 'alle', hidden: {} };
+      state = { status: 'alle', league: 'alle' };
     }
     apply(root);
+  });
+
+  // "Mehr zum Spieltag" closes on a click outside and on Escape
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('.md-menu[open]').forEach(function (m) { if (!m.contains(e.target)) m.open = false; });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.md-menu[open]').forEach(function (m) { m.open = false; m.querySelector('summary').focus(); });
   });
 
   document.addEventListener('rr:watch', function () {

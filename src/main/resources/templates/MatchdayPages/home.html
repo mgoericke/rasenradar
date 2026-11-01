@@ -14,15 +14,10 @@
      it opens the page over the full width, directly under the navigation (design r102) !}
   {#if page.top}<div id="top-stage">{#include MatchdayPages/topStage stage=page.top /}</div>{/if}
 
-  <header class="landing-head">
-    <h1 id="landing-heading" class="landing-heading">{page.heading}</h1>
-    <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.name}</b> {l.matchdayNumber}. Spieltag</a>{#if l_hasNext} · {/if}{/for}</p>
-  </header>
-
   {! story r044: the browser remembers the last visit and the final table of then (rr-visit) and
      shows here what has been played since — before the first paint, so nothing below jumps.
      Neither the visit nor the club ever reaches the server. !}
-  {#if page.recent}
+  {#if page.current && page.recent}
   <section class="since" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
     <div class="since-head">
       <h2 id="since-title">Seit dem letzten Besuch</h2>
@@ -47,20 +42,6 @@
   <script src="/since.js?v={assetVersion}"></script>
   {/if}
 
-  <div class="stream-filters" role="toolbar" aria-label="Spiele filtern" hidden>
-    <span class="seg" role="group" aria-label="Status">
-      <button type="button" data-status="alle" aria-pressed="true">Alle</button>
-      <button type="button" data-status="live" aria-pressed="false" {#if page.liveCount == 0}disabled{/if}>Live ({page.liveCount})</button>
-      <button type="button" data-status="beendet" aria-pressed="false">Beendet</button>
-      <button type="button" data-status="anstehend" aria-pressed="false">Anstehend</button>
-    </span>
-    <span class="stream-leagues" role="group" aria-label="Ligen">
-      {#for l in page.leagues}
-      <button type="button" class="chip" data-league="{l.shortcut}" aria-pressed="true"><span class="badge">{l.badge}</span>{l.name}</button>
-      {/for}
-    </span>
-  </div>
-
   <div class="seg view-switch" role="group" aria-label="Ansicht">
     <label for="view-spiele">Spiele</label><label for="view-tabelle">Tabelle</label><label for="view-bilanz">KI-Bilanz</label>
   </div>
@@ -68,13 +49,68 @@
   <div class="landing-layout">
     {! story r096: starred open matches move up into "Beobachtet" (nav.js); the stream never ends a matchday on its own, so nothing unpins here !}
     <div class="stream" data-watch-root data-watch-over="false">
+      {! design r102: the matchday head — title, league switch and "Mehr zum Spieltag" in one row, the
+         matchday step and the view below between two chalk lines. Switch, status filter and view need
+         stream.js and nav.js; the step is plain links. !}
+      <header class="landing-head">
+        <h1 id="landing-heading" class="landing-heading">Spieltag</h1>
+        <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.shortName}</b> {l.matchdayNumber}. Spieltag</a> · {/for}{page.dateRange}</p>
+        <div class="seg stream-leagues" role="group" aria-label="Wettbewerb" hidden>
+          <button type="button" data-league="alle" aria-pressed="true">Alle</button>{#for l in page.leagues}<button type="button" data-league="{l.shortcut}" aria-pressed="false">{l.shortName}</button>{/for}
+        </div>
+        <details class="md-menu">
+          <summary>Mehr zum Spieltag</summary>
+          <div class="md-menu-panel">
+            <div class="md-menu-status" hidden>
+              <p class="md-menu-label">Spiele zeigen</p>
+              <span class="seg" role="group" aria-label="Status">
+                <button type="button" data-status="alle" aria-pressed="true">Alle</button>
+                <button type="button" data-status="live" aria-pressed="false" {#if page.liveCount == 0}disabled{/if}>Live ({page.liveCount})</button>
+                <button type="button" data-status="beendet" aria-pressed="false">Beendet</button>
+                <button type="button" data-status="anstehend" aria-pressed="false">Anstehend</button>
+              </span>
+            </div>
+            {#for l in page.leagues}
+            <p class="md-menu-label">{l.name}</p>
+            <ul>
+              <li><a href="{l.matchdayLink}">{l.matchdayNumber}. Spieltag und Tabelle</a></li>
+              <li><a href="/{l.shortcut}/torschuetzen">Torschützen</a></li>
+              <li><a href="/{l.shortcut}/saison">Saison in Zahlen</a></li>
+            </ul>
+            {/for}
+            <ul><li><a href="/trefferbilanz">KI-Bilanz</a></li></ul>
+          </div>
+        </details>
+        <div class="md-tools">
+          {#let st=page.step}
+          <nav class="md-step" aria-label="Spieltag wählen">
+            {#if st.previousLink}<a href="{st.previousLink}" aria-label="Einen Spieltag zurück">‹</a>{#else}<span aria-hidden="true">‹</span>{/if}
+            <span class="md-step-label" aria-current="{#if st.offset == 0}page{#else}false{/if}">{st.label}</span>
+            {#if st.nextLink}<a href="{st.nextLink}" aria-label="Einen Spieltag weiter">›</a>{#else}<span aria-hidden="true">›</span>{/if}
+            {#if st.offset != 0}<a class="md-now" href="/">Zurück zu jetzt</a>{/if}
+          </nav>
+          {/let}
+          <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
+            <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
+          </p>
+        </div>
+      </header>
+      {! design r102: the Vorbericht — the lines of other clubs than "Mein Verein" stay hidden (rrClubCss) !}
+      {#if page.brief}
+      <aside class="brief" aria-labelledby="brief-title">
+        <h2 id="brief-title">Vorbericht</h2>
+        <ul>
+          {#for b in page.brief}<li{#if b.clubId} class="my-club-only" data-my-club-row="{b.clubId}"{/if}><b>{b.lead}</b> {b.text}</li>{/for}
+        </ul>
+      </aside>
+      {/if}
       <section class="stream-part watched" data-watch-block hidden aria-labelledby="stream-watched">
         <h2 id="stream-watched" class="stream-title">Beobachtet</h2>
         <ol class="stream-rows"></ol>
       </section>
       {#if page.days}
       <section class="stream-part" aria-labelledby="stream-now">
-        <h2 id="stream-now" class="stream-title">Spieltag <small>mit Urteil über die KI-Vorschau nach dem Abpfiff</small></h2>
+        <h2 id="stream-now" class="stream-title sr-only">Spieltag <small>mit Urteil über die KI-Vorschau nach dem Abpfiff</small></h2>
         {#if page.forecastPath}<div hx-get="{page.forecastPath}" hx-trigger="load" hx-swap="none"></div>{/if}
         {#for d in page.days}{#include MatchdayPages/streamDay d=d /}{/for}
         <p class="stream-empty" hidden>Keine Spiele für diese Auswahl. <button type="button" class="chip" data-reset>Filter zurücksetzen</button></p>

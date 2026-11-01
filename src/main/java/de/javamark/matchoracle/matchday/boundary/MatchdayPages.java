@@ -18,6 +18,8 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamDayVie
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StreamRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayStep;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BriefLine;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
@@ -57,6 +59,7 @@ import de.javamark.matchoracle.matchday.control.ScorerCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.control.MatchCalendar;
 import de.javamark.matchoracle.matchday.control.Stakes;
+import de.javamark.matchoracle.matchday.control.StreakCalculator;
 import de.javamark.matchoracle.matchday.control.TopMatch;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
@@ -81,6 +84,7 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.NotFoundException;
@@ -154,26 +158,37 @@ public class MatchdayPages {
     /**
      * Landing page, spec 01 "Spieltags-Strom": both Bundesligas as one stream by day and kickoff block.
      * {@code spiel} puts that match of the page on the stage — the stage's arrows without script.
+     * {@code versatz} steps both Bundesligas back or ahead by that many matchdays (design r102,
+     * "‹ Aktueller Spieltag ›"); away from the current one the page leaves out what only belongs to
+     * now: "Seit dem letzten Besuch" and the next matchday.
      */
     @GET
-    public TemplateInstance home(@QueryParam("spiel") Long spiel) {
+    public TemplateInstance home(@QueryParam("spiel") Long spiel, @QueryParam("versatz") @DefaultValue("0") int versatz) {
         Instant now = Instant.now();
+        int offset = Math.clamp(versatz, -MAX_STEPS, MAX_STEPS);
         List<LandingLeague> leagues = new ArrayList<>();
         List<Match> shown = new ArrayList<>();
         List<Match> next = new ArrayList<>();
         List<String> finalPlaces = new ArrayList<>();
+        boolean[] steps = new boolean[2];
         for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            Matchday.findDisplayed(l, now).ifPresent(matchday -> {
+            Matchday.findDisplayed(l, now)
+                    .flatMap(current -> offset == 0 ? Optional.of(current) : Matchday.find(l, current.season, current.number + offset))
+                    .ifPresent(matchday -> {
                 List<Match> matches = Match.findByMatchday(matchday);
                 shown.addAll(matches);
                 leagues.add(landingLeague(matchday));
                 finalPlaces.add(MatchdayPageModels.finalPlaces(finalTable(matchday.league, matchday.season)));
-                if (MatchdayStream.showsNext(matches)) {
+                if (offset == 0 && MatchdayStream.showsNext(matches)) {
                     Matchday.find(matchday.league, matchday.season, matchday.number + 1)
                             .ifPresent(md -> next.addAll(Match.findByMatchday(md)));
                 }
+                steps[0] |= Matchday.find(l, matchday.season, matchday.number - 1).isPresent();
+                steps[1] |= Matchday.find(l, matchday.season, matchday.number + 1).isPresent();
             });
         }
+        MatchdayStep step = new MatchdayStep(offset,
+                steps[0] && offset > -MAX_STEPS ? offset - 1 : null, steps[1] && offset < MAX_STEPS ? offset + 1 : null);
         List<StreamDay> days = MatchdayStream.of(shown);
         List<StreamDayView> dayViews = streamViews(days, now);
         List<StreamDayView> nextViews = streamViews(MatchdayStream.of(next), now);
@@ -181,8 +196,8 @@ public class MatchdayPages {
         int live = (int) shown.stream().filter(m -> m.isLive(now, liveWindow)).count();
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
-                MatchdayPageModels.LEADERBOARD_LINK, sinceRows(now), String.join(";", finalPlaces),
-                topStage(shown, next, now, spiel)));
+                MatchdayPageModels.LEADERBOARD_LINK, offset == 0 ? sinceRows(now) : List.of(), String.join(";", finalPlaces),
+                topStage(shown, next, now, spiel), step, offset == 0 ? brief(shown, now) : List.of()));
     }
 
     /**
@@ -209,6 +224,86 @@ public class MatchdayPages {
         }
         return null;
     }
+
+    /**
+     * Design r102, "Vorbericht" over the open matches of the page, from final results only: the top
+     * match with what is at stake, for every club with an open match the place a win would bring (the
+     * browser shows the line of "Mein Verein" only), and the strongest running streak at stake.
+     */
+    private List<BriefLine> brief(List<Match> shown, Instant now) {
+        List<Match> open = shown.stream().filter(m -> !m.isPlayed() && !m.isLive(now, liveWindow))
+                .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.id)).toList();
+        if (open.isEmpty()) {
+            return List.of();
+        }
+        Map<League, Standings> tables = new HashMap<>();
+        Map<League, StreakCalculator.Streaks> streaks = new HashMap<>();
+        for (Match m : open) {
+            League l = m.matchday.league;
+            if (!l.hasTable() || tables.containsKey(l)) continue;
+            List<Match> settled = Match.findPlayedBefore(l, m.matchday.season, Integer.MAX_VALUE).stream()
+                    .filter(x -> x.resultStatus == ResultStatus.FINAL).toList();
+            tables.put(l, standingsCalculator.standings(l, m.matchday.season, Integer.MAX_VALUE, settled));
+            streaks.put(l, StreakCalculator.of(settled));
+        }
+        List<BriefLine> lines = new ArrayList<>();
+        Match top = null;
+        for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
+            List<Match> candidates = open.stream().filter(m -> m.matchday.league == l).toList();
+            if (candidates.isEmpty()) continue;
+            Map<Team, Integer> places = placesOf(l, candidates.getFirst().matchday.season, Integer.MAX_VALUE);
+            top = TopMatch.pick(candidates, places, now, liveWindow).orElse(null);
+            if (top != null) break;
+        }
+        if (top == null) {
+            top = open.getFirst();
+        }
+        Standings topTable = tables.get(top.matchday.league);
+        String stake = topTable == null ? "" : Stakes.of(top.homeTeam, top.awayTeam, topTable).map(s -> " – " + s).orElse("");
+        lines.add(new BriefLine("Spiel des Spieltags:", shortName(top.homeTeam) + " – " + shortName(top.awayTeam)
+                + " (" + briefWhen(top) + ")" + stake + ".", null));
+        for (Match m : open) {
+            Standings table = tables.get(m.matchday.league);
+            if (m == top || table == null) continue;
+            for (boolean home : new boolean[] {true, false}) {
+                Team team = home ? m.homeTeam : m.awayTeam;
+                Team opponent = home ? m.awayTeam : m.homeTeam;
+                var side = table.of(team);
+                var other = table.of(opponent);
+                if (side.isEmpty() || other.isEmpty()) continue;
+                int place = Stakes.placeAfterWin(side.get(), other.get(), table);
+                String chance = place < side.get().position() ? "mit einem Sieg ginge es auf Platz " + place
+                        : "zurzeit Platz " + side.get().position();
+                lines.add(new BriefLine(shortName(team) + ":", (home ? "gegen " : "bei ") + shortName(opponent)
+                        + " (" + briefWhen(m) + ") – " + chance + ".", team.id));
+            }
+        }
+        Map<Team, Match> playing = new HashMap<>();
+        open.forEach(m -> { playing.put(m.homeTeam, m); playing.put(m.awayTeam, m); });
+        streaks.values().stream()
+                .flatMap(s -> java.util.stream.Stream.concat(s.going().stream(), s.stuck().stream()))
+                .filter(s -> playing.containsKey(s.team()) && s.length() >= 4)
+                .max(Comparator.comparingInt(StreakCalculator.Streak::length))
+                .ifPresent(s -> {
+                    Match m = playing.get(s.team());
+                    Team opponent = m.homeTeam.equals(s.team()) ? m.awayTeam : m.homeTeam;
+                    lines.add(new BriefLine("Serie auf dem Spiel:", shortName(s.team()) + ", "
+                            + MatchdayPageModels.streakSentence(s.kind(), s.length(), s.wholeSeason()) + ". "
+                            + (s.kind().good ? "Hält das" : "Endet das") + " gegen " + shortName(opponent) + "?", null));
+                });
+        return lines;
+    }
+
+    private static String briefWhen(Match m) {
+        return MatchdayPageModels.weekday(m.kickoff) + " " + MatchdayPageModels.time(m.kickoff);
+    }
+
+    private static String shortName(Team t) {
+        return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
+    }
+
+    /** How far "‹ Aktueller Spieltag ›" reaches either way — a season has at most 38 matchdays. */
+    private static final int MAX_STEPS = 40;
 
     /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
     static List<Match> startPageMatches(Instant now) {
@@ -342,7 +437,8 @@ public class MatchdayPages {
                         String.valueOf(slot.kickoff().getEpochSecond()),
                         slot.matches().stream().map(m -> new StreamRow(m.matchday.league.sourceShortcut(),
                                 MatchdayPageModels.badge(m.matchday.league),
-                                MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow))).toList())).toList()))
+                                MatchRow.of(m, m.matchday.league.sourceShortcut(), now, liveWindow),
+                                MatchdayPageModels.LeadLine.of(m))).toList())).toList()))
                 .toList();
     }
 

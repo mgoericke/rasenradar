@@ -48,6 +48,12 @@ public final class Stakes {
 
     /** "Bremen auf Platz 3" when a narrow win would lift the side; ties beyond goals scored go its way. */
     private static Optional<String> climb(StandingPosition side, StandingPosition opponent, Standings table) {
+        int place = placeAfterWin(side, opponent, table);
+        return place < side.position() ? Optional.of(name(side.team()) + " auf Platz " + place) : Optional.empty();
+    }
+
+    /** The place a narrow win (1:0) over {@code opponent} would bring, the rest of the table as it stands. */
+    public static int placeAfterWin(StandingPosition side, StandingPosition opponent, Standings table) {
         Balance b = side.balance();
         int points = b.points() + 3;
         int difference = b.goalDifference() + 1;
@@ -60,7 +66,7 @@ public final class Stakes {
                 place++;
             }
         }
-        return place < side.position() ? Optional.of(name(side.team()) + " auf Platz " + place) : Optional.empty();
+        return place;
     }
 
     private static boolean ahead(int points, int difference, int goals, int byPoints, int byDifference, int byGoals) {

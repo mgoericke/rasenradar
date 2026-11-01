@@ -841,11 +841,45 @@ h2 { font-size: 1.35rem; }
 .chip[aria-pressed="false"] { color: var(--ink-mute); }
 .chip .badge { border-color: currentColor; color: currentColor; }
 
-.stream-filters { position: sticky; top: 3.6rem; z-index: 6; background: var(--ground); display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; padding: .55rem 0 .7rem; border-bottom: 1px solid var(--line); }
-.stream-filters[hidden] { display: none; }
-/* with script, stream.js shows the bar: hold its place from the first paint, so the stream below does not jump when it appears */
-.js .stream-filters[hidden] { display: flex; visibility: hidden; }
-.stream-leagues { display: flex; gap: .4rem; flex-wrap: wrap; }
+/* design r102: the matchday head — title, league switch and "Mehr zum Spieltag" in one row, below
+   between two chalk lines the matchday step and the view */
+.stream .landing-head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .7rem 1rem; margin-bottom: 1.1rem; }
+.stream .landing-heading { grid-column: 1; grid-row: 1; }
+.stream .landing-sub { grid-column: 1 / -1; grid-row: 2; margin: -.4rem 0 0; }
+.stream-leagues { grid-column: 2; grid-row: 1; }
+.stream-leagues[hidden], .md-menu-status[hidden] { display: none; }
+/* with script, stream.js shows the switch: hold its place from the first paint, so nothing jumps */
+.js .stream-leagues[hidden] { display: inline-flex; visibility: hidden; }
+.md-menu { grid-column: 3; grid-row: 1; position: relative; }
+.md-menu summary { list-style: none; cursor: pointer; font: 600 .88rem var(--text); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: .4rem .9rem; display: inline-flex; align-items: center; gap: .45rem; }
+.md-menu summary::-webkit-details-marker { display: none; }
+.md-menu summary::after { content: ""; width: .45rem; height: .45rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-.15rem) rotate(45deg); }
+.md-menu[open] summary::after { transform: translateY(.1rem) rotate(-135deg); }
+.md-menu-panel { position: absolute; right: 0; top: calc(100% + .4rem); z-index: 8; width: max-content; min-width: 15rem; max-width: min(22rem, calc(100vw - 2rem)); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .4rem 1rem .8rem; box-shadow: 0 10px 24px rgb(0 0 0 / .14); }
+.md-menu-label { font-size: .78rem; font-weight: 600; color: var(--ink-mute); margin: .7rem 0 .25rem; }
+.md-menu-panel ul { list-style: none; margin: 0; padding: 0; }
+.md-menu-panel li a { display: block; padding: .3rem 0; color: var(--ink); }
+.md-menu-panel li a:hover { text-decoration: underline; }
+.md-menu-panel .seg { flex-wrap: wrap; }
+.md-tools { grid-column: 1 / -1; grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; padding: .5rem 0; border-block: 2px solid var(--line); }
+.md-step { display: flex; align-items: center; gap: .2rem; }
+.md-step > a:not(.md-now), .md-step > span[aria-hidden] { display: inline-grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1px solid var(--line); border-radius: 6px; font-size: 1.35rem; line-height: 1; color: var(--ink); }
+.md-step > a:not(.md-now):hover { border-color: var(--ink); }
+.md-step > span[aria-hidden] { color: var(--ink-mute); opacity: .5; }
+.md-step-label { font-weight: 700; padding: 0 .7rem; }
+.stream-leagues button, .md-step-label, .md-step .md-now { white-space: nowrap; }
+.md-step .md-now { margin-left: .5rem; font-size: .88rem; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.md-tools .view-choice { margin: 0; }
+/* design r102: the Vorbericht — no card, a dash before each line, a chalk line below */
+.brief { padding: 0 0 .9rem; margin: 0 0 1.4rem; border-bottom: 2px solid var(--line); }
+.brief h2 { font-size: 1.4rem; margin: 0 0 .5rem; }
+.brief ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
+.brief li { position: relative; padding-left: 1rem; line-height: 1.45; max-width: 46rem; }
+.brief li::before { content: ""; position: absolute; left: 0; top: .7em; width: .45rem; height: 2px; background: var(--ink); }
+.rr-compact .brief { display: none; }
+/* Kompakt on the start page: one line per match, the KI cell tucked away */
+.rr-compact .stream-row .fixture { padding-top: .3rem; padding-bottom: .3rem; }
+.rr-compact .stream-row > .lead-line, .rr-compact .stream-when .badge { display: none; }
 .view-switch { display: none; }
 /* the radios only switch the phone view; above 1000px all views show, so they leave the tab order and the a11y tree */
 @media (min-width: 1001px) { .view-input { display: none; } }
@@ -859,15 +893,23 @@ h2 { font-size: 1.35rem; }
 .stream-title small { font: 400 .88rem var(--text); color: var(--ink-soft); }
 .stream-day-label { display: flex; align-items: center; gap: .8rem; font: 700 1.25rem var(--display); color: var(--ink); margin: 1.4rem 0 .5rem; }
 .stream-day-label::after { content: ""; flex: 1; height: 2px; background: var(--line); }
-.stream-slot { background: var(--mow-b); border-radius: 8px; overflow: hidden; }
-.stream-slot + .stream-slot { margin-top: .6rem; }
-.stream-slot-head { display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem; font-weight: 600; color: var(--ink-mute); padding: .45rem .9rem; }
-.slot-ki { color: var(--ink-soft); }
+/* design r102: no kickoff boxes — one striped row per match, the kickoff and league on its left */
+.stream-slot-head { display: none; }
 .stream-rows { list-style: none; margin: 0; padding: 0; }
-.stream-row { display: grid; grid-template-columns: minmax(0, 1fr) 8.8rem; align-items: center; gap: .6rem; padding-right: .9rem; }
+.stream-row { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 8.8rem; align-items: center; column-gap: .6rem; padding: 0 .9rem; }
 .stream-row[hidden], .stream-slot[hidden], .stream-day[hidden] { display: none; }
-.stream-row .fixture { grid-template-columns: 1.6rem minmax(0, 1fr) auto minmax(0, 1fr); gap: .6rem; padding: .55rem .2rem .55rem .9rem; }
+.stream-when { grid-column: 1; grid-row: 1 / span 2; align-self: start; padding-top: .85rem; display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; font-size: .88rem; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .stream-row .badge { border-color: var(--ink-mute); color: var(--ink-mute); }
+.stream-row > .fixture { grid-column: 2; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .7rem; padding: .7rem 0; }
+.stream-row > .fixture .team-name { font-weight: 700; }
+.stream-row > .stream-ki { grid-column: 3; grid-row: 1; }
+.stream-row .score:not(.is-live) { font-size: 1.5rem; }
+/* the score stands plain once final; dashed while provisional and the live outline stay */
+.stream-row .score.is-played:not(.is-provisional) { background: none; border-color: transparent; color: var(--ink); }
+.stream-row .score:not(.is-played):not(.is-live) { border-color: transparent; color: var(--ink-mute); }
+.stream-row > .lead-line { grid-column: 2; grid-row: 2; order: 0; margin: -.35rem 0 0; padding: 0 0 .6rem; }
+.stream-row > .lead-line summary { max-width: none; }
+.stream-row > .lead-line svg { height: 1.4rem; }
 .stream-empty { padding: 1.2rem; color: var(--ink-soft); background: var(--mow-a); border-radius: 8px; margin-top: 1rem; }
 .stream-empty[hidden] { display: none; }
 
@@ -920,15 +962,21 @@ h2 { font-size: 1.35rem; }
   .view-input:focus-visible ~ .view-switch { outline: 3px solid var(--win); outline-offset: 2px; }
   #view-spiele:checked ~ .landing-layout .landing-rail { display: none; }
   #view-tabelle:checked ~ .landing-layout .stream, #view-bilanz:checked ~ .landing-layout .stream { display: none; }
-  #view-tabelle:checked ~ .stream-filters, #view-bilanz:checked ~ .stream-filters { display: none; }
   #view-tabelle:checked ~ .landing-layout .rail-bilanz { display: none; }
   #view-bilanz:checked ~ .landing-layout .rail-table { display: none; }
 }
 @media (max-width: 720px) {
-  .stream-filters { top: 5.6rem; }
-  .stream-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
-  .stream-row .fixture { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .45rem; padding: .55rem .7rem .2rem; }
-  .stream-row .badge, .stream-row .crest { display: none; }
+  .stream .landing-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .stream-leagues { grid-column: 1; grid-row: 3; }
+  .md-menu { grid-column: 2; grid-row: 3; }
+  .md-tools { grid-row: 4; }
+  .md-step { flex: 1 1 100%; flex-wrap: wrap; }
+  .md-step .md-now { order: 1; margin: .4rem auto 0; }
+  .md-step-label { flex: 1; text-align: center; }
+  .md-tools .view-choice { flex: 1; }
+  .md-tools .view-choice button { flex: 1; }
+  .stream-row > .fixture { gap: .45rem; padding: .6rem 0 .2rem; }
+  .stream-row .crest { display: none; }
   .stream-ki { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .1rem .7rem; padding: 0 .7rem .55rem; }
   /* the KI cells arrive after the page: hold their height (one line) while they are pending, so the rows below do not jump */
   .stream-ki { min-height: 1.875rem; }
@@ -1243,17 +1291,18 @@ h2 { font-size: 1.35rem; }
 .watched .watch-day { display: block; }
 /* the same star on the start page: a third column beside the KI cell; the kickoff shows only
    in "Beobachtet", where the row is away from its kickoff block */
-.js .stream-row { grid-template-columns: minmax(0, 1fr) 8.8rem 2.75rem; padding-right: .25rem; }
-.stream-row > .star { grid-column: 3; margin: 0; }
+.js .stream-row { grid-template-columns: 3.4rem minmax(0, 1fr) 8.8rem 2.75rem; padding-right: .25rem; }
+.stream-row > .star { grid-column: 4; grid-row: 1; margin: 0; }
 .watch-when { display: none; }
-.watched .watch-when { display: block; grid-column: 1 / -1; font-size: .85rem; font-weight: 600; color: var(--ink-mute); padding: .45rem .9rem 0; }
+.watched .watch-when { display: inline; }
 .watched .stream-rows { border: 1px solid var(--line); border-radius: 8px; }
 @media (max-width: 720px) {
-  .js .stream-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .stream-row > .fixture, .stream-row > .stream-ki { grid-column: 1; }
-  .stream-row > .star { grid-column: 2; grid-row: 1 / span 2; }
-  .watched .stream-row > .star { grid-row: 2 / span 2; }
-  .watched .watch-when { padding: .45rem .7rem 0; text-align: center; }
+  .stream-row, .js .stream-row { grid-template-columns: 2.6rem minmax(0, 1fr) auto; padding: 0 .25rem 0 .6rem; }
+  .stream-row > .fixture, .stream-row > .stream-ki, .stream-row > .lead-line { grid-column: 2; }
+  .stream-row > .stream-ki { grid-row: 2; }
+  .stream-row > .lead-line { grid-row: 3; }
+  .stream-row > .star { grid-column: 3; grid-row: 1 / span 2; }
+  .stream-when { grid-row: 1 / span 3; font-size: .8rem; }
 }
 @media print { .star { display: none !important; } }
 /* story r078: "Gut für <Verein>: …" under an open match — plain ink, no brass, no green or red */

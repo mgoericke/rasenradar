@@ -220,4 +220,21 @@ class MatchdayPageModelsTest {
     void stageWithoutAnotherMatchHasNoArrows() {
         assertNull(MatchdayPageModels.StageBrowse.of(List.of(11L), 11L));
     }
+
+    @Test
+    void matchdayStepNamesHowFarThePageStandsFromNow() {
+        assertEquals("Aktueller Spieltag", new MatchdayPageModels.MatchdayStep(0, -1, 1).label());
+        assertEquals("Ein Spieltag zurück", new MatchdayPageModels.MatchdayStep(-1, -2, 0).label());
+        assertEquals("Nächster Spieltag", new MatchdayPageModels.MatchdayStep(1, 0, 2).label());
+        assertEquals("3 Spieltage zurück", new MatchdayPageModels.MatchdayStep(-3, -4, -2).label());
+        assertEquals("In 2 Spieltagen", new MatchdayPageModels.MatchdayStep(2, 1, 3).label());
+    }
+
+    @Test
+    void matchdayStepLinksBackToTheBareStartPageAndEndsAtTheSeason() {
+        var step = new MatchdayPageModels.MatchdayStep(-1, -2, 0);
+        assertEquals("/?versatz=-2", step.previousLink());
+        assertEquals("/", step.nextLink());
+        assertNull(new MatchdayPageModels.MatchdayStep(0, -1, null).nextLink());
+    }
 }
