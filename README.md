@@ -15,6 +15,37 @@ Aktuelle Spieltage, Tabellen und Vereinsdaten der 1./2. Bundesliga und der Champ
 > [!NOTE]
 > Ein privates, nicht kommerzielles Hobbyprojekt eines Bundesliga-Fans. Keine Quoten, keine Wettempfehlungen — die KI-Vorschau ist eine Einschätzung, kein Rat.
 
+## So hängt es zusammen
+
+Eine einzige Quarkus-Anwendung holt die Spieldaten von OpenLigaDB, jede Minute während laufender Spiele, sonst alle 15 Minuten. Sie rechnet daraus Tabellen, Saisonauswertungen und die Saisonaussicht und liefert alles als serverseitig gerenderte Seiten aus. Wetter kommt vom Deutschen Wetterdienst (über Bright Sky), die Wappen liefert sie selbst aus. Nur die KI-Vorschau ruft ein Sprachmodell: Claude, im Dev-Modus mit einem lokalen Ollama als Fallback.
+
+```mermaid
+flowchart LR
+    viewer([Betrachter<br/>Browser])
+    subgraph app [match-oracle · Quarkus]
+        ui[Qute-Seiten + htmx-Fragmente]
+        api[JSON-API]
+        agents[LangChain4j agentic<br/>5 Agenten]
+    end
+    oldb[(OpenLigaDB<br/>api.openligadb.de)]
+    sky[Bright Sky / DWD<br/>api.brightsky.dev]
+    crests[Wappen-Quellen<br/>Wikimedia u. a.]
+    pg[(PostgreSQL<br/>Flyway-Schema)]
+    cloud[Anthropic<br/>claude-sonnet-5]
+    ollama[Ollama lokal<br/>gemma4:12b]
+
+    viewer --> ui
+    viewer --> api
+    app -- "jede Minute bei laufenden Spielen,<br/>sonst alle 15 min" --> oldb
+    app -- "Wetter zur Halbzeit" --> sky
+    app -- "einmal laden,<br/>selbst ausliefern" --> crests
+    app --> pg
+    agents -- "zuerst" --> cloud
+    agents -- "Fallback" --> ollama
+```
+
+Mehr dazu, mit Feature-Schnitt und Abläufen: [Architektur › Kontext](docs/architecture/README.md#kontext).
+
 ## Screenshots
 
 **Startseite** — aktueller Spieltag beider Ligen nebeneinander, mit Tabellen-Vorschau je Karte:
