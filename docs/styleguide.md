@@ -179,6 +179,10 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   **Spielzeilen** ohne Anstoß-Kästen: eine Mähstreifen-Zeile je Spiel, links Anstoß und
   Liga-Abzeichen, das Endergebnis ohne Kasten in Display-Schrift (vorläufig gestrichelt, live
   rot umrandet), unter beendeten Spielen der Torverlauf (Story r053).
+  **Pokal im Strom:** Pokalspiele, die in den vier Tagen vor dem gezeigten Bundesliga-Spieltag oder
+  währenddessen angepfiffen werden, stehen mit Abzeichen „DFB" im selben Strom; der Ligaschalter
+  bekommt „Pokal", das Menü einen Abschnitt DFB-Pokal, die Unterzeile die Runde. Unter 720 px steht
+  der Schalter in einer eigenen Zeile. Vorbericht, Tabelle und KI-Vorschau bleiben bei den Bundesligen.
   Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
   (`.stream-slot`, Mähstreifen, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
   trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):
@@ -205,6 +209,16 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
 - **Kompakt** (Spieltagsseite, Umschalter „Liste | Kompakt“): eine Zeile je Spiel mit Zeit,
   Kurznamen und Ergebnis, der KI-Marker bleibt; alles unter der Paarung entfällt. Die Wahl liegt nur
   im Browser (`rr-view`) und wird wie die Darstellung im `<head>` vor dem ersten Zeichnen gesetzt.
+- **Pokalseite** (DFB-Pokal, K.-o.-Runden): dieselben Werkzeuge wie die Spieltagsseite —
+  Torverlauf unter jeder beendeten Begegnung (gemeinsamer Baustein `{#leadLine}`; nach Verlängerung
+  reicht die Achse bis 125 Minuten, ein zweiter Strich markiert die 90.), Stern und „Beobachtet"
+  für offene Begegnungen, Liste | Kompakt und „Runde drucken" (gedruckt wird nur die offene Runde,
+  ohne Trichter und Überraschungen).
+- **Pokal in Zahlen** (`/dfb/saison`, Vorlage der Saisonseite mit `page.cup`): nur, was im K.-o.
+  trägt — häufigste Ergebnisse, Tore der besonderen Art, die größte Aufholjagd (ohne Vereinsbalken,
+  Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
+  Elfmeterschießen" als gestreifte Liste (`.cup-decisions`). Ohne Tabelle, Serien, Vorjahr,
+  Kreuztabelle und Heimvorteil; die Sprungmarken folgen.
 - **Spielseite: der Spielkopf** (`.scoreboard`, `.board-ai`, `.board-verdict`): gestreifter Rasen
   mit Seitenlinie und zwei Strafräumen als Rahmen; Wappen auf weißer Scheibe, Namen und Ergebnis in
   Display-Schrift 800. Unter einer Kreidelinie eine KI-Zeile — KI-Plakette, Richtwert und Tendenz

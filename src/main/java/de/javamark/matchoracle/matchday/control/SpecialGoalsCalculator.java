@@ -65,7 +65,7 @@ public final class SpecialGoalsCalculator {
         List<SpecialGoal> all = new ArrayList<>();
         for (Match m : settled) {
             Score before = new Score(0, 0);
-            for (Goal g : m.goals) {
+            for (Goal g : m.matchGoals()) {
                 boolean home = g.scoreAfter.home > before.home;
                 before = g.scoreAfter;
                 all.add(new SpecialGoal(g, m, home ? m.homeTeam : m.awayTeam));

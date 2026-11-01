@@ -1,5 +1,6 @@
 package de.javamark.matchoracle.matchday.control;
 
+import de.javamark.matchoracle.matchday.entity.Decision;
 import de.javamark.matchoracle.matchday.entity.Goal;
 import de.javamark.matchoracle.matchday.entity.GoalTiming;
 import de.javamark.matchoracle.matchday.entity.League;
@@ -29,19 +30,39 @@ public class GoalTimingCalculator {
      * {@code conceded} stays zero. Final results only; goals without a minute are left out.
      */
     public static List<GoalTiming> league(List<Match> matches) {
-        int[] goals = new int[LABELS.length];
+        return windows(matches, false);
+    }
+
+    /**
+     * The same for a cup: a match that went to extra time adds a window "91.-120." for every goal
+     * after minute 90 — Nachspielzeit of the second half counts there too, the source does not tell
+     * them apart.
+     */
+    public static List<GoalTiming> cup(List<Match> matches) {
+        return windows(matches, true);
+    }
+
+    private static List<GoalTiming> windows(List<Match> matches, boolean extraTime) {
+        int[] goals = new int[LABELS.length + 1];
         for (Match match : matches) {
             if (match.fullTimeScore == null || match.resultStatus != ResultStatus.FINAL) continue;
-            for (Goal goal : match.goals) {
-                if (goal.minute != null) goals[window(goal.minute)]++;
+            boolean extended = extraTime && match.decision != Decision.REGULAR;
+            for (Goal goal : match.matchGoals()) {
+                if (goal.minute == null) continue;
+                goals[extended && goal.minute > 90 ? LABELS.length : window(goal.minute)]++;
             }
         }
         List<GoalTiming> result = new ArrayList<>();
         for (int i = 0; i < LABELS.length; i++) {
             result.add(new GoalTiming(LABELS[i], goals[i], 0));
         }
+        if (extraTime) {
+            result.add(new GoalTiming(EXTRA_TIME_LABEL, goals[LABELS.length], 0));
+        }
         return result;
     }
+
+    private static final String EXTRA_TIME_LABEL = "91.-120.";
 
     /** Pure calculation over the club's matches; goals without a known minute are left out. */
     List<GoalTiming> timing(Team team, List<Match> matches) {
@@ -50,7 +71,7 @@ public class GoalTimingCalculator {
         for (Match match : matches) {
             boolean home = match.homeTeam.equals(team);
             Score before = new Score(0, 0);
-            for (Goal goal : match.goals) {
+            for (Goal goal : match.matchGoals()) {
                 boolean homeScored = goal.scoreAfter.home > before.home;
                 before = goal.scoreAfter;
                 if (goal.minute == null) {

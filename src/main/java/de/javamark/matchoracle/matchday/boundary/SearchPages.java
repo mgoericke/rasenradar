@@ -86,7 +86,7 @@ public class SearchPages {
         return index;
     }
 
-    /** Clubs of both Bundesligas, the start page's matches, then the scorers — the order hits keep. */
+    /** Clubs of both Bundesligas, the start page's matches, then the scorers of both and of the cup — the order hits keep. */
     private List<Hit> build(Instant now) {
         List<Hit> clubs = new ArrayList<>();
         List<Hit> scorers = new ArrayList<>();
@@ -107,6 +107,13 @@ public class SearchPages {
                 }
             });
         }
+        // the cup's scorers after the leagues' — a Bundesliga club's crest where there is one
+        Matchday.latestSeason(League.DFB_POKAL).ifPresent(season -> {
+            for (LeagueScorer s : scorerCalculator.leagueScorersFor(League.DFB_POKAL, season)) {
+                scorers.add(Hit.of("Torjäger", s.name(), s.team() + " · DFB-Pokal · " + s.goals() + (s.goals() == 1 ? " Tor" : " Tore"),
+                        "/dfb/torschuetzen", crests.get(s.team()), s.name(), s.team(), "Pokal"));
+            }
+        });
         clubs.sort(Comparator.comparing(Hit::label));
         List<Hit> matches = MatchdayPages.startPageMatches(now).stream()
                 .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.id))

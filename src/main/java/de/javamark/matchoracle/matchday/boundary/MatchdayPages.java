@@ -20,6 +20,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayStep;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BriefLine;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupRound;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
@@ -189,6 +190,10 @@ public class MatchdayPages {
         }
         MatchdayStep step = new MatchdayStep(offset,
                 steps[0] && offset > -MAX_STEPS ? offset - 1 : null, steps[1] && offset < MAX_STEPS ? offset + 1 : null);
+        List<Match> cupMatches = cupMatchesAround(shown);
+        shown.addAll(cupMatches);
+        CupRound cup = cupMatches.isEmpty() ? null : new CupRound("dfb", MatchdayPageModels.leagueName(League.DFB_POKAL),
+                cupMatches.getFirst().matchday.displayName(), "/dfb");
         List<StreamDay> days = MatchdayStream.of(shown);
         List<StreamDayView> dayViews = streamViews(days, now);
         List<StreamDayView> nextViews = streamViews(MatchdayStream.of(next), now);
@@ -197,7 +202,7 @@ public class MatchdayPages {
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
                 MatchdayPageModels.LEADERBOARD_LINK, offset == 0 ? sinceRows(now) : List.of(), String.join(";", finalPlaces),
-                topStage(shown, next, now, spiel), step, offset == 0 ? brief(shown, now) : List.of()));
+                topStage(shown, next, now, spiel), step, offset == 0 ? brief(shown, now) : List.of(), cup));
     }
 
     /**
@@ -231,7 +236,8 @@ public class MatchdayPages {
      * browser shows the line of "Mein Verein" only), and the strongest running streak at stake.
      */
     private List<BriefLine> brief(List<Match> shown, Instant now) {
-        List<Match> open = shown.stream().filter(m -> !m.isPlayed() && !m.isLive(now, liveWindow))
+        // the Bundesligas only: a cup tie has no table and its own streaks
+        List<Match> open = shown.stream().filter(m -> m.matchday.league.hasTable() && !m.isPlayed() && !m.isLive(now, liveWindow))
                 .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.id)).toList();
         if (open.isEmpty()) {
             return List.of();
@@ -305,6 +311,22 @@ public class MatchdayPages {
     /** How far "‹ Aktueller Spieltag ›" reaches either way — a season has at most 38 matchdays. */
     private static final int MAX_STEPS = 40;
 
+    /** How long before a Bundesliga matchday a cup round still belongs to its week — Tuesday and Wednesday before the weekend. */
+    private static final Duration CUP_LEAD = Duration.ofDays(4);
+
+    /**
+     * The DFB-Pokal on the start page: the cup's matches that kick off in the days before the shown
+     * Bundesliga matchdays or during them — a midweek round stands with the weekend that follows it.
+     */
+    static List<Match> cupMatchesAround(List<Match> leagueMatches) {
+        if (leagueMatches.isEmpty()) {
+            return List.of();
+        }
+        Instant first = leagueMatches.stream().map(m -> m.kickoff).min(Comparator.naturalOrder()).orElseThrow();
+        Instant last = leagueMatches.stream().map(m -> m.kickoff).max(Comparator.naturalOrder()).orElseThrow();
+        return Match.findKickoffBetween(League.DFB_POKAL, first.minus(CUP_LEAD), last);
+    }
+
     /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
     static List<Match> startPageMatches(Instant now) {
         List<Match> all = new ArrayList<>();
@@ -318,6 +340,7 @@ public class MatchdayPages {
                 }
             });
         }
+        all.addAll(cupMatchesAround(all));
         return all;
     }
 
@@ -622,7 +645,7 @@ public class MatchdayPages {
         int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
         var scorers = scorerCalculator.leagueScorersFor(l, season);
         Map<String, ClubLook> clubs = new HashMap<>();
-        Match.findPlayedBefore(l, season, Integer.MAX_VALUE).forEach(m -> {
+        ScorerCalculator.seasonMatches(l, season).forEach(m -> {
             for (Team t : List.of(m.homeTeam, m.awayTeam)) {
                 clubs.putIfAbsent(t.name, new ClubLook(t.shortName == null ? t.name : t.shortName, MatchdayPageModels.crestLink(t)));
             }
@@ -643,6 +666,9 @@ public class MatchdayPages {
     @Path("/{league}/saison")
     public TemplateInstance season(@PathParam("league") String league) {
         League l = league(league);
+        if (l == League.DFB_POKAL) {
+            return cupSeason(l);
+        }
         if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
             throw new NotFoundException("no season page for " + league);
         }
@@ -669,7 +695,29 @@ public class MatchdayPages {
                 MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.league(settled)),
                 MatchdayPageModels.LastYearView.of(de.javamark.matchoracle.matchday.control.LastYearCalculator.of(l, settled, Map.of(
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
-                        League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut)));
+                        League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
+                null));
+    }
+
+    /**
+     * "Pokal in Zahlen": the season page's figures that make sense in a knockout competition — most
+     * frequent results, special goals, the biggest comeback, when the goals fall (with extra time), and
+     * how often a pairing went to extra time or penalties. Final results only.
+     */
+    private TemplateInstance cupSeason(League l) {
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> settled = ScorerCalculator.seasonMatches(l, season).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        String shortcut = l.sourceShortcut();
+        return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), List.of(),
+                settled.size(), null, List.of(), List.of(),
+                MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut),
+                de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
+                        .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
+                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
+                null, null, null,
+                MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.cup(settled)),
+                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut)));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */
@@ -898,7 +946,7 @@ public class MatchdayPages {
     private static List<GoalRow> goalRows(Match match) {
         List<GoalRow> goals = new ArrayList<>();
         int prevHome = 0;
-        for (Goal g : match.goals) {
+        for (Goal g : match.matchGoals()) {
             goals.add(GoalRow.of(g, g.scoreAfter.home > prevHome));
             prevHome = g.scoreAfter.home;
         }
@@ -1043,6 +1091,9 @@ public class MatchdayPages {
         }
         upsets.sort(Comparator.comparingInt(UpsetRow::gap).reversed());
 
+        Map<Long, MatchdayPageModels.LeadLine> lines = new HashMap<>();
+        rounds.forEach(r -> lines.putAll(leadLines(Match.findByMatchday(r))));
+
         List<SeasonChip> otherEditions = Matchday.<Matchday>list("league = ?1", league).stream()
                 .map(m -> m.season).distinct().filter(y -> y != season).sorted(Comparator.reverseOrder())
                 .map(y -> new SeasonChip(MatchdayPageModels.seasonLabel(y), MatchdayPageModels.leagueName(league), null,
@@ -1051,7 +1102,7 @@ public class MatchdayPages {
 
         CupFunnel funnel = cupFunnelCalculator.funnelFor(league, season);
         return new KnockoutPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, otherEditions,
-                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel));
+                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel), lines);
     }
 
     /**

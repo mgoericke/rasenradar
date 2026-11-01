@@ -73,6 +73,18 @@ public class Match extends PanacheEntity {
     @OrderBy("position")
     public List<Goal> goals = new ArrayList<>();
 
+    /**
+     * The goals of the match itself. After a penalty shootout the source also lists the kicks, with a
+     * running count above the score after 120 minutes — those are left out here.
+     */
+    public List<Goal> matchGoals() {
+        if (decision != Decision.PENALTIES || fullTimeScore == null) {
+            return goals;
+        }
+        int total = fullTimeScore.home + fullTimeScore.away;
+        return goals.stream().filter(g -> g.scoreAfter == null || g.scoreAfter.home + g.scoreAfter.away <= total).toList();
+    }
+
     /** Spec 06: how the match was decided; always REGULAR outside a knockout competition. */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -154,6 +166,18 @@ public class Match extends PanacheEntity {
     public static List<Match> findPlayedSince(List<League> leagues, Instant since) {
         return list("matchday.league in ?1 and kickoff >= ?2 and fullTimeScore is not null order by kickoff desc",
                 leagues, since);
+    }
+
+    /**
+     * Every finished match of a season, whatever its round — the cup's rounds carry a label, which
+     * {@link #findPlayedBefore} leaves out.
+     */
+    public static List<Match> findKickoffBetween(League league, Instant from, Instant to) {
+        return list("matchday.league = ?1 and kickoff >= ?2 and kickoff <= ?3 order by kickoff", league, from, to);
+    }
+
+    public static List<Match> findPlayedInSeason(League league, int season) {
+        return list("matchday.league = ?1 and matchday.season = ?2 and fullTimeScore is not null", league, season);
     }
 
     public static List<Match> findPlayedBefore(League league, int season, int matchday) {
