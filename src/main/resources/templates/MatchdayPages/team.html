@@ -125,6 +125,25 @@
     </div>
 
     <div class="club-panel club-panel-season">
+      {#if page.hasTable && page.schedule}
+      {! story r064: every matchday as a tile; a tile opens its match page, never the opponent's club page !}
+      <div class="wall-block">
+        <h2>Die ganze Saison</h2>
+        <p class="wall-key">{page.wallKey} <span class="muted">· neueste Ergebnisse zuerst, dann die offenen Spiele</span></p>
+        <ol class="season-wall">
+          {#for r in page.wall}
+          <li><a href="{r.link}" class="tile {#if r.result}{r.result.toString.toLowerCase}{#else}open{/if}{#if r.provisional} is-provisional{/if}{#if r == page.next && !r.score} is-next{/if}"
+                 aria-label="{r.matchday}. Spieltag: {#if r.home}zu Hause gegen{#else}bei{/if} {r.opponent}, {#if r.score}{r.score}, {#if r.provisional}vorläufig{#else}{#switch r.result}{#case WIN}Sieg{#case DRAW}Remis{#case LOSS}Niederlage{/switch}{/if}{#else}{r.date} {r.time} Uhr{#if r == page.next}, nächstes Spiel{/if}{/if}">
+            <span class="md">{r.matchday}.</span>
+            {#crest src=r.opponentIcon size="small" lazy=true /}
+            <span class="opp">{r.opponent}</span>
+            <span class="venue">{#if r.home}H{#else}A{/if}</span>
+            {#if r.score}<span class="res">{r.score}{#if !r.provisional} <b>{#switch r.result}{#case WIN}S{#case DRAW}U{#case LOSS}N{/switch}</b>{#else} <i>vorl.</i>{/if}</span>{#else}<span class="res when">{r.date}</span>{/if}
+          </a></li>
+          {/for}
+        </ol>
+      </div>
+      {/if}
       {#if page.hasTable}
       <div class="chart-block">
         <h2>Tabellenplatz im Saisonverlauf</h2>
@@ -137,11 +156,12 @@
         <p class="timing-sentence">{page.goalTiming.sentence}</p>
         {#if !page.goalTiming.empty}
         <div class="chart"><canvas id="goal-timing" aria-hidden="true"></canvas></div>
-        <table class="sr-only">
+        {! a table ignores the 1px box of .sr-only and pushed the phone page sideways — the wrapper clips it !}
+        <div class="sr-only"><table>
           <caption>Tore je 15-Minuten-Abschnitt, nur endgültige Ergebnisse</caption>
           <thead><tr><th scope="col">Minuten</th><th scope="col">Erzielt</th><th scope="col">Kassiert</th></tr></thead>
           <tbody>{#for r in page.goalTiming.rows}<tr><th scope="row">{r.label}</th><td>{r.scored}</td><td>{r.conceded}</td></tr>{/for}</tbody>
-        </table>
+        </table></div>
         {/if}
       </div>
     </div>
