@@ -30,8 +30,20 @@ public class SeasonSimulator {
     public record Outcome(long teamId, Map<String, Double> probabilities) {
     }
 
+    /**
+     * Story r039: besides each team's probabilities, the median final points total at every table
+     * position (key counted from 1) — "Platz 4 hatte am Ende typischerweise 58 Punkte".
+     */
+    public record Result(List<Outcome> outcomes, Map<Integer, Integer> medianPointsAtPosition) {
+    }
+
     public List<Outcome> simulate(List<TeamState> teams, List<Fixture> fixtures, List<String> allGoals,
                                    IntFunction<List<String>> goalsAtPosition, Random random) {
+        return simulateSeason(teams, fixtures, allGoals, goalsAtPosition, random).outcomes();
+    }
+
+    public Result simulateSeason(List<TeamState> teams, List<Fixture> fixtures, List<String> allGoals,
+                                 IntFunction<List<String>> goalsAtPosition, Random random) {
         Map<Long, Map<String, Integer>> hits = new HashMap<>();
         for (TeamState team : teams) {
             Map<String, Integer> zeros = new HashMap<>();
@@ -43,6 +55,9 @@ public class SeasonSimulator {
 
         // With no remaining fixtures every run produces the same table — one run is exact, not an approximation.
         int runs = fixtures.isEmpty() ? 1 : RUNS;
+        // a histogram per position instead of every run's points: final totals are small whole numbers
+        int maxPoints = teams.stream().mapToInt(TeamState::points).max().orElse(0) + 3 * fixtures.size();
+        int[][] pointsAtPosition = new int[teams.size()][maxPoints + 1];
         for (int run = 0; run < runs; run++) {
             Map<Long, long[]> table = new HashMap<>();
             for (TeamState team : teams) {
@@ -61,6 +76,7 @@ public class SeasonSimulator {
                     .reversed());
             for (int i = 0; i < ranked.size(); i++) {
                 long teamId = ranked.get(i)[0];
+                pointsAtPosition[i][(int) ranked.get(i)[1]]++;
                 for (String goal : goalsAtPosition.apply(i + 1)) {
                     hits.get(teamId).merge(goal, 1, Integer::sum);
                 }
@@ -75,7 +91,23 @@ public class SeasonSimulator {
             }
             outcomes.add(new Outcome(team.teamId(), probabilities));
         }
-        return outcomes;
+        Map<Integer, Integer> medians = new HashMap<>();
+        for (int i = 0; i < pointsAtPosition.length; i++) {
+            medians.put(i + 1, median(pointsAtPosition[i], runs));
+        }
+        return new Result(outcomes, medians);
+    }
+
+    /** The lower median of a histogram holding {@code runs} values. */
+    static int median(int[] histogram, int runs) {
+        int seen = 0;
+        for (int points = 0; points < histogram.length; points++) {
+            seen += histogram[points];
+            if (seen * 2 >= runs) {
+                return points;
+            }
+        }
+        return histogram.length - 1;
     }
 
     private static void credit(long[] row, int goalsFor, int goalsAgainst) {

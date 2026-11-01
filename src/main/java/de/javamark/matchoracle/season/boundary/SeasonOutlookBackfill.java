@@ -3,6 +3,7 @@ package de.javamark.matchoracle.season.boundary;
 import de.javamark.matchoracle.matchday.boundary.MatchdayFacade;
 import de.javamark.matchoracle.season.control.SeasonOutlookService;
 import de.javamark.matchoracle.season.entity.SeasonOutlook;
+import de.javamark.matchoracle.season.entity.SeasonThreshold;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -29,7 +30,9 @@ public class SeasonOutlookBackfill {
     void onStart(@Observes StartupEvent event) {
         for (String league : LEAGUES) {
             matchday.mostRecentlyPlayedMatchday(league)
-                    .filter(ref -> SeasonOutlook.findByLeagueSeason(ref.league(), ref.season()).isEmpty())
+                    // story r039: an outlook from before the thresholds existed is computed again once
+                    .filter(ref -> SeasonOutlook.findByLeagueSeason(ref.league(), ref.season()).isEmpty()
+                            || SeasonThreshold.byPosition(ref.league(), ref.season()).isEmpty())
                     .ifPresent(ref -> outlook.recompute(ref.league(), ref.season()));
         }
     }

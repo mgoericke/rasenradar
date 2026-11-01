@@ -60,6 +60,7 @@ public class ForecastPages {
         static native TemplateInstance stage(StageFragment fragment);
         static native TemplateInstance markers(List<MarkerView> markers);
         static native TemplateInstance streamForecasts(List<StreamCell> cells, List<SlotSummary> slots);
+        static native TemplateInstance projection(MatchdayFacade.Projection projection);
     }
 
     @Inject
@@ -361,6 +362,20 @@ public class ForecastPages {
                 .collect(Collectors.toMap(f -> f.matchId, Function.identity(), (a, b) -> a, LinkedHashMap::new));
         Map<Long, MatchdayFacade.MatchScore> scores = matchday.scoresOf(List.copyOf(latest.keySet()));
         return Templates.markers(latest.values().stream().map(f -> MarkerView.of(f, scores.get(f.matchId))).toList());
+    }
+
+    /**
+     * Story r007 "Was wäre, wenn": fragment for the matchday table — the table if every open match
+     * ended at its latest KI-Richtwert. Only an assumption, never a result: nothing is stored.
+     */
+    @GET
+    @Path("/{league}/{season}/{number}/forecasts/projection")
+    public TemplateInstance projectionFragment(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
+        String l = league(league);
+        Map<Long, MatchdayFacade.MatchScore> richtwerte = Forecast.findByMatchday(l, season, number).stream()
+                .collect(Collectors.toMap(f -> f.matchId, f -> new MatchdayFacade.MatchScore(f.expectedHomeGoals, f.expectedAwayGoals, true),
+                        (a, b) -> a));
+        return Templates.projection(matchday.projectedStandings(l, season, number, richtwerte).orElse(null));
     }
 
     @GET

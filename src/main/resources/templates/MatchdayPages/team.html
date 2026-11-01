@@ -37,6 +37,17 @@
         <button type="button" class="link-button" data-club-clear data-club-id="{page.myClub.id}" hidden>Auswahl entfernen</button>
       </p>
       {/if}
+      {#if page.compare}
+      {! story r026: a plain form — the server answers with the comparison's own address !}
+      <form class="compare-pick" action="/{page.nav.leagueShortcut}/vergleich" method="get">
+        <input type="hidden" name="a" value="{page.compare.teamId}">
+        <label for="compare-b">Vergleichen mit</label>
+        <select id="compare-b" name="b" required>
+          {#for o in page.compare.options}<option value="{o.id}">{o.name}</option>{/for}
+        </select>
+        <button type="submit" class="link-button">Vergleichen</button>
+      </form>
+      {/if}
     </div>
   </header>
 
@@ -59,7 +70,7 @@
     </section>
     {/let}
 
-    <section class="club-scorers" aria-labelledby="club-scorers-title">
+    <section class="club-scorers" data-section="verein-torschuetzen" aria-labelledby="club-scorers-title">
       <h2 id="club-scorers-title">Torschützen</h2>
       {#if page.scorers.isEmpty}
       <p class="muted">Noch kein Tor in dieser Saison.</p>
@@ -94,7 +105,7 @@
     </div>
 
     <div class="club-panel club-panel-overview">
-      <div class="facts-block">
+      <div class="facts-block" data-section="verein-bilanz">
         <h2>Bilanz</h2>
         <table class="balance">
           <tbody>
@@ -105,7 +116,7 @@
         </table>
       </div>
       {#if page.otherSeasons}
-      <div class="facts-block">
+      <div class="facts-block" data-section="verein-saisons">
         <h2>Weitere Saisons</h2>
         <ul class="seasons">
           {#for s in page.otherSeasons}
@@ -115,9 +126,16 @@
       </div>
       {/if}
       {#if page.outlookLink}
-      <div class="facts-block">
+      <div class="facts-block" data-section="verein-saisonaussicht">
         <h2>Saisonaussicht</h2>
         <div hx-get="{page.outlookLink}" hx-trigger="load" hx-swap="innerHTML">
+          <p class="muted">Wird geladen …</p>
+        </div>
+      </div>
+      {! story r039: the goals' typical points, from the same simulation run as the outlook above !}
+      <div class="facts-block" data-section="verein-was-braucht">
+        <h2>Was braucht {page.name}?</h2>
+        <div hx-get="{page.outlookLink}/targets" hx-trigger="load" hx-swap="innerHTML">
           <p class="muted">Wird geladen …</p>
         </div>
       </div>
@@ -127,7 +145,7 @@
     <div class="club-panel club-panel-season">
       {#if page.hasTable && page.schedule}
       {! story r064: every matchday as a tile; a tile opens its match page, never the opponent's club page !}
-      <div class="wall-block">
+      <div class="wall-block" data-section="verein-ganze-saison">
         <h2>Die ganze Saison</h2>
         <p class="wall-key">{page.wallKey} <span class="muted">· neueste Ergebnisse zuerst, dann die offenen Spiele</span></p>
         <ol class="season-wall">
@@ -145,12 +163,12 @@
       </div>
       {/if}
       {#if page.hasTable}
-      <div class="chart-block">
+      <div class="chart-block" data-section="verein-saisonverlauf">
         <h2>Tabellenplatz im Saisonverlauf</h2>
         <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
       </div>
       {/if}
-      <div class="chart-block">
+      <div class="chart-block" data-section="verein-torminuten">
         <h2>Wann fallen die Tore?</h2>
         {! story r016: the finding in words above the chart, the numbers as a table for screen readers !}
         <p class="timing-sentence">{page.goalTiming.sentence}</p>

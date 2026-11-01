@@ -69,6 +69,9 @@ import de.javamark.matchoracle.matchday.control.MatchCalendar;
 import de.javamark.matchoracle.matchday.control.Stakes;
 import de.javamark.matchoracle.matchday.control.StreakCalculator;
 import de.javamark.matchoracle.matchday.control.TopMatch;
+import de.javamark.matchoracle.matchday.control.TravelCalculator;
+import de.javamark.matchoracle.matchday.control.Stadiums;
+import de.javamark.matchoracle.matchday.control.WeatherService;
 import de.javamark.matchoracle.matchday.entity.Form;
 import de.javamark.matchoracle.matchday.entity.ResultStatus;
 import de.javamark.matchoracle.matchday.entity.Goal;
@@ -131,6 +134,9 @@ public class MatchdayPages {
         static native TemplateInstance match(MatchPage page);
         static native TemplateInstance matchNotFound(MatchNotFoundPage page);
         static native TemplateInstance team(TeamPage page);
+        static native TemplateInstance compare(MatchdayPageModels.ComparePage page);
+        static native TemplateInstance weatherLine(WeatherService.Weather weather);
+        static native TemplateInstance weatherCells(Map<Long, WeatherService.Weather> cells);
         static native TemplateInstance knockout(KnockoutPage page);
         static native TemplateInstance groups(GroupsPage page);
         static native TemplateInstance leagueScorers(LeagueScorersPage page);
@@ -146,6 +152,9 @@ public class MatchdayPages {
 
     @Inject
     StandingsCalculator standingsCalculator;
+
+    @Inject
+    WeatherService weatherService;
 
     @Inject
     HeadToHeadCalculator headToHeadCalculator;
@@ -736,7 +745,35 @@ public class MatchdayPages {
                 MatchdayPageModels.LastYearView.of(de.javamark.matchoracle.matchday.control.LastYearCalculator.of(l, settled, Map.of(
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
                         League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
-                null));
+                null,
+                seasonRace(l, season, shortcut),
+                travel(l, season, shortcut)));
+    }
+
+    /** Story r060: kilometres to the away grounds of the season and the pairings of close grounds. */
+    private static MatchdayPageModels.TravelView travel(League league, int season, String shortcut) {
+        List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
+        all.addAll(Match.findUnplayed(league, season));
+        var ground = TravelCalculator.byExternalId();
+        return MatchdayPageModels.TravelView.of(TravelCalculator.trips(all, ground), TravelCalculator.derbies(all, ground), shortcut);
+    }
+
+    /**
+     * Story r019: the table after every matchday so far, from one query — every played match, provisional
+     * ones included, so the last step can be drawn dashed while a result is still open.
+     */
+    private MatchdayPageModels.SeasonRace seasonRace(League league, int season, String shortcut) {
+        List<Match> played = Match.findPlayedBefore(league, season, Integer.MAX_VALUE);
+        int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
+        List<Standings> afterEach = new ArrayList<>();
+        for (int n = 1; n <= last; n++) {
+            int before = n + 1;
+            afterEach.add(standingsCalculator.standings(league, season, before,
+                    played.stream().filter(m -> m.matchday.number < before).toList()));
+        }
+        boolean lastProvisional = played.stream()
+                .anyMatch(m -> m.matchday.number == last && m.resultStatus == ResultStatus.PROVISIONAL);
+        return MatchdayPageModels.SeasonRace.of(afterEach, lastProvisional, shortcut);
     }
 
     /**
@@ -771,7 +808,7 @@ public class MatchdayPages {
                 runIn(l, season, leaguePhase, shortcut),
                 MatchdayPageModels.GoalTimingView.ofLeague(extraTime ? GoalTimingCalculator.cup(settled) : GoalTimingCalculator.league(settled)),
                 null,
-                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut)));
+                knockout.isEmpty() ? null : MatchdayPageModels.CupDecisionView.of(knockout, shortcut), null, null));
     }
 
     private TemplateInstance cupSeason(League l) {
@@ -787,7 +824,7 @@ public class MatchdayPages {
                 MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
                 null, null, null,
                 MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.cup(settled)),
-                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut)));
+                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut), null, null));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */
@@ -795,7 +832,7 @@ public class MatchdayPages {
         List<Match> all = new ArrayList<>(Match.findPlayedBefore(league, season, Integer.MAX_VALUE));
         all.addAll(Match.findUnplayed(league, season));
         Standings finalTable = standingsCalculator.standings(league, season, Integer.MAX_VALUE, settled);
-        return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), shortcut);
+        return MatchdayPageModels.ReachView.of(de.javamark.matchoracle.matchday.control.ReachCalculator.of(finalTable, all), league, shortcut);
     }
 
     /** Story r045: the next matchdays per club, opponents by their current place (final results only). */
@@ -843,6 +880,7 @@ public class MatchdayPages {
                 .filter(n -> n.label == null) // spec 06: the pager stays inside the league phase
                 .map(n -> base + n.number).orElse(null);
 
+        Map<Long, Integer> tension = tension(matchday, matches, now);
         return new MatchdayPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.season, matchday.number,
                 prev, next, days, rows, standings.includesProvisional(), DataInfo.of(matchday, Instant.now()),
                 roundSections(matchday.league, matchday.season, shortcut, now),
@@ -851,7 +889,51 @@ public class MatchdayPages {
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
                 stakes(matchday, matches, now), liveTable(matchday, standings, matches, now),
-                splitTables(matchday, playedSoFar), leadLines(matches));
+                splitTables(matchday, playedSoFar), leadLines(matches), tension, tensionOrder(matches, tension),
+                matches.stream().filter(m -> WeatherService.shown(m, now)).map(m -> m.id).collect(java.util.stream.Collectors.toSet()));
+    }
+
+    /**
+     * Story r073: the Spannung of every open match from the table before the matchday and the form —
+     * the same table the "Es geht um" lines use; nothing from a forecast enters.
+     */
+    private Map<Long, Integer> tension(Matchday matchday, List<Match> matches, Instant now) {
+        if (!matchday.league.hasTable()) {
+            return Map.of();
+        }
+        List<Match> open = matches.stream().filter(m -> !m.isPlayed() && !m.isLive(now, liveWindow)).toList();
+        if (open.isEmpty()) {
+            return Map.of();
+        }
+        Standings before = standingsCalculator.standingsBefore(matchday);
+        int teams = Math.max(before.positions().size(), Team.findInLeagueSeason(matchday.league, matchday.season).size());
+        Map<Long, Integer> tension = new HashMap<>();
+        for (Match m : open) {
+            tension.put(m.id, de.javamark.matchoracle.matchday.control.TensionCalculator.of(
+                    side(m.homeTeam, matchday, before, teams), side(m.awayTeam, matchday, before, teams), teams));
+        }
+        return tension;
+    }
+
+    private de.javamark.matchoracle.matchday.control.TensionCalculator.Side side(Team team, Matchday matchday, Standings before, int teams) {
+        var standing = before.of(team);
+        int formPoints = formCalculator.formBefore(team, matchday).lastMatches().stream()
+                .mapToInt(v -> switch (v.result()) { case WIN -> 3; case DRAW -> 1; case LOSS -> 0; }).sum();
+        return new de.javamark.matchoracle.matchday.control.TensionCalculator.Side(
+                standing.map(StandingPosition::position).orElse(teams), standing.map(s -> s.balance().points()).orElse(0), formPoints);
+    }
+
+    /** Story r073: open matches by Spannung (ties by kickoff), then the started and finished ones by kickoff. */
+    private static Map<Long, Integer> tensionOrder(List<Match> matches, Map<Long, Integer> tension) {
+        if (tension.isEmpty()) {
+            return Map.of();
+        }
+        List<Match> ordered = matches.stream()
+                .sorted(Comparator.comparingInt((Match m) -> -tension.getOrDefault(m.id, 0)).thenComparing(m -> m.kickoff))
+                .toList();
+        Map<Long, Integer> order = new HashMap<>();
+        for (int i = 0; i < ordered.size(); i++) order.put(ordered.get(i).id, i + 1);
+        return order;
     }
 
     /** Story r053: a lead line for every finished match of the matchday whose goal list is complete. */
@@ -1010,6 +1092,30 @@ public class MatchdayPages {
         return Response.ok(Templates.liveScores(new LiveScoresFragment(rows, detail, goals, keepPolling, countdown))).build();
     }
 
+    /**
+     * Story r052: the last complete matchday of a Bundesliga — every match FINAL — as data for the
+     * "Konferenz nachspielen" board. 404 while no matchday of the season is complete yet.
+     */
+    @GET
+    @Path("/{league}/konferenz")
+    @Produces(MediaType.APPLICATION_JSON)
+    public MatchdayPageModels.ConferenceReplay conference(@PathParam("league") String league) {
+        League l = league(league);
+        if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
+            throw new NotFoundException("no conference for " + league);
+        }
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> played = Match.findPlayedBefore(l, season, Integer.MAX_VALUE);
+        java.util.Set<Integer> incomplete = new java.util.HashSet<>();
+        Match.findUnplayed(l, season).forEach(m -> incomplete.add(m.matchday.number));
+        played.stream().filter(m -> m.resultStatus != ResultStatus.FINAL).forEach(m -> incomplete.add(m.matchday.number));
+        int last = played.stream().mapToInt(m -> m.matchday.number).filter(n -> !incomplete.contains(n)).max()
+                .orElseThrow(() -> new NotFoundException("no complete matchday yet"));
+        List<Match> matches = played.stream().filter(m -> m.matchday.number == last).toList();
+        return MatchdayPageModels.ConferenceReplay.of(last + ". Spieltag · " + MatchdayPageModels.leagueName(l), matches,
+                l.sourceShortcut());
+    }
+
     /** More than any page shows at once (two Bundesligas, one matchday each); caps what a crafted URL can ask for. */
     private static final int MAX_LIVE_SCORES = 40;
 
@@ -1041,7 +1147,36 @@ public class MatchdayPages {
                 positionChart(matchday, match.homeTeam, match.awayTeam),
                 standings.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), standings.includesProvisional(),
                 DataInfo.of(matchday, Instant.now()),
-                Countdown.of(match.kickoff, match.isPlayed(), Instant.now()));
+                Countdown.of(match.kickoff, match.isPlayed(), Instant.now()),
+                MatchdayPageModels.travelLine(match, TravelCalculator.km(match, TravelCalculator.byExternalId()).orElse(null),
+                        Stadiums.of(match.homeTeam.externalId).map(s -> s.city()).orElse(null)),
+                WeatherService.shown(match, Instant.now()) ? "/wetter/spiel/" + match.id : null);
+    }
+
+    /** Story r034: the weather line of a match page (htmx only) — empty when there is nothing to say. */
+    @GET
+    @Path("/wetter/spiel/{id}")
+    public Response weatherLine(@PathParam("id") long id, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        var weather = Match.<Match>findByIdOptional(id).flatMap(m -> weatherService.at(m, now));
+        return Response.ok(Templates.weatherLine(weather.orElse(null))).build();
+    }
+
+    /** Story r034: the short weather values of a matchday's fixtures, swapped out of band (htmx only). */
+    @GET
+    @Path("/wetter/spieltag")
+    public Response weatherCells(@QueryParam("match") List<Long> matchIds, @HeaderParam("HX-Request") String htmxRequest) {
+        if (htmxRequest == null) {
+            return Response.seeOther(URI.create("/")).build();
+        }
+        Instant now = Instant.now();
+        Map<Long, WeatherService.Weather> cells = new java.util.LinkedHashMap<>();
+        matchIds.stream().limit(MAX_LIVE_SCORES).distinct().forEach(id -> Match.<Match>findByIdOptional(id)
+                .flatMap(m -> weatherService.at(m, now)).ifPresent(w -> cells.put(id, w)));
+        return Response.ok(Templates.weatherCells(cells)).build();
     }
 
     /** The club in one season: standing, position curve, schedule, home/away balance, scorers and goal timing. */
@@ -1554,7 +1689,64 @@ public class MatchdayPages {
                         ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null,
                 MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing),
                 scorerProfiles(team, schedule, shortcut),
-                MatchdayPageModels.clubCalendar(schedule, team, shortcut, java.time.LocalDate.now(MatchdayPageModels.DISPLAY_ZONE)));
+                MatchdayPageModels.clubCalendar(schedule, team, shortcut, java.time.LocalDate.now(MatchdayPageModels.DISPLAY_ZONE)),
+                // story r026: the other clubs of this league and season, alphabetically
+                hasTable && currentSeason && standing.isPresent()
+                        ? new MatchdayPageModels.ComparePicker(team.id, standings.positions().stream().map(p -> p.team())
+                                .filter(t -> !t.equals(team)).sorted(java.util.Comparator.comparing(t -> t.name))
+                                .map(t -> new MatchdayPageModels.CompareOption(t.id, t.name)).toList())
+                        : null);
+    }
+
+    /** Story r026: the picker on the team page sends both ids here; the comparison has an address of its own. */
+    @GET
+    @Path("/{league}/vergleich")
+    public Response comparePick(@PathParam("league") String league, @QueryParam("a") long a, @QueryParam("b") long b) {
+        return Response.seeOther(URI.create("/" + league(league).sourceShortcut() + "/vergleich/" + a + "/" + b)).build();
+    }
+
+    /**
+     * Story r026 "Vereinsvergleich": two clubs of a league in the current season. Anything in the
+     * address that is not two clubs of this league gets an explanation instead of an error page.
+     */
+    @GET
+    @Path("/{league}/vergleich/{a}/{b}")
+    public TemplateInstance compare(@PathParam("league") String league, @PathParam("a") long a, @PathParam("b") long b) {
+        League l = league(league);
+        if (!l.hasTable()) {
+            throw new NotFoundException("no comparison in " + league);
+        }
+        String shortcut = l.sourceShortcut();
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> played = Match.findPlayedBefore(l, season, Integer.MAX_VALUE);
+        int last = played.stream().mapToInt(m -> m.matchday.number).max().orElse(0);
+        Standings table = standingsCalculator.standings(l, season, last + 1, played);
+        Optional<Team> teamA = Team.<Team>findByIdOptional(a);
+        Optional<Team> teamB = Team.<Team>findByIdOptional(b);
+        var posA = teamA.flatMap(table::of);
+        var posB = teamB.flatMap(table::of);
+        MatchdayPageModels.CompareClub clubA = teamA.map(t -> compareClub(t, shortcut, posA.map(p -> p.position()).orElse(null))).orElse(null);
+        MatchdayPageModels.CompareClub clubB = teamB.map(t -> compareClub(t, shortcut, posB.map(p -> p.position()).orElse(null))).orElse(null);
+        if (posA.isEmpty() || posB.isEmpty() || a == b) {
+            String error = a == b ? "Ein Verein lässt sich nicht mit sich selbst vergleichen."
+                    : "Beide Vereine müssen in dieser Saison in der " + MatchdayPageModels.leagueName(l) + " spielen.";
+            // a club of another league: its page wherever it plays this season (the "Mein Verein" route finds it)
+            java.util.function.UnaryOperator<MatchdayPageModels.CompareClub> anywhere = c -> c == null ? null
+                    : new MatchdayPageModels.CompareClub(c.id(), c.name(), c.shortName(), c.icon(), "/mein-verein/" + c.id(), c.position());
+            return Templates.compare(new MatchdayPageModels.ComparePage(Nav.of(l), MatchdayPageModels.seasonLabel(season),
+                    anywhere.apply(clubA), anywhere.apply(clubB), List.of(), null, List.of(), false, error));
+        }
+        List<MatchdayPageModels.DuelRow> duels = Match.findByTeam(teamA.get(), l, season).stream()
+                .filter(m -> m.homeTeam.equals(teamB.get()) || m.awayTeam.equals(teamB.get()))
+                .map(m -> MatchdayPageModels.DuelRow.of(m, shortcut)).toList();
+        return Templates.compare(new MatchdayPageModels.ComparePage(Nav.of(l), MatchdayPageModels.seasonLabel(season), clubA, clubB,
+                MatchdayPageModels.CompareRow.of(posA.get().balance(), posB.get().balance()),
+                seasonRace(l, season, shortcut).only(List.of(a, b)), duels, table.includesProvisional(), null));
+    }
+
+    private static MatchdayPageModels.CompareClub compareClub(Team t, String shortcut, Integer position) {
+        return new MatchdayPageModels.CompareClub(t.id, t.name, t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName,
+                MatchdayPageModels.crestLink(t), "/" + shortcut + "/teams/" + t.id, position);
     }
 
     /** Story r063: one profile per scorer of the club, keyed by the name the scorer list shows. */

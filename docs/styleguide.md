@@ -203,6 +203,74 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   mit Display-Überschrift und 2-px-Kreidelinie, darunter ein Satz in Worten, dann die Zahlen auf
   Mähstreifen. Anteile Heim/Remis/Auswärts als ein Balken (`.share-bar`) in den Tendenzfarben
   (`--ink`, `--draw`, `--ink-soft`), die Zahlen immer als Text daneben.
+- **Spannung** (`.tension`, Spieltagsseite, Story r073): unter jedem offenen Spiel fünf kleine
+  Kästchen in Tinte (gefüllt `--ink`, leer gerahmt), dazu das Wort „Spannung" und für Vorleser
+  „4 von 5". Kein Messing, keine Ampel. Umschalter „Nach Tag | Spannendste zuerst" neben „Liste |
+  Kompakt", gemerkt nur im Browser (`rr-sort`, vor dem ersten Zeichnen gesetzt). Sortiert ordnet CSS
+  die Zeilen in einer Spalte (`--t-order`), mit Wochentag und Kurznamen, darüber ein Satz, woraus die
+  Spannung entsteht. In „Kompakt" entfällt die Zeile.
+- **Punktestrahl** (`.points-axis`, Saisonseite, Story r022): die Tabelle als senkrechte Punkteachse,
+  eine Zeile je Punktzahl mit Wappen und Kurznamen, jeder fehlende Punkt dazwischen ein Schritt Abstand
+  (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
+  die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
+  viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Auswärtsfahrten und Derbys** (`.trips`, `.derbies`, Saisonseite der Bundesligen, Story r060): je
+  Verein ein Balken der Luftlinien-Kilometer zu allen Auswärtsstadien der Saison, gefahren in `--ink`,
+  noch zu fahren gedämpft, darunter die Zahlen und die weiteste Fahrt; Vereine ohne Stadion am Ende
+  mit „Entfernung unbekannt“. Derbys: Paarungen mit höchstens 60 km zwischen den Stadien, mit beiden
+  Begegnungen. Auf der Spielseite eine Textzeile („Derby: …“ oder „Anreise für …: … km Luftlinie
+  nach …“). Immer „Luftlinie“, nie Fahrstrecke.
+- **Wetter am Spielort** (Spieltagsseite und Spielseite, Story r034): nur Text in neutraler Tinte,
+  kein Symbol, keine Farbe. Spieltag: eine freigehaltene Zeile je kommendem Spiel („6 °C, bewölkt“),
+  die sich ohne Verschieben füllt. Spielseite: „Wetter zur Halbzeit: …“, Regenwahrscheinlichkeit ab
+  30 %, Wind ab 30 km/h, dahinter „Wetterdaten: Deutscher Wetterdienst (DWD) via Bright Sky“.
+- **Bereiche** (`.area-tabs`, unter der Navigation, Story r020): drei Reiter „Spieltag“, „Saison“,
+  „KI-Bilanz“ der aktuellen Liga, jeder eine eigene Adresse. Der aktuelle Reiter fett mit 3-px-Linie
+  in `--ink` darunter und `aria-current`, nie nur Farbe. Zur Saison gehören Saisonseite,
+  Torschützenliste und Vereinsvergleich; zur KI-Bilanz Trefferbilanz und „So entsteht eine Prognose“;
+  eine Vereinsseite gehört zu keinem Reiter. Unter 560 px entfallen die Reiter, die Daumenleiste
+  trägt dieselben Bereiche plus „Verein“ (die Tabelle steckt im Spieltag).
+- **Vereinsvergleich** (`.compare`, eigene Seite `/{liga}/vergleich/{a}/{b}`, Story r026): auf der
+  Vereinsseite „Vergleichen mit“ (ein einfaches Formular, Auswahl nur aus derselben Liga). Gespiegelte
+  Balken für Punkte, Siege, Tore, Gegentore, Tordifferenz; der bessere Wert eines Paars (bei
+  Gegentoren der kleinere) in voller Tinte und fett, der andere gedämpft, gleiche Werte beide
+  gedämpft. Darunter beide Platzkurven wie im Saisonrennen, links durchgezogen in `--ink`, rechts
+  gestrichelt in `--ink-soft`, Name und Platz am Linienende, keine Vereinsfarben. Dann die direkten
+  Duelle dieser Saison mit Datum, Ergebnis und Status.
+- **Seite anpassen** (`.customize`, Fuß jeder Seite mit mindestens zwei schaltbaren Abschnitten,
+  Story r100): „Diese Seite anpassen“ öffnet einen nativen Dialog mit je einer Checkbox pro Abschnitt
+  (Text = Überschrift), dem Satz „Was ausgeschaltet wird, bleibt in diesem Browser ausgeblendet. Die
+  Spiele selbst bleiben immer da.“ und „Alles zeigen“. Schaltbar ist nur, was `data-section` trägt;
+  Spiellisten, Spieltagsliste und Spielkern nie. Ein ausgeschalteter Abschnitt fehlt auch im Wegweiser
+  (`data-section-toc`) und wird schon vor dem ersten Zeichnen ausgeblendet (Kopf-Skript, `rr-hidden`).
+- **Bühne in groß** (`.board`, Spieltagsseite, Stories r038 „Sofa-Modus“ und r052 „Konferenz
+  nachspielen“): die dunkle Bühne bildschirmfüllend (Vollbild, sonst fensterfüllend), nur
+  Stage-Tokens, kein Messing, kein zweites Dunkel-Thema. Kopf mit Marke, Titel, Zusammenfassung
+  („2 Spiele laufen, 12 Tore bisher“) und „Beenden“; darunter je Spiel eine große Kachel mit
+  Wappen, Kurznamen, Spielstand in der Display-Schrift und Status („Läuft“, „Ende · vorläufig“,
+  Anstoßzeit). Laufende zuerst, dann beendete, dann offene. Eine geänderte Kachel bekommt einen
+  dicken Rand und ein statisches „Neu“, nichts blinkt. Die KI-Zeile beendeter Spiele in
+  `--ki-on-turf`, als „KI-Vorschau“ benannt. Die Konferenz: Uhr von 0' bis Abpfiff in rund einer
+  Minute, Tickerzeile „Tor für …!“, Knöpfe „Pause“/„Weiter“ und „Nochmal“; bei reduzierter
+  Bewegung keine laufende Uhr, sondern „Nächstes Tor“. Escape schließt, der Fokus kehrt zurück.
+- **Saisonrennen** (`.race`, Saisonseite, Story r019): der Tabellenplatz jedes Vereins nach jedem
+  Spieltag als Linie, Platz 1 oben, am Linienende der Kurzname. Alle Linien neutral (`--ink-mute`,
+  gedämpft); Zeigen, Tippen oder Fokus legt eine Kopie der Linie in `--ink`, 3 px, mit Platzziffern
+  je Spieltag über alle anderen (die Reihenfolge der Linien und damit die Tab-Reihenfolge bleibt die
+  der Tabelle). Ohne Auswahl ist „Mein Verein“ hervorgehoben. Ein vorläufiger letzter Spieltag:
+  letzter Schritt gestrichelt, „vorläufig“ über der Achse. Breiter als der Bildschirm scrollt nur die
+  Box, geöffnet am aktuellen Ende. Darunter „Position nach Spieltag als Tabelle“ zum Aufklappen.
+- **Was braucht {Verein}?** (`.season-targets`, Vereinsseite, Story r039): je Platzierungsziel eine
+  Karte mit „typisch N Punkte“ (Median des Tabellenplatzes aus der Saisonaussicht), fehlenden Punkten,
+  Restspielen und nötigem gegen bisheriges Tempo, darunter der Anteil der simulierten Saisons. Linke
+  Kante und Satz grün nur für „das bisherige Tempo reicht“, rot nur für „rechnerisch nicht mehr
+  erreichbar“; „bereits sicher“ bleibt in Tinte, fett. Kein Messing. Darunter ein Satz, woher der
+  typische Wert kommt („Eine Einschätzung, kein Rat.“).
+- **Was wäre, wenn** (`.table-proj-switch`, `.table-projection`, Spieltagstabelle solange Spiele offen
+  sind, Story r007): Umschalter „Jetzt“ / „Nach KI-Vorschau“; der gewählte KI-Knopf in `--ki-wash` mit
+  `--ki-deep`. Die angenommene Tabelle beginnt mit dem KI-Chip und „Angenommen: …“ (alle eingerechneten
+  Richtwerte), nennt offene Spiele ohne KI-Vorschau und zeigt die Spalte „Veränderung“ als
+  vorzeichenbehaftete Zahl in neutraler Tinte. Keine Animation, nie „Ergebnis“ oder „Empfehlung“.
 - **Wegweiser** (`.season-toc`, Saisonseite): ab sieben Abschnitten direkt unter dem Seitenkopf eine
   Zeile mit einem Link je Abschnitt, Linktext gleich Überschrift, in Seitenreihenfolge. Einfache
   Anker, also auch ohne Skript nutzbar. Mit Skript klebt die Zeile unter der Navigation (deren Höhe

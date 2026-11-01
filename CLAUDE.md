@@ -134,6 +134,19 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 | Pokalbühne (Spiel der Runde / Überraschung der Runde über der Pokalseite) | `MatchdayPages.cupStage` / `stagePick`, `StageRoute` |
 | Noch im Wettbewerb (verbliebene Vereine nach Spielklasse, Ausgeschiedene mit Runde, Pokalsieger) | `CupField` / `MatchdayPages.cupField` |
+| Spannung (offenes Spiel, 1–5, aus Tabelle und Form, Story r073 „Spannendste zuerst") | `TensionCalculator` |
+| Punktestrahl (Tabelle als Punkteachse, Story r022) | `PointsAxis` / `AxisRow` |
+| Saisonrennen (Tabellenplatz aller Vereine je Spieltag, Story r019) | `SeasonRace` / `RaceLine` |
+| Vereinsvergleich (zwei Vereine einer Liga nebeneinander, Story r026) | `ComparePage` / `CompareRow` / `DuelRow` |
+| Bereich (Reiter Spieltag / Saison / KI-Bilanz, Story r020) | `.area-tabs` / `data-area` in `base.html` |
+| Stadion / Heimspielort (Koordinaten je OpenLigaDB-Team, `stadiums.jsonl`) | `Stadiums` / `Stadium` |
+| Auswärtsfahrt, Derby (Luftlinie, Derby ≤ 60 km, Story r060) | `TravelCalculator` / `TravelView` |
+| Wetter am Spielort (Bright Sky/DWD, zur Halbzeit, Story r034) | `WeatherService` / `BrightSkyClient` |
+| Sofa-Modus (Spieltag als bildschirmfüllende Bühne, Story r038) | `.board` in `nav.js` |
+| Schaltbarer Abschnitt (Story r100 „Seite anpassen“, nur im Browser gemerkt) | `data-section` / `rr-hidden` |
+| Konferenz nachspielen (Tore des letzten kompletten Spieltags in Minutenfolge, Story r052) | `ConferenceReplay` / `ReplayMatch` / `ReplayGoal` |
+| Typische Punktzahl (Median der Endpunkte eines Tabellenplatzes über die simulierten Restsaisons, Story r039 „Was braucht {Verein}?“) | `SeasonThreshold` / `SeasonTargets` |
+| Was wäre, wenn (Tabelle mit den offenen Spielen beim KI-Richtwert, Story r007) | `MatchdayFacade.Projection` / `StandingsCalculator.Assumed` |
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
 | Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |
 | Titelverteidiger (Sieger der vorigen Ausgabe mit seinem Weg durch die Endrunde) | `Holder` / `HolderStep` |

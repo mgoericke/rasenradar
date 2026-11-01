@@ -77,6 +77,24 @@ class SeasonSimulatorTest {
     }
 
     @Test
+    void theMedianPointsPerPlaceComeFromTheSameRuns() {
+        List<SeasonSimulator.TeamState> teams = List.of(
+                new SeasonSimulator.TeamState(1L, 30, 20, 40),
+                new SeasonSimulator.TeamState(2L, 20, 0, 25));
+
+        SeasonSimulator.Result result = simulator.simulateSeason(teams, List.of(), List.of("Meisterschaft"),
+                position -> List.of(), new Random(1));
+
+        assertEquals(Map.of(1, 30, 2, 20), result.medianPointsAtPosition());
+    }
+
+    @Test
+    void theMedianOfAHistogramIsItsLowerMiddleValue() {
+        assertEquals(2, SeasonSimulator.median(new int[]{1, 0, 2, 1}, 4));
+        assertEquals(0, SeasonSimulator.median(new int[]{3, 0, 0, 1}, 4));
+    }
+
+    @Test
     void poissonSamplesAverageCloseToTheirExpectedValue() {
         Random random = new Random(7);
         long sum = 0;

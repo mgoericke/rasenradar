@@ -94,6 +94,19 @@ public final class MatchdayPageModels {
         return ids.isEmpty() ? null : LIVE_SCORES_LINK + "?" + ids + (details ? "&details=true" : "");
     }
 
+    /** Story r034: the weather values of a matchday's fixtures, out of band; {@code /wetter/spiel/{id}} for one match page. */
+    static final String WEATHER_LINK = "/wetter/spieltag";
+
+    /** Story r060: the line on a match page — a derby, or the away side's trip. Null when a ground is unknown. */
+    static String travelLine(Match m, Integer km, String awayCity) {
+        if (km == null) {
+            return null;
+        }
+        return km <= de.javamark.matchoracle.matchday.control.Stadiums.DERBY_KM
+                ? "Derby: " + TravelView.km(km) + " km zwischen den Stadien."
+                : "Anreise für " + shortOrName(m.awayTeam) + ": " + TravelView.km(km) + " km Luftlinie nach " + awayCity + ".";
+    }
+
     /** Polled every minute by a page that shows a running match: fresh score cells, out of band. */
     static final String LIVE_SCORES_LINK = "/live/spielstaende";
 
@@ -422,7 +435,29 @@ public final class MatchdayPageModels {
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
-                        LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines) {
+                        LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines,
+                        Map<Long, Integer> tension, Map<Long, Integer> tensionOrder, java.util.Set<Long> weather) {
+
+        /** Story r034: whether this fixture keeps a line free for its weather (ahead, in range, ground known). */
+        public boolean weatherOf(long matchId) {
+            return weather.contains(matchId);
+        }
+
+        /** Story r034: one request for all fixtures with a weather line, answered out of band; null without any. */
+        public String weatherLink() {
+            return weather.isEmpty() ? null : WEATHER_LINK + "?" + weather.stream().sorted().map(id -> "match=" + id)
+                    .collect(java.util.stream.Collectors.joining("&"));
+        }
+
+        /** Story r073: the Spannung of an open match, 1 to 5, or null for a started or finished one. */
+        public Integer tensionOf(long matchId) {
+            return tension.get(matchId);
+        }
+
+        /** Story r073: the place of a match in "Spannendste zuerst" — open matches by Spannung, then the rest. */
+        public int tensionOrderOf(long matchId) {
+            return tensionOrder.getOrDefault(matchId, 0);
+        }
 
         /** Story r070: the "Es geht um" line of an open match, or null. */
         public String stakeOf(long matchId) {
@@ -831,6 +866,47 @@ public final class MatchdayPageModels {
         }
     }
 
+    /**
+     * Story r052 "Konferenz nachspielen": the last complete matchday of a league, FINAL results only,
+     * each match with its goals in the order they fell — the board in nav.js plays them back. No
+     * KI-Vorschau in here. A goal without a minute counts as a 90th-minute goal.
+     */
+    record ConferenceReplay(String title, int goals, List<ReplayMatch> matches) {
+
+        static ConferenceReplay of(String title, List<Match> matches, String shortcut) {
+            List<ReplayMatch> rows = matches.stream()
+                    .sorted(java.util.Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.homeTeam.name))
+                    .map(m -> ReplayMatch.of(m, shortcut)).toList();
+            int goals = matches.stream().mapToInt(m -> m.fullTimeScore.home + m.fullTimeScore.away).sum();
+            return new ConferenceReplay(title, goals, rows);
+        }
+    }
+
+    record ReplayMatch(String home, String away, String homeShort, String awayShort, String homeIcon, String awayIcon,
+                       String link, String result, List<ReplayGoal> goals) {
+
+        static ReplayMatch of(Match m, String shortcut) {
+            List<ReplayGoal> goals = new java.util.ArrayList<>();
+            int prevHome = 0;
+            for (Goal g : m.matchGoals()) {
+                if (g.scoreAfter == null) {
+                    continue;
+                }
+                boolean forHome = g.scoreAfter.home > prevHome;
+                prevHome = g.scoreAfter.home;
+                goals.add(new ReplayGoal(g.minute == null ? 90 : g.minute, forHome, g.scorerName,
+                        g.penalty ? "Elfmeter" : g.ownGoal ? "Eigentor" : null, g.scoreAfter.home + ":" + g.scoreAfter.away));
+            }
+            return new ReplayMatch(m.homeTeam.name, m.awayTeam.name, shortOrName(m.homeTeam), shortOrName(m.awayTeam),
+                    crestLink(m.homeTeam), crestLink(m.awayTeam), "/" + shortcut + "/matches/" + m.id,
+                    m.fullTimeScore.home + ":" + m.fullTimeScore.away, List.copyOf(goals));
+        }
+    }
+
+    /** {@code forHome}: the home side's score went up — an own goal counts for the side it helped. */
+    record ReplayGoal(int minute, boolean forHome, String scorer, String note, String score) {
+    }
+
     /** Story r005: the page for a match link that leads nowhere, with the way to the league's current matchday. */
     record MatchNotFoundPage(Nav nav, String currentLink) {
     }
@@ -839,7 +915,7 @@ public final class MatchdayPageModels {
                      List<GoalRow> goals, TeamSituation homeTeam, TeamSituation awayTeam,
                      HeadToHeadSummary headToHead,
                      String chartJson, List<StandingRow> table, boolean tableProvisional, DataInfo data,
-                     Countdown countdown) {
+                     Countdown countdown, String travelLine, String weatherLink) {
         public List<TeamSituation> teams() {
             return List.of(homeTeam, awayTeam);
         }
@@ -998,10 +1074,226 @@ public final class MatchdayPageModels {
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
                       ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear,
-                      CupDecisionView decisions) {
+                      CupDecisionView decisions, SeasonRace race, TravelView travel) {
         /** The cup's numbers page: no table, so no reach, run-in, streaks, cross table, last year or home advantage. */
         public boolean cup() {
             return reach == null;
+        }
+    }
+
+    /**
+     * Story r019 "Saisonrennen": every club's table position after each matchday, as lines on a grid
+     * — place 1 at the top, the short name at each line's end. The coordinates are worked out here so
+     * the template only draws. {@code lastProvisional}: the last matchday holds a result that is not
+     * final yet, so the last step of every line is dashed. Null {@code lines}: fewer than two matchdays.
+     */
+    record SeasonRace(int matchdays, int teams, List<RaceLine> lines, boolean lastProvisional,
+                      int width, int height, List<RaceTick> ticks) {
+
+        static final int STEP_Y = 22;
+        static final int PAD = 14;
+        static final int LABEL_WIDTH = 120;
+
+        public boolean drawn() {
+            return lines != null;
+        }
+
+        /** Bottom end of the matchday lines, and the baseline of their numbers below. */
+        public int axisY() {
+            return height - 22;
+        }
+
+        public int labelY() {
+            return height - 6;
+        }
+
+        /** Story r026: the same race with only the given clubs' lines, in the given order. */
+        SeasonRace only(List<Long> teamIds) {
+            if (lines == null) {
+                return this;
+            }
+            List<RaceLine> kept = teamIds.stream()
+                    .flatMap(id -> lines.stream().filter(l -> l.teamId() == id)).toList();
+            return new SeasonRace(matchdays, teams, kept, lastProvisional, width, height, ticks);
+        }
+
+        /** x of the last matchday — where "vorläufig" stands. */
+        public int lastX() {
+            return x(matchdays, matchdays);
+        }
+
+        /** Spread over about 640 px while there are few matchdays; from there on 26 px each, scrolled inside its box. */
+        static int stepX(int matchdays) {
+            return Math.max(26, Math.min(72, 640 / Math.max(1, matchdays - 1)));
+        }
+
+        static int x(int matchday, int matchdays) {
+            return PAD + (matchday - 1) * stepX(matchdays);
+        }
+
+        static int y(int position) {
+            return PAD + (position - 1) * STEP_Y;
+        }
+
+        /**
+         * @param afterEach the table after matchday 1, 2, … in order — {@code afterEach.get(n - 1)} after matchday n
+         */
+        static SeasonRace of(List<Standings> afterEach, boolean lastProvisional, String shortcut) {
+            int matchdays = afterEach.size();
+            int teams = afterEach.isEmpty() ? 0 : afterEach.getLast().positions().size();
+            if (matchdays < 2 || teams == 0) {
+                return new SeasonRace(matchdays, teams, null, false, 0, 0, List.of());
+            }
+            List<RaceLine> lines = new java.util.ArrayList<>();
+            for (StandingPosition end : afterEach.getLast().positions()) {
+                Team team = end.team();
+                List<RacePoint> points = new java.util.ArrayList<>();
+                for (int n = 1; n <= matchdays; n++) {
+                    int matchday = n;
+                    afterEach.get(n - 1).of(team).ifPresent(p ->
+                            points.add(new RacePoint(matchday, p.position(), x(matchday, matchdays), y(p.position()))));
+                }
+                List<RacePoint> solid = lastProvisional && points.size() > 1 ? points.subList(0, points.size() - 1) : points;
+                List<RacePoint> tail = lastProvisional && points.size() > 1 ? points.subList(points.size() - 2, points.size()) : List.of();
+                lines.add(new RaceLine(team.id, shortOrName(team), team.name, teamLink(team, shortcut), end.position(),
+                        List.copyOf(points), polyline(solid), polyline(tail)));
+            }
+            List<RaceTick> ticks = new java.util.ArrayList<>();
+            for (int n = 1; n <= matchdays; n++) {
+                // a label at every matchday is too dense from a dozen on; the first, every fifth and the last
+                boolean labelled = matchdays <= 12 || n == 1 || n % 5 == 0 || n == matchdays;
+                ticks.add(new RaceTick(n, x(n, matchdays), labelled));
+            }
+            int width = x(matchdays, matchdays) + LABEL_WIDTH;
+            int height = y(teams) + 40;
+            return new SeasonRace(matchdays, teams, List.copyOf(lines), lastProvisional, width, height, List.copyOf(ticks));
+        }
+
+        private static String polyline(List<RacePoint> points) {
+            return points.stream().map(p -> p.x() + "," + p.y()).collect(java.util.stream.Collectors.joining(" "));
+        }
+    }
+
+    /** One club in the Saisonrennen: its points as SVG coordinates, solid and — when provisional — the dashed last step. */
+    record RaceLine(long teamId, String name, String fullName, String link, int endPosition, List<RacePoint> points,
+                    String solid, String tail) {
+
+        public int endY() {
+            return points.isEmpty() ? 0 : points.getLast().y();
+        }
+
+        /** The name starts right of the last point, clear of its position dot. */
+        public int labelX() {
+            return (points.isEmpty() ? 0 : points.getLast().x()) + 12;
+        }
+
+        /** The table row for screen readers: the position after each matchday, empty where the club had no table place yet. */
+        public List<String> cells(int matchdays) {
+            List<String> cells = new java.util.ArrayList<>();
+            for (int n = 1; n <= matchdays; n++) {
+                int matchday = n;
+                cells.add(points.stream().filter(p -> p.matchday() == matchday).findFirst()
+                        .map(p -> String.valueOf(p.position())).orElse(""));
+            }
+            return cells;
+        }
+    }
+
+    record RacePoint(int matchday, int position, int x, int y) {
+    }
+
+    record RaceTick(int matchday, int x, boolean labelled) {
+    }
+
+    /**
+     * Story r060: "Auswärtsfahrten" — every club by its kilometres to away grounds this season, split
+     * into travelled and ahead (bar widths in percent of the longest total) — and the "Derbys".
+     */
+    record TravelView(String lead, List<TripRow> trips, List<DerbyRow> derbies) {
+
+        static TravelView of(List<de.javamark.matchoracle.matchday.control.TravelCalculator.Trips> trips,
+                             List<de.javamark.matchoracle.matchday.control.TravelCalculator.Derby> derbies, String shortcut) {
+            int max = trips.stream().mapToInt(t -> t.total()).max().orElse(0);
+            List<TripRow> rows = trips.stream().map(t -> new TripRow(shortOrName(t.team()), teamLink(t.team(), shortcut), t.known(),
+                    km(t.total()), km(t.travelled()), km(t.ahead()),
+                    t.longest() == null ? null : t.longest().city() + ", " + km(t.longest().km()) + " km",
+                    max == 0 ? 0 : Math.round(100f * t.travelled() / max), max == 0 ? 0 : Math.round(100f * t.ahead() / max))).toList();
+            String lead = trips.stream().filter(t -> t.known() && t.total() > 0).findFirst()
+                    .map(t -> "Am weitesten reist " + shortOrName(t.team()) + ": " + km(t.total())
+                            + " km Luftlinie zu den Auswärtsspielen dieser Saison.").orElse(null);
+            List<DerbyRow> derbyRows = derbies.stream().map(d -> new DerbyRow(shortOrName(d.first()), shortOrName(d.second()),
+                    d.km(), d.meetings().stream().map(m -> DuelRow.of(m, shortcut)).toList())).toList();
+            return new TravelView(lead, rows, derbyRows);
+        }
+
+        static String km(int km) {
+            return String.format(Locale.GERMANY, "%,d", km);
+        }
+    }
+
+    record TripRow(String name, String link, boolean known, String total, String travelled, String ahead, String longest,
+                   int travelledWidth, int aheadWidth) {
+    }
+
+    record DerbyRow(String first, String second, int km, List<DuelRow> meetings) {
+    }
+
+    /** Story r026: a club the team page offers to compare with — same league, current season. */
+    record CompareOption(long id, String name) {
+    }
+
+    /** Story r026: the picker of a team page — this club and the ones it can be compared with. */
+    record ComparePicker(long teamId, List<CompareOption> options) {
+    }
+
+    /**
+     * Story r026 "Vereinsvergleich": two clubs of one league side by side — mirrored bars, both
+     * position curves, and this season's matches between them. {@code a} is the club on the left.
+     * {@code error}: the address names clubs that do not both play in the league this season.
+     */
+    record ComparePage(Nav nav, String season, CompareClub a, CompareClub b, List<CompareRow> rows, SeasonRace race,
+                       List<DuelRow> duels, boolean provisional, String error) {
+    }
+
+    record CompareClub(long id, String name, String shortName, String icon, String link, Integer position) {
+    }
+
+    /**
+     * One pair of mirrored bars. Widths in percent of the larger value (of the larger amount for the goal
+     * difference); {@code better} is -1 for the left club, 1 for the right one, 0 when equal.
+     */
+    record CompareRow(String label, String left, String right, int leftWidth, int rightWidth, int better) {
+
+        static CompareRow of(String label, int a, int b, boolean lowerIsBetter, boolean signed) {
+            int max = Math.max(Math.abs(a), Math.abs(b));
+            int better = a == b ? 0 : (a > b) != lowerIsBetter ? -1 : 1;
+            return new CompareRow(label, signed ? signed(a) : String.valueOf(a), signed ? signed(b) : String.valueOf(b),
+                    max == 0 ? 0 : Math.round(100f * Math.abs(a) / max), max == 0 ? 0 : Math.round(100f * Math.abs(b) / max), better);
+        }
+
+        /** Punkte, Siege, Tore, Gegentore (fewer is better) and Tordifferenz, in that order. */
+        static List<CompareRow> of(Balance a, Balance b) {
+            return List.of(
+                    of("Punkte", a.points(), b.points(), false, false),
+                    of("Siege", a.wins(), b.wins(), false, false),
+                    of("Tore", a.goalsFor(), b.goalsFor(), false, false),
+                    of("Gegentore", a.goalsAgainst(), b.goalsAgainst(), true, false),
+                    of("Tordifferenz", a.goalDifference(), b.goalDifference(), false, true));
+        }
+
+        private static String signed(int n) {
+            return n > 0 ? "+" + n : n < 0 ? "−" + (-n) : "0";
+        }
+    }
+
+    /** A match between the two compared clubs this season: date, pairing, score and where it stands. */
+    record DuelRow(String date, String home, String away, String score, String status, String link) {
+
+        static DuelRow of(Match m, String shortcut) {
+            String status = !m.isPlayed() ? "offen" : m.resultStatus == ResultStatus.PROVISIONAL ? "vorläufig" : "Endstand";
+            return new DuelRow(DAY_SHORT.format(m.kickoff.atZone(DISPLAY_ZONE)), shortOrName(m.homeTeam), shortOrName(m.awayTeam),
+                    m.fullTimeScore == null ? "–:–" : m.fullTimeScore.home + ":" + m.fullTimeScore.away, status,
+                    "/" + shortcut + "/matches/" + m.id);
         }
     }
 
@@ -1268,10 +1560,10 @@ public final class MatchdayPageModels {
      * Story r058: every club on one points scale — today's points (filled), what is still possible
      * (outlined), the pace value (a neutral tick) and the reference places as thin lines.
      */
-    record ReachView(String lead, List<ReachLine> lines, List<ReachRow> rows) {
-        static ReachView of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, String shortcut) {
+    record ReachView(String lead, List<ReachLine> lines, List<ReachRow> rows, PointsAxis axis) {
+        static ReachView of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, League league, String shortcut) {
             if (r.clubs().isEmpty()) {
-                return new ReachView(null, List.of(), List.of());
+                return new ReachView(null, List.of(), List.of(), null);
             }
             int scale = Math.max(1, r.clubs().stream().mapToInt(c -> Math.max(c.maximum(), c.pace() == null ? 0 : c.pace())).max().orElse(1));
             List<ReachLine> lines = r.thresholds().stream()
@@ -1288,12 +1580,71 @@ public final class MatchdayPageModels {
                     + (out == 0 ? "; jeder Verein kann Platz 1 rechnerisch noch erreichen."
                        : "; " + out + (out == 1 ? " Verein kann" : " Vereine können") + " Platz 1 rechnerisch nicht mehr erreichen.")
                     + " Eine Rechnung, keine Vorhersage.";
-            return new ReachView(lead, lines, rows);
+            return new ReachView(lead, lines, rows, PointsAxis.of(r, league, shortcut));
         }
 
         private static int percent(int value, int scale) {
             return (int) Math.round(100.0 * value / scale);
         }
+    }
+
+    /**
+     * Story r022 "Punktestrahl": the table on a points axis, top down — one row per points total, the
+     * gap to the row above as space (one step per missing point, at most six), the zone lines of the
+     * league under the row that holds their place. Final results only, like the rest of the page.
+     */
+    record PointsAxis(String lead, List<AxisRow> rows) {
+        static final int MAX_GAP = 6;
+
+        static PointsAxis of(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r, League league, String shortcut) {
+            var clubs = r.clubs();
+            Map<Integer, List<AxisClub>> byPoints = new java.util.TreeMap<>(java.util.Comparator.reverseOrder());
+            clubs.forEach(c -> byPoints.computeIfAbsent(c.points(), p -> new java.util.ArrayList<>())
+                    .add(new AxisClub(shortOrName(c.team()), crestLink(c.team()), teamLink(c.team(), shortcut), c.position())));
+            List<AxisRow> rows = new java.util.ArrayList<>();
+            Integer above = null;
+            for (var e : byPoints.entrySet()) {
+                int points = e.getKey();
+                List<AxisLine> lines = r.thresholds().stream()
+                        .filter(t -> t.position() > 1 && t.position() < clubs.size() && t.points() == points)
+                        .map(t -> new AxisLine(t.label(), lineZone(league, t.position()))).toList();
+                rows.add(new AxisRow(points, above == null ? 0 : Math.min(MAX_GAP, above - points - 1), e.getValue(), lines));
+                above = points;
+            }
+            return new PointsAxis(lead(r), List.copyOf(rows));
+        }
+
+        /** How many clubs below the first zone line are at most three points behind it. */
+        static String lead(de.javamark.matchoracle.matchday.control.ReachCalculator.Reach r) {
+            var clubs = r.clubs();
+            if (clubs.stream().map(c -> c.points()).distinct().count() <= 1) {
+                return "Noch keine Abstände.";
+            }
+            var line = r.thresholds().stream().filter(t -> t.position() > 1 && t.position() < clubs.size()).findFirst();
+            if (line.isEmpty()) {
+                return null;
+            }
+            int place = line.get().position();
+            int points = line.get().points();
+            long close = clubs.stream().filter(c -> c.position() > place && c.points() >= points - 3).count();
+            return (close == 0 ? "Keine Mannschaft liegt" : close == 1 ? "1 Mannschaft liegt" : close + " Mannschaften liegen")
+                    + " höchstens drei Punkte hinter Platz " + place + ".";
+        }
+
+        /** The zone a line closes: the place itself, or for a lower line the place below it. */
+        private static String lineZone(League league, int place) {
+            String own = zone(league, place);
+            return own.isEmpty() ? zone(league, place + 1) : own;
+        }
+    }
+
+    record AxisRow(int points, int gap, List<AxisClub> clubs, List<AxisLine> lines) {
+    }
+
+    record AxisClub(String name, String icon, String link, int position) {
+    }
+
+    record AxisLine(String label, String zone) {
     }
 
     record ReachLine(String label, int points, int at) {
@@ -1611,7 +1962,8 @@ public final class MatchdayPageModels {
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
                     boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming,
-                    Map<String, ScorerProfileView> scorerProfiles, List<CalendarMonth> calendar) {
+                    Map<String, ScorerProfileView> scorerProfiles, List<CalendarMonth> calendar,
+                    ComparePicker compare) {
 
         /** Story r063: the profile behind a name in the scorer list, null for a name without one. */
         public ScorerProfileView profileOf(String scorer) {

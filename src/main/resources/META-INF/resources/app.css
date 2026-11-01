@@ -270,6 +270,19 @@ h2 { font-size: 1.35rem; }
 @media (max-width: 380px) { .table-split-switch label { padding-left: .55rem; padding-right: .55rem; } }
 @media print { .table-split-switch, .table-split { display: none !important; } .table-split-total { display: table !important; } }
 /* story r059: the live table "wenn es so bleibt" beside the normal one — Live first while a match runs */
+/* story r007 "Was wäre, wenn": Jetzt / Nach KI-Vorschau — the projection replaces everything below the switch */
+.table-proj-switch { margin-top: .6rem; }
+.table-proj-input:nth-of-type(1):checked ~ .table-proj-switch label:nth-of-type(1),
+.table-proj-input:nth-of-type(2):checked ~ .table-proj-switch label:nth-of-type(2) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+#table-proj-ki:checked ~ .table-proj-switch label:nth-of-type(2) { background: var(--ki-wash); color: var(--ki-deep); }
+.table-proj-input:focus-visible ~ .table-proj-switch { outline: 3px solid var(--ink); outline-offset: 2px; }
+.table-projection { display: none; }
+#table-proj-ki:checked ~ .table-projection { display: block; }
+#table-proj-ki:checked ~ :not(.table-proj-input):not(.table-proj-switch):not(.table-projection) { display: none !important; }
+.projection-assumed { margin: .8rem 0 .4rem; line-height: 1.45; }
+.projection-table td.move, .projection-table th.move { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+@media print { .table-proj-switch, .table-projection { display: none !important; } }
+
 .table-view-switch { margin-bottom: .8rem; }
 .table-view-input:nth-of-type(1):checked ~ .table-view-switch label:nth-of-type(1),
 .table-view-input:nth-of-type(2):checked ~ .table-view-switch label:nth-of-type(2) { background: var(--ink); color: var(--on-ink); font-weight: 700; }
@@ -387,6 +400,21 @@ h2 { font-size: 1.35rem; }
 .reach-pace { position: absolute; top: -.2rem; bottom: -.2rem; width: 3px; margin-left: -1px; background: var(--ink-soft); }
 .reach-line { position: absolute; top: -.4rem; bottom: -.4rem; width: 1px; background: var(--line); }
 @media (max-width: 560px) { .reach li { grid-template-columns: minmax(0, 1fr); } }
+/* story r022: Punktestrahl — the points as a vertical axis; a missing point is a step of space,
+   a zone line runs under the row that holds its place (green/red as meaning, dimmed for play-offs) */
+.points-axis { list-style: none; margin: .4rem 0 0; padding: 0 0 0 3.2rem; position: relative; border-left: 0; }
+.points-axis::before { content: ""; position: absolute; left: 2.6rem; top: .3rem; bottom: .3rem; width: 2px; background: var(--line); }
+.points-axis li { position: relative; margin-top: calc(var(--gap, 0) * .55rem); padding: .2rem 0; }
+.axis-points { position: absolute; left: -3.2rem; width: 2.2rem; text-align: right; top: .3rem; font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.axis-points::after { content: ""; position: absolute; right: -.75rem; top: .45rem; width: .5rem; height: .5rem; border-radius: 50%; background: var(--ink); }
+.axis-clubs { display: flex; flex-wrap: wrap; gap: .2rem .9rem; font-size: .9rem; }
+.axis-clubs a { display: inline-flex; align-items: center; gap: .35rem; color: inherit; text-decoration: none; white-space: nowrap; }
+.axis-clubs a:hover { text-decoration: underline; }
+.axis-line { display: block; margin: .35rem 0 .1rem -3.2rem; padding-left: 3.2rem; border-top: 2px solid var(--line); font-size: .75rem; color: var(--ink-mute); }
+.axis-line.zone-top { border-color: var(--win); }
+.axis-line.zone-top-playoff { border-color: color-mix(in srgb, var(--win) 55%, transparent); }
+.axis-line.zone-bottom { border-color: var(--loss); }
+.axis-line.zone-bottom-playoff { border-color: color-mix(in srgb, var(--loss) 55%, transparent); }
 /* story r045: the run-in grid — a neutral ink ramp by the opponent's place, the place always printed */
 .run-in { border-collapse: separate; border-spacing: 2px; font-size: .85rem; font-variant-numeric: tabular-nums; }
 .run-in thead th { color: var(--ink-mute); font-weight: 600; white-space: nowrap; padding: 0 .3rem .2rem; text-align: center; }
@@ -823,6 +851,8 @@ h2 { font-size: 1.35rem; }
 /* story r028: the print button needs script, so it shows only once the head script set .js */
 .print-button { display: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
 .js .print-button { display: inline-block; }
+/* stories r038/r052: the board buttons look like the links beside them */
+[data-sofa-open], [data-replay-open] { font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
 .print-note { display: none; }
 
 /* --- landing page, spec 01 "Spieltags-Strom": one stream by day and kickoff block across both
@@ -1198,6 +1228,148 @@ h2 { font-size: 1.35rem; }
 .outlook-goals { list-style: none; margin: .6rem 0 0; padding: 0; border-radius: 8px; overflow: hidden; }
 .outlook-goals li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 2.5rem; padding: .4rem .75rem; }
 .outlook-goals .percent { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+/* stories r034/r060: weather and trip as plain text in neutral ink — no icon, no colour */
+.match-facts { margin: 0 0 1rem; color: var(--ink-soft); font-size: .95rem; }
+.match-facts p { margin: .2rem 0; }
+.fixture-weather-line { flex-basis: 100%; order: 2; margin: 0; padding-left: 4.85rem; min-height: 1.3em; font-size: .85rem; color: var(--ink-soft); }
+.rr-compact .fixture-weather-line { display: none; }
+/* story r060: Auswärtsfahrten — one bar per club, travelled in ink, still ahead quiet; Derbys as a plain list */
+.trips { list-style: none; margin: .6rem 0 0; padding: 0; }
+.trips > li { display: grid; grid-template-columns: minmax(6rem, 9rem) 5.5rem 1fr; grid-template-areas: "club total bar" ". detail detail";
+  align-items: center; gap: .1rem .75rem; padding: .4rem 0; border-bottom: 1px solid var(--line); }
+.trip-club { grid-area: club; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trip-total { grid-area: total; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.trip-bar { grid-area: bar; display: flex; height: .6rem; }
+.trip-done, .trip-ahead { display: block; height: 100%; width: calc(var(--w) * 1%); }
+.trip-done { background: var(--ink); border-radius: 2px 0 0 2px; }
+.trip-ahead { background: var(--ink-mute); opacity: .35; border-radius: 0 2px 2px 0; }
+.trip-detail { grid-area: detail; font-size: .85rem; }
+@media (max-width: 500px) { .trips > li { grid-template-columns: 1fr auto; grid-template-areas: "club total" "bar bar" "detail detail"; } }
+.derbies { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .75rem; }
+.derby-head { margin: 0 0 .2rem; }
+.derby-meetings { list-style: none; margin: 0; padding: 0; }
+.derby-meetings a { color: var(--ink); text-decoration: none; font-size: .95rem; }
+.derby-meetings a:hover { text-decoration: underline; }
+/* story r026: Vereinsvergleich — mirrored bars, the better value of a pair in full ink, the other quiet; no crest colours */
+.compare { grid-column: 1 / -1; max-width: 56rem; }
+.compare-pick { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .6rem 0 0; }
+.compare-pick select { font: inherit; max-width: 100%; min-height: 2.5rem; padding: .3rem .5rem; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); color: var(--ink); }
+.compare-head h1 { margin: 0 0 .75rem; }
+.compare-head h1 .muted { font-size: .5em; font-weight: 500; display: block; }
+.compare-error { font-weight: 600; }
+.compare-clubs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.compare-club { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--ink); text-decoration: none; min-width: 0; }
+.compare-club span:not(.muted) { overflow-wrap: anywhere; }
+.compare-club.is-right { justify-content: flex-end; text-align: right; }
+.compare-club .muted { white-space: nowrap; font-weight: 500; }
+.compare-block { margin: 1.5rem 0; }
+.compare-bars { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.compare-bars td, .compare-bars th { padding: .35rem 0; }
+.cb-label { width: 7.5rem; text-align: center; font-weight: 500; color: var(--ink-soft); font-size: .9rem; }
+.cb-side { color: var(--ink-mute); }
+.cb-side > * { vertical-align: middle; }
+.cb-left { text-align: right; }
+.cb-value { display: inline-block; min-width: 2.2rem; font-family: var(--display); font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cb-left .cb-value { text-align: right; margin-right: .4rem; }
+.cb-right .cb-value { margin-left: .4rem; }
+.cb-bar { display: inline-block; height: .7rem; width: calc((100% - 3rem) * var(--w) / 100); background: var(--ink-mute); opacity: .35; border-radius: 2px; }
+.cb-side.is-better { color: var(--ink); }
+.cb-side.is-better .cb-value { font-weight: 800; }
+.cb-side.is-better .cb-bar { background: var(--ink); opacity: 1; }
+.compare-race .compare-line polyline { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.compare-race .compare-line.is-dashed polyline { stroke: var(--ink-soft); stroke-dasharray: 7 5; }
+.compare-race .compare-line .race-tail { stroke-dasharray: 3 3; }
+.compare-race .race-name { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.compare-duels { list-style: none; margin: 0; padding: 0; }
+.compare-duels a { display: flex; flex-wrap: wrap; gap: .3rem .75rem; padding: .5rem 0; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+@media (max-width: 500px) { .cb-label { width: 5.5rem; font-size: .8rem; } .cb-value { min-width: 1.8rem; font-size: 1.1rem; } }
+/* story r100: Seite anpassen — a native dialog (focus stays inside, Escape closes, focus returns) */
+.customize-open { margin: 0 0 .75rem; }
+.customize { max-width: min(28rem, calc(100vw - 2rem)); width: 100%; box-sizing: border-box; padding: 1.25rem; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--surface); color: var(--ink); }
+.customize::backdrop { background: rgba(15, 36, 23, .45); }
+.customize h2 { margin: 0 0 .5rem; font-family: var(--display); font-size: 1.5rem; }
+.customize p { margin: 0 0 .75rem; }
+.customize fieldset { border: 0; margin: 0; padding: 0; }
+.customize-list { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .15rem; }
+.customize-list label { display: flex; align-items: center; gap: .6rem; min-height: 2.5rem; cursor: pointer; }
+.customize-list input { width: 1.15rem; height: 1.15rem; accent-color: var(--ink); }
+.customize-blocked { color: var(--loss); }
+.customize-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; }
+/* stories r038/r052: the board — the dark stage in full size, stage tokens only; a changed tile gets a static "Neu" */
+.board { position: fixed; inset: 0; z-index: 1000; overflow: auto; background: var(--stage); color: var(--stage-ink);
+  padding: clamp(.75rem, 2vw, 2rem); display: flex; flex-direction: column; gap: .75rem; }
+.board[hidden], .board [hidden] { display: none; }
+.board-open body { overflow: hidden; }
+.board-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.25rem; }
+.board-brand { margin: 0; font-family: var(--display); font-weight: 800; font-size: 1.1rem; }
+.board-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2.2rem); color: var(--stage-ink); }
+.board-summary { margin: 0; color: var(--stage-soft); font-size: clamp(1rem, 1.8vw, 1.35rem); }
+.board-controls { margin: 0; display: flex; gap: .5rem; }
+.board button { font: inherit; color: var(--stage-ink); background: transparent; border: 1px solid var(--stage-line);
+  border-radius: 999px; padding: .4rem 1rem; cursor: pointer; min-height: 2.5rem; }
+.board button:focus-visible, .board a:focus-visible { outline: 3px solid var(--stage-ink); outline-offset: 2px; }
+.board-close { margin-left: auto; }
+.board-note { margin: 0; color: var(--stage-soft); font-size: .9rem; }
+.board-ticker { margin: 0; font-size: clamp(1.05rem, 2vw, 1.5rem); font-weight: 600; min-height: 1.5em; }
+.board-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(.5rem, 1vw, 1rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); }
+.board-tile a { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; grid-template-areas: "status status status" "home score away" "line line line";
+  align-items: center; gap: .35rem .75rem; padding: .8rem 1rem; height: 100%; box-sizing: border-box; color: inherit; text-decoration: none;
+  border: 1px solid var(--stage-line); border-radius: 10px; }
+.board-tile.is-live a { border-color: var(--stage-ink); }
+.board-tile.is-changed a { border-width: 3px; padding: calc(.8rem - 2px) calc(1rem - 2px); }
+.bt-status { grid-area: status; color: var(--stage-soft); font-size: .9rem; }
+.board-tile.is-live .bt-status { color: var(--stage-ink); font-weight: 700; }
+.bt-team { display: flex; align-items: center; gap: .5rem; min-width: 0; font-size: clamp(1rem, 1.6vw, 1.3rem); font-weight: 600; }
+.bt-home { grid-area: home; justify-content: flex-end; text-align: right; }
+.bt-home .crest { order: 2; }
+.bt-away { grid-area: away; }
+.bt-team .crest { width: clamp(28px, 3vw, 44px); height: clamp(28px, 3vw, 44px); object-fit: contain; flex: none; }
+.bt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-score { grid-area: score; font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.bt-line { grid-area: line; color: var(--stage-soft); font-size: .95rem; text-align: center; min-height: 1.3em; }
+.bt-line.bt-ki { color: var(--ki-on-turf); }
+.bt-new { position: absolute; top: .5rem; right: .6rem; font-size: .8rem; font-weight: 700; padding: .05rem .5rem; border-radius: 999px;
+  background: var(--stage-ink); color: var(--stage); }
+/* story r019: Saisonrennen — every line neutral, the one in view in ink and thicker; scrolls inside its box, never the page */
+.race-scroll { overflow-x: auto; margin: .6rem 0 0; -webkit-overflow-scrolling: touch; }
+.race { display: block; font-family: var(--text); }
+.race-ticks line { stroke: var(--line); stroke-width: 1; }
+.race-ticks text { fill: var(--ink-mute); font-size: 11px; text-anchor: middle; }
+.race-ticks .race-provisional { font-style: italic; }
+.race-line { cursor: pointer; outline: none; }
+.race-line polyline { fill: none; stroke: var(--ink-mute); stroke-opacity: .35; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.race-line .race-tail { stroke-dasharray: 4 3; }
+.race-line .race-name { fill: var(--ink-mute); font-size: 12px; }
+.race-dots { display: none; }
+.race-line:hover polyline, .race-line:focus polyline, .race-top polyline { stroke: var(--ink); stroke-opacity: 1; stroke-width: 3; }
+.race-line:hover .race-name, .race-line:focus .race-name, .race-top .race-name { fill: var(--ink); font-weight: 700; }
+.race-line:focus-visible .race-name { text-decoration: underline; }
+.race-top { pointer-events: none; }
+.race-top .race-dots { display: inline; }
+.race-dots circle { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.race-dots text { fill: var(--ink); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.race-table { margin-top: .6rem; }
+.race-table-scroll { overflow-x: auto; }
+.race-table table { border-collapse: collapse; font-size: .8rem; }
+.race-table th, .race-table td { padding: .2rem .35rem; text-align: center; border-bottom: 1px solid var(--line); }
+.race-table th[scope="row"] { text-align: left; white-space: nowrap; }
+/* story r039: Was braucht {Verein}? — green only for "the pace so far is enough", red only for "out of reach" */
+.season-targets { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.season-targets .target { padding: .6rem .75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; background: var(--surface); }
+.season-targets .target-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+.season-targets .label { font-weight: 600; }
+.season-targets .target-points { font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.season-targets .target-verdict { margin: .25rem 0 0; }
+.season-targets .target-share { margin: .15rem 0 0; font-size: .85rem; }
+.season-targets .target-on-pace { border-left-color: var(--win); }
+.season-targets .target-on-pace .target-verdict { color: var(--win); font-weight: 600; }
+.season-targets .target-out-of-reach { border-left-color: var(--loss); }
+.season-targets .target-out-of-reach .target-verdict { color: var(--loss); font-weight: 600; }
+.season-targets .target-secured .target-verdict { font-weight: 600; }
+.target-note { font-size: .8rem; margin: .5rem 0 0; }
 .standings td.team a:hover, .team-link:hover { border-bottom: 1px solid var(--ink); }
 
 /* story r063: a scorer's name opens the profile — a plain-looking button, the profile a card in the middle */
@@ -1297,6 +1469,26 @@ h2 { font-size: 1.35rem; }
 .watched .fixtures { border: 1px solid var(--line); }
 .watch-day { display: none; }
 .watched .watch-day { display: block; }
+
+/* story r073: Spannung of an open match in five steps of ink (no brass, no traffic light); "Spannendste
+   zuerst" lays the days' lists into one column ordered by --t-order — the rows are not moved */
+.fixtures > li:has(> .tension) { flex-wrap: wrap; }
+.tension { flex-basis: 100%; order: 2; display: flex; align-items: center; gap: .45rem; margin: -.15rem 0 .4rem; padding: 0 .9rem 0 4.85rem; font-size: .78rem; color: var(--ink-mute); }
+.rr-compact .matchday .tension { display: none; }
+@media (max-width: 560px) { .tension { padding-left: .9rem; } }
+.tension-steps { display: inline-flex; gap: 2px; }
+.tension-steps span { width: .55rem; height: .4rem; border-radius: 1px; border: 1px solid var(--ink-mute); }
+.tension-steps span.on { background: var(--ink); border-color: var(--ink); }
+.tension-note { display: none; font-size: .85rem; color: var(--ink-soft); max-width: 46rem; margin: .8rem 0 0; }
+.rr-by-tension .tension-note { display: block; }
+.rr-by-tension [data-tension-sort] { display: flex; flex-direction: column; margin-top: 1rem; border-radius: 8px; overflow: hidden; }
+.rr-by-tension [data-tension-sort] > .day { display: none; }
+.rr-by-tension [data-tension-sort] > .fixtures { display: contents; }
+.rr-by-tension [data-tension-sort] > .fixtures > li { order: var(--t-order, 0); }
+.rr-by-tension [data-tension-sort] .watch-day { display: block; }
+/* the weekday takes room in the one column: short names, as in "Kompakt" */
+.rr-by-tension [data-tension-sort] .fixture .team-name.full { display: none; }
+.rr-by-tension [data-tension-sort] .fixture .team-name.short { display: block; }
 /* the same star on the start page: a third column beside the KI cell; the kickoff shows only
    in "Beobachtet", where the row is away from its kickoff block */
 .js .stream-row { grid-template-columns: 3.4rem minmax(0, 1fr) 8.8rem 2.75rem; padding-right: .25rem; }
@@ -1756,6 +1948,17 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .since-results .badge, .since-results .crest, .since-results .muted { display: none; }
 }
 @media print { .since { display: none !important; } }
+/* story r020: the three areas of a league — a light strip under the navigation; the current tab is bold with
+   an ink line underneath, never colour alone. On phones the thumb bar carries the same areas instead. */
+.season-links { margin: .5rem 0; }
+.area-tabs { display: flex; gap: 1.5rem; padding: 0 clamp(1rem, 4vw, 3rem); background: var(--surface); border-bottom: 1px solid var(--line); }
+.area-tabs a { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--ink-soft); text-decoration: none;
+  box-shadow: inset 0 -3px 0 transparent; }
+.area-tabs a:hover { color: var(--ink); }
+.area-tabs a[aria-current="page"] { color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--ink); }
+.area-tabs a:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+@media (max-width: 559.98px) { .area-tabs { display: none; } }
+@media print { .area-tabs { display: none; } }
 /* story r011: the thumb bar on phones — light surface and a hairline, text only; the current area
    carries an ink line on top and bold type, not just a colour */
 .thumb-bar { display: none; }

@@ -1,0 +1,25 @@
+{! Story r007 "Was wäre, wenn": the matchday table with every open match counted at its latest
+   KI-Richtwert. An assumption, never a result or a recommendation — no animation, neutral ink for
+   the change. !}
+{#if projection}
+<p class="projection-assumed"><span class="ki-chip">KI</span> Angenommen: {#each projection.assumed}{it}{#if it_hasNext}, {/if}{/each}</p>
+{#if projection.withoutForecast}<p class="note">Ohne KI-Vorschau, nicht mitgezählt: {#each projection.withoutForecast}{it}{#if it_hasNext}, {/if}{/each}</p>{/if}
+<table class="projection-table">
+  <thead>
+    <tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th><th class="move"><abbr title="Plätze gegenüber der Tabelle jetzt">Veränderung</abbr></th></tr>
+  </thead>
+  <tbody>
+    {#for c in projection.clubs}
+    <tr data-clubs="{c.teamId}">
+      <td class="pos">{c.position}</td>
+      <td class="team"><a href="{c.link}">{#crest src=c.crest size="small" lazy=true /} <span class="name-long">{c.name}</span><span class="name-short">{c.shortName}</span></a></td>
+      <td>{c.played}</td><td>{#if c.goalDifference > 0}+{/if}{c.goalDifference}</td><td class="points">{c.points}</td>
+      <td class="move"><span aria-hidden="true">{c.changeLabel}</span><span class="sr-only">{c.changeDescription}</span></td>
+    </tr>
+    {/for}
+  </tbody>
+</table>
+<p class="note">Nur eine Annahme aus den KI-Richtwerten – kein Ergebnis und keine Empfehlung.{#if projection.provisional} Enthält vorläufige Ergebnisse.{/if}</p>
+{#else}
+<p class="note">Für diesen Spieltag gibt es keine offenen Spiele mit KI-Vorschau.</p>
+{/if}

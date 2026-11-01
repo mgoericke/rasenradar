@@ -33,6 +33,14 @@
 
   {#goals goals=page.goals matchId=page.match.id /}
 
+  {! stories r060 and r034: the trip and the weather at the ground, text only !}
+  {#if page.travelLine || page.weatherLink}
+  <div class="match-facts">
+    {#if page.travelLine}<p class="travel-line">{page.travelLine}</p>{/if}
+    {#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="outerHTML"></div>{/if}
+  </div>
+  {/if}
+
   <div class="match-layout">
     <div class="match-main">
       <section class="situations">
@@ -58,11 +66,11 @@
       </section>
 
       <section class="history">
-        <div class="chart-block">
+        <div class="chart-block" data-section="spiel-saisonverlauf">
           <h2>Tabellenplatz im Saisonverlauf</h2>
           <div class="chart"><canvas id="positions" aria-label="Tabellenplatz je Spieltag"></canvas></div>
         </div>
-        <div class="h2h">
+        <div class="h2h" data-section="spiel-duelle">
           {#let h=page.headToHead}
           <h2>Bisherige Duelle{#if h.since} <span class="muted">in OpenLigaDB seit {h.since}</span>{/if}</h2>
           {#if h.recent.isEmpty}
@@ -105,7 +113,7 @@
 
     {#if !page.table.isEmpty}
     <aside class="match-rail">
-      <section class="rail-card" aria-labelledby="match-table">
+      <section class="rail-card" data-section="spiel-tabelle" aria-labelledby="match-table">
         <h2 id="match-table">Tabelle vor dem Spieltag</h2>
         <table class="stream-table">
           <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th>Diff.</th><th>Pkt.</th></tr></thead>

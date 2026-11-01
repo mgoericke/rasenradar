@@ -13,11 +13,20 @@
       <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
       {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2' || page.nav.leagueShortcut == 'ucl'}<a class="link-button" href="/{page.nav.leagueShortcut}/saison">Saison in Zahlen</a>{/if}
       {#if page.days}<button type="button" class="link-button print-button" data-print>Spieltag drucken</button>{/if}
+      {! stories r038/r052: the dark stage in full size; nav.js shows the buttons, without script there is nothing to open !}
+      {#if page.days}<button type="button" class="link-button" data-sofa-open hidden>Sofa-Modus</button>{/if}
+      {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2'}<button type="button" class="link-button" data-replay-open="/{page.nav.leagueShortcut}/konferenz" hidden>Konferenz nachspielen</button>{/if}
     </p>
     {#if page.days}
     {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
     <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
       <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
+    </p>
+    {/if}
+    {#if page.tension}
+    {! story r073: the order of the list, kept in this browser only (rr-sort); without script the days stay !}
+    <p class="seg sort-choice" role="group" aria-label="Reihenfolge der Spiele" hidden>
+      <button type="button" data-sort-choice="tag" aria-pressed="true">Nach Tag</button><button type="button" data-sort-choice="spannung" aria-pressed="false">Spannendste zuerst</button>
     </p>
     {/if}
     <nav class="pager" aria-label="Spieltag wechseln">
@@ -32,12 +41,13 @@
     <h2 class="day">Beobachtet</h2>
     <ol class="fixtures"></ol>
   </div>
-  <div data-watch-root data-watch-over="{page.over}"{#if page.current} data-places="{page.placesByTeam}"{/if}>
+  {#if page.tension}<p class="tension-note">Spannendste zuerst: Die Spannung offener Spiele ergibt sich aus Tabellenplatz, Punkteabstand und Form der letzten fünf Spiele beider Mannschaften – ohne KI. Begonnene und beendete Spiele folgen danach.</p>{/if}
+  <div data-watch-root data-watch-over="{page.over}"{#if page.tension} data-tension-sort{/if}{#if page.current} data-places="{page.placesByTeam}"{/if}>
   {#for day in page.days}
   <h2 class="day">{day.label}</h2>
   <ol class="fixtures">
     {#for m in day.matches}
-    <li data-watch="{m.id}"{#if page.current && !m.played && !m.live} data-good-for="{m.homeId} {m.awayId}" data-home-name="{m.homeShort}" data-away-name="{m.awayShort}"{/if}>
+    <li data-watch="{m.id}"{#if page.tension} style="--t-order: {page.tensionOrderOf(m.id)}"{/if}{#if page.current && !m.played && !m.live} data-good-for="{m.homeId} {m.awayId}" data-home-name="{m.homeShort}" data-away-name="{m.awayShort}"{/if}>
       <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
         <span class="time"><span class="watch-day">{m.weekday} </span>{m.time}</span>
         <span class="home">
@@ -53,6 +63,9 @@
       </a>
       {! story r053: the course of a finished match; a tap opens the goals (minute, scorer, own goal or penalty) !}
       {#let line=page.leadLineOf(m.id)}{#if line}{#leadLine line=line /}{/if}{/let}
+      {#let t=page.tensionOf(m.id)}{#if t}<p class="tension"><span class="tension-steps" aria-hidden="true">{#for i in 5}<span{#if i <= t} class="on"{/if}></span>{/for}</span><span class="tension-label">Spannung</span><span class="sr-only"> {t} von 5</span></p>{/if}{/let}
+      {! story r034: the line is there from the start, so the value fills it without moving anything !}
+      {#if page.weatherOf(m.id)}<p class="fixture-weather-line"><span id="weather-{m.id}" class="fixture-weather"></span></p>{/if}
       {#let stake=page.stakeOf(m.id)}{#if stake}<p class="stakes"><span class="muted">Es geht um:</span> {stake}</p>{/if}{/let}
       {#if page.current && !m.played && !m.live}<p class="good-for" hidden></p>{/if}
       {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
@@ -78,6 +91,15 @@
   {/if}
   <div class="table-total">
   <h2>Tabelle <span class="muted">nach dem {page.number}. Spieltag</span></h2>
+  {#if page.nav.forecastSupported && !page.over}
+  {! story r007 "Was wäre, wenn": the table with the open matches at their KI-Richtwert, loaded on first switch !}
+  <input class="table-proj-input sr-only" type="radio" name="table-proj" id="table-proj-now" checked>
+  <input class="table-proj-input sr-only" type="radio" name="table-proj" id="table-proj-ki">
+  <div class="seg table-proj-switch" role="group" aria-label="Tabelle annehmen">
+    <label for="table-proj-now">Jetzt</label><label for="table-proj-ki">Nach KI-Vorschau</label>
+  </div>
+  <div class="table-projection" aria-live="polite" hx-get="/{page.nav.leagueShortcut}/{page.seasonYear}/{page.number}/forecasts/projection" hx-trigger="change from:#table-proj-ki once"><p class="note">Lädt …</p></div>
+  {/if}
   {#if page.splits}
   {! story r041: Gesamt, Heim, Auswärts, Letzte 5 — radios in CSS, so "Gesamt" shows without script too !}
   <input class="table-split-input sr-only" type="radio" name="table-split" id="table-split-gesamt" checked>
@@ -157,6 +179,25 @@
   {/for}
 </section>
 {/if}
+{#if page.days}
+<div class="board" data-board hidden role="dialog" aria-modal="true" aria-labelledby="board-title">
+  <div class="board-head">
+    <p class="board-brand">Rasen-Radar</p>
+    <h2 class="board-title" id="board-title" data-board-title></h2>
+    <p class="board-summary" data-board-summary></p>
+    <p class="board-controls" data-board-controls hidden>
+      <button type="button" data-replay-pause>Pause</button>
+      <button type="button" data-replay-step hidden>Nächstes Tor</button>
+      <button type="button" data-replay-again>Nochmal</button>
+    </p>
+    <button type="button" class="board-close" data-board-close>Beenden</button>
+  </div>
+  <p class="board-note" data-board-note hidden></p>
+  <p class="board-ticker" data-board-ticker aria-live="polite" hidden></p>
+  <ol class="board-tiles" data-board-tiles></ol>
+</div>
+{/if}
+{#if page.weatherLink}<div hx-get="{page.weatherLink}" hx-trigger="load" hx-swap="none"></div>{/if}
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}
 {/include}

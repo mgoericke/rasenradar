@@ -104,6 +104,24 @@ class StandingsCalculatorTest {
         assertEquals(1, before.of(mainz).orElseThrow().position(), "the table before kickoff stays as it was");
     }
 
+    /** Story r007: an open match counts at its assumed Richtwert; only a running match makes the table provisional. */
+    @Test
+    void assumedTableCountsOpenMatchesAtTheirRichtwert() {
+        Standings before = calculator.standings(League.BUNDESLIGA_1, 2025, 2, List.of(
+                played(1, mainz, 1, leipzig, 0),
+                played(1, koeln, 0, bremen, 0)));
+        Match open = running(leipzig, mainz, null);
+
+        Standings assumed = calculator.assumedStandings(before,
+                List.of(new StandingsCalculator.Assumed(open, 3, 0)), false);
+
+        assertEquals(leipzig, assumed.positions().get(0).team(), "Leipzig leads on goal difference (+2 against -2)");
+        assertEquals(3, assumed.of(mainz).orElseThrow().balance().points());
+        assertEquals(2, assumed.of(leipzig).orElseThrow().balance().played());
+        assertFalse(assumed.includesProvisional());
+        assertTrue(calculator.assumedStandings(before, List.of(StandingsCalculator.Assumed.live(open)), true).includesProvisional());
+    }
+
     /** Story r041: home, away and last-five tables count only those matches, and only final ones. */
     @Test
     void splitTablesCountOnlyTheirMatches() {
