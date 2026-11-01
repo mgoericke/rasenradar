@@ -127,6 +127,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Tabelle zur Halbzeit / „Schluss nach 80“ (Saison neu gezählt mit früherem Spielstand) | `ScenarioScores` |
 | Führungslinie (Spielverlauf eines beendeten Spiels als Linie) | `LeadLine` |
 | Torjäger-Steckbrief (Tore eines Schützen für seinen Verein) | `ScorerProfile` / `ScorerProfileCalculator` |
+| Vereinskalender (Saison eines Vereins als Monatsraster) | `CalendarMonth` / `CalendarDay` |
 | Serie (läuft / hängt: Siege, ungeschlagen, ohne Gegentor … in Folge) | `Streak` / `StreakCalculator` |
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 

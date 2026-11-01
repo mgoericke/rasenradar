@@ -738,6 +738,57 @@ public final class MatchdayPageModels {
                          boolean provisional, String link) {
     }
 
+    /** Story r088: one month of the club calendar, Monday first; each week has seven days. */
+    record CalendarMonth(String label, List<List<CalendarDay>> weeks) {
+    }
+
+    /**
+     * Story r088: a day of the club calendar. {@code inMonth} false for the padding days of the first
+     * and last week; {@code matches} the club's matches that day (two on one day are possible in a cup).
+     */
+    record CalendarDay(int day, boolean inMonth, boolean today, List<ScheduleRow> matches) {
+        public ScheduleRow match() {
+            return matches.isEmpty() ? null : matches.getFirst();
+        }
+
+        /** "7. November: gegen Leipzig, 18:30 Uhr" or "… bei Leipzig, 2:1 Sieg". */
+        public String label(String month) {
+            ScheduleRow r = match();
+            if (r == null) return null;
+            String result = r.score() == null ? r.time() + " Uhr"
+                    : r.score() + (r.provisional() ? " vorläufig" : switch (r.result()) { case WIN -> " Sieg"; case DRAW -> " Remis"; case LOSS -> " Niederlage"; });
+            return day + ". " + month + ": " + (r.home() ? "gegen " : "bei ") + r.opponent() + ", " + result;
+        }
+    }
+
+    private static final DateTimeFormatter MONTH_LABEL = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.GERMAN);
+
+    /** Story r088: the club's season as month grids, from the first to the last month with a match. */
+    static List<CalendarMonth> clubCalendar(List<Match> schedule, Team team, String shortcut, java.time.LocalDate today) {
+        if (schedule.isEmpty()) return List.of();
+        Map<java.time.LocalDate, List<ScheduleRow>> byDay = new java.util.TreeMap<>();
+        for (Match m : schedule) {
+            byDay.computeIfAbsent(m.kickoff.atZone(DISPLAY_ZONE).toLocalDate(), d -> new java.util.ArrayList<>())
+                    .add(ScheduleRow.of(m, team, shortcut));
+        }
+        java.time.YearMonth first = java.time.YearMonth.from(((java.util.TreeMap<java.time.LocalDate, List<ScheduleRow>>) byDay).firstKey());
+        java.time.YearMonth last = java.time.YearMonth.from(((java.util.TreeMap<java.time.LocalDate, List<ScheduleRow>>) byDay).lastKey());
+        List<CalendarMonth> months = new java.util.ArrayList<>();
+        for (java.time.YearMonth ym = first; !ym.isAfter(last); ym = ym.plusMonths(1)) {
+            java.time.LocalDate start = ym.atDay(1).with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            java.time.LocalDate end = ym.atEndOfMonth().with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
+            List<List<CalendarDay>> weeks = new java.util.ArrayList<>();
+            List<CalendarDay> week = new java.util.ArrayList<>();
+            for (java.time.LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+                boolean in = java.time.YearMonth.from(d).equals(ym);
+                week.add(new CalendarDay(d.getDayOfMonth(), in, d.equals(today), in ? byDay.getOrDefault(d, List.of()) : List.of()));
+                if (week.size() == 7) { weeks.add(List.copyOf(week)); week = new java.util.ArrayList<>(); }
+            }
+            months.add(new CalendarMonth(MONTH_LABEL.format(ym), List.copyOf(weeks)));
+        }
+        return List.copyOf(months);
+    }
+
     /** A past season of the club with its final position, linking to that season's club page. */
     record SeasonChip(String season, String league, Integer position, String link) {
     }
@@ -1324,7 +1375,7 @@ public final class MatchdayPageModels {
                     List<ScorerRow> scorers, String goalTimingJson, String chartJson, String outlookLink, DataInfo data,
                     boolean hasTable, String cupRunOutcome, String tier, MyClubChoice myClub,
                     boolean noMatchesLeft, List<ResultRow> form, String calendarLink, GoalTimingView goalTiming,
-                    Map<String, ScorerProfileView> scorerProfiles) {
+                    Map<String, ScorerProfileView> scorerProfiles, List<CalendarMonth> calendar) {
 
         /** Story r063: the profile behind a name in the scorer list, null for a name without one. */
         public ScorerProfileView profileOf(String scorer) {
