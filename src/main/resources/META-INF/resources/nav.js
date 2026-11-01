@@ -47,6 +47,51 @@
   document.addEventListener('htmx:afterSettle', setUp);
 })();
 
+// Story r085: the section row of the season page. It sticks below the top navigation, whose height
+// changes with "Mein Verein" and on phones, so that height is measured into --topnav-h. The section
+// whose head has passed under the row is marked as current, and the row scrolls sideways to keep its
+// link in view. The links themselves are plain anchors and work without this.
+(function () {
+  var pending = false;
+  function measure() {
+    var nav = document.querySelector('.topnav');
+    document.documentElement.style.setProperty('--topnav-h', (nav ? nav.offsetHeight : 0) + 'px');
+  }
+  function update() {
+    pending = false;
+    var toc = document.querySelector('.season-toc');
+    if (!toc) return;
+    var links = toc.querySelectorAll('a[href^="#"]');
+    // a jump leaves the heading a little below the row (scroll-margin-top), so allow some room
+    var edge = toc.getBoundingClientRect().bottom + 48;
+    var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    var current = null;
+    links.forEach(function (a) {
+      var section = document.getElementById(a.hash.slice(1));
+      if (section && (atEnd || section.getBoundingClientRect().top <= edge)) current = a;
+    });
+    links.forEach(function (a) {
+      if (a === current) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+    });
+    if (!current || current.dataset.shown) return;
+    links.forEach(function (a) { delete a.dataset.shown; });
+    current.dataset.shown = '1';
+    var list = current.closest('ol');
+    var item = current.parentElement;
+    list.scrollLeft = item.offsetLeft - list.offsetLeft - (list.clientWidth - item.offsetWidth) / 2;
+  }
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(update);
+  }
+  function setUp() { measure(); schedule(); }
+  document.addEventListener('DOMContentLoaded', setUp);
+  document.addEventListener('htmx:afterSettle', setUp);
+  window.addEventListener('resize', setUp);
+  window.addEventListener('scroll', schedule, { passive: true });
+})();
+
 // Story r057: while a match on the page runs, the tab title leads with it — "1:0 Bremen – Hoffenheim
 // · läuft – Rasen-Radar" — so a background tab still shows the score. It follows the live poll, which
 // swaps the score cells; once nothing runs the page's own title comes back. No alerts, no permissions.

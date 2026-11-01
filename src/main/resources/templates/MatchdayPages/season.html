@@ -11,6 +11,23 @@
     {#for l in page.leagues}<a href="/{l.shortcut}/saison"{#if l.active} aria-current="page" class="is-active"{/if}>{l.name}</a>{/for}
   </nav>
 
+  {! story r085: one link per section in page order, plain anchors so it works without script; nav.js
+     marks the section in view. Every section below always renders (empty states inside), so no link dies. !}
+  <nav class="season-toc" aria-label="Abschnitte">
+    <ol>
+      <li><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>
+      <li><a href="#restprogramm">Restprogramm</a></li>
+      <li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>
+      <li><a href="#serien">Serien</a></li>
+      <li><a href="#ergebnisse">Häufigste Ergebnisse</a></li>
+      <li><a href="#besondere-tore">Tore der besonderen Art</a></li>
+      <li><a href="#aufholjagden">Aufholjagden</a></li>
+      <li><a href="#kreuztabelle">Kreuztabelle</a></li>
+      <li><a href="#torminuten">Wann fallen die Tore?</a></li>
+      <li><a href="#heimvorteil">Heimvorteil</a></li>
+    </ol>
+  </nav>
+
   {! story r058: what is still possible — points today, the maximum, the pace; a calculation, no forecast !}
   <section class="season-block" id="wer-kann-noch" aria-labelledby="wer-kann-noch-title">
     <h2 id="wer-kann-noch-title">Rechnerisch noch möglich</h2>
