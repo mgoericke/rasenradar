@@ -324,6 +324,8 @@ h2 { font-size: 1.35rem; }
 .season-block > h2::after { content: ""; flex: 1; height: 2px; background: var(--line); }
 .season-block h3 { font-size: 1.15rem; margin: 1rem 0 .4rem; }
 .season-lead { max-width: 70ch; margin: 0 0 .6rem; }
+/* one line under a section title that says what the figure shows, for a reader new to it */
+.season-sub { max-width: 70ch; margin: -.3rem 0 .8rem; color: var(--ink-soft); }
 /* story r098: home win / draw / away win as one bar — tendency colours of the styleguide, text beside it */
 .share-bar { display: flex; gap: 2px; height: .8rem; margin: 0 0 .3rem; }
 .share-bar span { border-radius: 4px; min-width: 4px; }
