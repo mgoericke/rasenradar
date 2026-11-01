@@ -79,14 +79,14 @@
   {#for t in page.splits}
   <div class="table-split table-split-{t.key}">
     <table>
-      <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th class="wdl">S</th><th class="wdl">U</th><th class="wdl">N</th><th class="goals-for">Tore</th><th>Diff.</th><th>Pkt.</th></tr></thead>
+      <thead><tr><th class="pos">#</th><th class="team">Mannschaft</th><th>Sp.</th><th class="wdl">S</th><th class="wdl">U</th><th class="wdl">N</th><th class="goals-for">Tore</th><th>Diff.</th><th>Pkt.</th>{#if t.moves}<th class="move"><abbr title="Plätze gegenüber der Tabelle">±</abbr></th>{/if}</tr></thead>
       <tbody>
         {#for r in t.rows}
         <tr data-clubs="{r.teamId}">
           <td class="pos">{r.position}</td>
           <td class="team"><a href="{r.teamLink}">{#crest src=r.icon size="small" lazy=true /} <span class="name-long">{r.team}</span><span class="name-short">{r.teamShort}</span></a></td>
           <td>{r.played}</td><td class="wdl">{r.wins}</td><td class="wdl">{r.draws}</td><td class="wdl">{r.losses}</td>
-          <td class="goals-for">{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>
+          <td class="goals-for">{r.goals}</td><td>{r.difference}</td><td class="points">{r.points}</td>{#if t.moves}<td class="move">{t.move(r_index)}</td>{/if}
         </tr>
         {/for}
       </tbody>
