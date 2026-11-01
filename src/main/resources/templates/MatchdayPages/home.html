@@ -10,13 +10,14 @@
   <input class="view-input sr-only" type="radio" name="landing-view" id="view-tabelle">
   <input class="view-input sr-only" type="radio" name="landing-view" id="view-bilanz">
 
+  {! the start page's stage: the top match of the 1. Bundesliga, or the club's own with "Mein Verein";
+     it opens the page over the full width, directly under the navigation (design r102) !}
+  {#if page.top}<div id="top-stage">{#include MatchdayPages/topStage stage=page.top /}</div>{/if}
+
   <header class="landing-head">
     <h1 id="landing-heading" class="landing-heading">{page.heading}</h1>
     <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.name}</b> {l.matchdayNumber}. Spieltag</a>{#if l_hasNext} · {/if}{/for}</p>
   </header>
-
-  {! the start page's stage: the top match of the 1. Bundesliga, or the club's own with "Mein Verein" !}
-  {#if page.top}<div id="top-stage">{#include MatchdayPages/topStage stage=page.top /}</div>{/if}
 
   {! story r044: the browser remembers the last visit and the final table of then (rr-visit) and
      shows here what has been played since — before the first paint, so nothing below jumps.

@@ -10,7 +10,10 @@ Ein Bundesliga-Rasen von der Haupttribüne aus: zwei Grüntöne in breiten Bahne
 Genau das ist die Struktur der Seite, nicht ihre Dekoration („Rasenschnitt", im UX-Lab als Design B
 entwickelt und gemessen).
 
-- **Heller Kreidegrund.** Inhalt steht auf hellem Grund; die Navigation ist hell.
+- **Heller Kreidegrund.** Inhalt steht auf hellem Grund. Die Navigation ist ein Rasenband (`--turf-a`)
+  über die volle Breite, damit sie mit der Bühne darunter eine Fläche bildet (Entwurf r102).
+- **Mittige Spalte.** Der Inhalt steht in einer mittigen Spalte von höchstens 1280 px; nur Navigation,
+  Bühne der Startseite und Fußzeile laufen über die volle Breite. Die Saisonseite nutzt die ganze Spalte.
 - **Mähstreifen sind der Rhythmus der Daten.** Spiellisten, Tabellen, Torschützen und Spielpläne
   wechseln zeilenweise zwei blasse Grüntöne (`--mow-a`/`--mow-b`). Sie ersetzen Zebra, weiße Karten und
   Haarlinien zwischen Zeilen. Die Streifen tragen Rhythmus, keine Bedeutung — nichts darf davon abhängen,
@@ -20,7 +23,8 @@ entwickelt und gemessen).
   die Begegnung auf dem gestreiften Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als
   Rahmen; keine Linie kreuzt Text. Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte,
   Form) sind die große Schrift; die KI-Vorschau ist eine markierte Zeile darunter. Die Startseite zeigt
-  darüber hinaus genau ein Spiel auf demselben Rasen, kleiner und als Link zur Spielseite: das Topspiel
+  darüber hinaus genau ein Spiel auf demselben Rasen, als Link zur Spielseite und über die volle Breite
+  direkt unter der Navigation, Wappen über dem Namen, das Ergebnis dazwischen: das Topspiel
   (laufend vor anstehend vor beendet, je die beste Paarung nach Tabellenplatz) oder mit „Mein Verein"
   dessen laufendes bzw. nächstes Spiel. Mehr Bühnen gibt es nicht; Listen, Tabellen und Karten bleiben
   auf Kreide.
@@ -34,10 +38,10 @@ Hell („Tagspiel"); jede Textfarbe ist gegen **beide** Streifen gemessen.
 
 | Token | Wert | Verwendung |
 |---|---|---|
-| `--chalk` | `#F3F5EE` | Seitengrund, Navigation |
+| `--chalk` | `#F3F5EE` | Seitengrund |
 | `--paper` | `#FAFCF7` | Erklärkarten, Formulare, Menüs — keine Datenlisten |
 | `--mow-a` / `--mow-b` | `#E3EDDB` / `#D5E4CB` | Mähstreifen: Zeilenrhythmus jeder Datenliste |
-| `--turf-a` / `--turf-b` | `#1C5530` / `#24653A` | Die Bühne: Spielkopf |
+| `--turf-a` / `--turf-b` | `#1C5530` / `#24653A` | Die Bühne: Spielkopf, Topspiel; `--turf-a` auch die Navigation |
 | `--turf-ink` / `--turf-soft` | `#F3F5EE` / `#D3E3CC` | Text auf der Bühne (8,0:1 / 5,2:1 auf dem helleren Band) |
 | `--turf-line` | `rgba(243,245,238,.55)` | Kreidelinien auf der Bühne |
 | `--ink` | `#0F2417` | Text, gespielte Ergebnisse, Auswahl („gedrückt", „aktiv") |
