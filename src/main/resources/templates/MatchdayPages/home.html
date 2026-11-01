@@ -95,6 +95,15 @@
           </p>
         </div>
       </header>
+      {! design r102: the Vorbericht — the lines of other clubs than "Mein Verein" stay hidden (rrClubCss) !}
+      {#if page.brief}
+      <aside class="brief" aria-labelledby="brief-title">
+        <h2 id="brief-title">Vorbericht</h2>
+        <ul>
+          {#for b in page.brief}<li{#if b.clubId} class="my-club-only" data-my-club-row="{b.clubId}"{/if}><b>{b.lead}</b> {b.text}</li>{/for}
+        </ul>
+      </aside>
+      {/if}
       <section class="stream-part watched" data-watch-block hidden aria-labelledby="stream-watched">
         <h2 id="stream-watched" class="stream-title">Beobachtet</h2>
         <ol class="stream-rows"></ol>

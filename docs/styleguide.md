@@ -173,6 +173,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Werkzeugleiste (`.md-tools`): „‹ Aktueller Spieltag ›" als Links (`/?versatz=-1`, ohne Skript
   bedienbar, am Saisonrand ausgegraut, „Zurück zu jetzt" abseits von heute) und Liste | Kompakt
   (`rr-view`). Abseits von heute fallen „Seit dem letzten Besuch" und der nächste Spieltag weg.
+  Darunter der **Vorbericht** (`.brief`): kein Kasten, H2, je Zeile ein 2 px-Strich in `--ink`,
+  fetter Anfang, unten eine Kreidelinie. Die Zeile von „Mein Verein" steht für jeden Verein im
+  HTML und wird nur über `rrClubCss` sichtbar; in Kompakt fällt der Vorbericht weg.
+  **Spielzeilen** ohne Anstoß-Kästen: eine Mähstreifen-Zeile je Spiel, links Anstoß und
+  Liga-Abzeichen, das Endergebnis ohne Kasten in Display-Schrift (vorläufig gestrichelt, live
+  rot umrandet), unter beendeten Spielen der Torverlauf (Story r053).
   Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
   (`.stream-slot`, Mähstreifen, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
   trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):

@@ -35,6 +35,11 @@ public final class MatchdayPageModels {
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", Locale.GERMAN);
     private static final DateTimeFormatter WEEKDAY = DateTimeFormatter.ofPattern("EE", Locale.GERMAN);
 
+    /** "Sa." — the short weekday in the display zone. */
+    static String weekday(Instant instant) {
+        return WEEKDAY.format(instant.atZone(DISPLAY_ZONE));
+    }
+
     private MatchdayPageModels() {
     }
 
@@ -405,6 +410,14 @@ public final class MatchdayPageModels {
     }
 
     /**
+     * Design r102, "Vorbericht": one line above the stream — the match of the matchday, "Mein Verein"
+     * (a line for every club with an open match, the browser shows only its own: {@code clubId}) and
+     * a streak at stake.
+     */
+    record BriefLine(String lead, String text, Long clubId) {
+    }
+
+    /**
      * Design r102, "‹ Aktueller Spieltag ›": how many matchdays the start page stands away from the
      * current one, and where the arrows lead — null at the end of the season either way.
      */
@@ -565,7 +578,8 @@ public final class MatchdayPageModels {
      */
     record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
                        List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink,
-                       List<SinceRow> recent, String finalPlaces, TopStage top, MatchdayStep step) {
+                       List<SinceRow> recent, String finalPlaces, TopStage top, MatchdayStep step,
+                       List<BriefLine> brief) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())

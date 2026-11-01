@@ -870,6 +870,13 @@ h2 { font-size: 1.35rem; }
 .stream-leagues button, .md-step-label, .md-step .md-now { white-space: nowrap; }
 .md-step .md-now { margin-left: .5rem; font-size: .88rem; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 .md-tools .view-choice { margin: 0; }
+/* design r102: the Vorbericht — no card, a dash before each line, a chalk line below */
+.brief { padding: 0 0 .9rem; margin: 0 0 1.4rem; border-bottom: 2px solid var(--line); }
+.brief h2 { font-size: 1.4rem; margin: 0 0 .5rem; }
+.brief ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
+.brief li { position: relative; padding-left: 1rem; line-height: 1.45; max-width: 46rem; }
+.brief li::before { content: ""; position: absolute; left: 0; top: .7em; width: .45rem; height: 2px; background: var(--ink); }
+.rr-compact .brief { display: none; }
 /* Kompakt on the start page: one line per match, the KI cell tucked away */
 .rr-compact .stream-row .fixture { padding-top: .3rem; padding-bottom: .3rem; }
 .rr-compact .stream-row > .lead-line, .rr-compact .stream-when .badge { display: none; }
