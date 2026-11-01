@@ -358,11 +358,16 @@ public final class MatchdayPageModels {
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
-                        LiveTable live, List<SplitTable> splits) {
+                        LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines) {
 
         /** Story r070: the "Es geht um" line of an open match, or null. */
         public String stakeOf(long matchId) {
             return stakes.get(matchId);
+        }
+
+        /** Story r053: the course of a finished match, null when there is none to draw. */
+        public LeadLine leadLineOf(long matchId) {
+            return leadLines.get(matchId);
         }
 
         /**
@@ -1091,6 +1096,52 @@ public final class MatchdayPageModels {
     }
 
     record GoalTimingRow(String label, int scored, int conceded, int scoredWidth, int concededWidth) {
+    }
+
+    /**
+     * Story r053 "Spielverlauf als Führungslinie": the lead of a finished match from minute 0 to the
+     * end, up for every home goal and down for every away goal (an own goal counts for the side that
+     * benefits — the source's running score already says so). {@code path} is an SVG path in a
+     * 100 × 24 box; the lead is clamped at two goals, the goal list underneath stays exact.
+     */
+    record LeadLine(String path, String label, List<GoalRow> goals) {
+        static final int CLAMP = 2;
+        private static final double MID = 12, STEP = 5, LAST_MINUTE = 95;
+
+        /** Null for an unplayed match or one whose goal list does not add up to its final score. */
+        static LeadLine of(Match m) {
+            if (m.fullTimeScore == null || m.goals.size() != m.fullTimeScore.home + m.fullTimeScore.away
+                    || m.goals.stream().anyMatch(g -> g.minute == null || g.scoreAfter == null)) {
+                return null;
+            }
+            StringBuilder path = new StringBuilder("M0 12");
+            List<GoalRow> rows = new java.util.ArrayList<>();
+            Score before = new Score(0, 0);
+            for (Goal g : m.goals) {
+                boolean forHome = g.scoreAfter.home > before.home;
+                before = g.scoreAfter;
+                int lead = Math.max(-CLAMP, Math.min(CLAMP, g.scoreAfter.home - g.scoreAfter.away));
+                path.append(" H").append(x(g.minute)).append(" V").append(fmt(MID - STEP * lead));
+                rows.add(GoalRow.of(g, forHome));
+            }
+            path.append(" H100");
+            String label = m.goals.isEmpty() ? "Spielverlauf: keine Tore"
+                    : "Spielverlauf: " + rows.stream().map(r -> r.minute() + " " + r.score()).collect(java.util.stream.Collectors.joining(", "));
+            return new LeadLine(path.toString(), label, List.copyOf(rows));
+        }
+
+        private static String x(int minute) {
+            return fmt(Math.min(100, 100.0 * minute / LAST_MINUTE));
+        }
+
+        private static String fmt(double v) {
+            return String.format(Locale.ROOT, "%.1f", v);
+        }
+
+        /** Where the half-time tick sits in the same box. */
+        public String halfTime() {
+            return x(45);
+        }
     }
 
     /** One decimal with a comma, as German readers expect it: 1.8 → "1,8". */
