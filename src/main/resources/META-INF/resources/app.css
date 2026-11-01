@@ -1011,14 +1011,16 @@ h2 { font-size: 1.35rem; }
   .stream-leagues { grid-column: 1 / -1; grid-row: 3; display: flex; }
   .stream-leagues button { flex: 1; }
   .js .stream-leagues[hidden] { display: flex; }
-  .md-menu { grid-column: 1 / -1; grid-row: 4; justify-self: start; }
-  .md-menu-panel { left: 0; right: auto; }
-  .md-tools { grid-row: 5; }
-  .md-step { flex: 1 1 100%; flex-wrap: wrap; }
-  .md-step .md-now { order: 1; margin: .4rem auto 0; }
-  .md-step-label { flex: 1; text-align: center; }
-  .md-tools .view-choice { flex: 1; }
-  .md-tools .view-choice button { flex: 1; }
+  /* "Mehr zum Spieltag" beside the heading, the step and the view share one row: the matches come first */
+  .md-menu { grid-column: 2; grid-row: 1; justify-self: end; }
+  .md-menu-panel { left: auto; right: 0; }
+  .md-tools { grid-row: 4; flex-wrap: nowrap; gap: .5rem; }
+  .md-step { flex: 1 1 auto; min-width: 0; flex-wrap: wrap; gap: .25rem; }
+  .md-step > a:not(.md-now), .md-step > span[aria-hidden] { width: 2.75rem; height: 2.75rem; }
+  .md-step .md-now { flex-basis: 100%; margin: .2rem 0 0; text-align: center; border-bottom: 0; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: .25em; }
+  .md-step-label { flex: 1; min-width: 0; padding: 0 .2rem; text-align: center; font-size: .88rem; line-height: 1.15; white-space: normal; }
+  .md-tools .view-choice { flex: none; }
+  .md-tools .view-choice button { padding-inline: .65rem; }
   .stream-row > .fixture { gap: .45rem; padding: .6rem 0 .2rem; }
   .stream-row .crest { display: none; }
   .stream-ki { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .1rem .7rem; padding: 0 .7rem .55rem; }
@@ -1159,7 +1161,31 @@ h2 { font-size: 1.35rem; }
 .param-form label .muted { font-weight: 400; font-size: .85rem; }
 .param-form input { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 6px; width: 8rem; }
 .param-form input:focus-visible { outline: 3px solid var(--win); outline-offset: 1px; }
-.matchday-actions, .match-actions { margin: .8rem 0 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.match-actions { margin: .8rem 0 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.matchday-actions { margin: .8rem 0 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.matchday-actions .link-button { white-space: nowrap; font-size: .9rem; }
+/* phones: the actions as one swipeable band, like the season's jump links — the matches stay in view
+   instead of three rows of buttons. A mouse cannot swipe, so wider screens keep them wrapped.
+   Padding gives the focus ring room inside the scroll box. */
+@media (max-width: 720px) {
+  .matchday-actions {
+    flex-wrap: nowrap; margin-inline: -4px; padding: 4px;
+    overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: 1rem;
+  }
+  .matchday-actions::-webkit-scrollbar { display: none; }
+  .matchday-actions .link-button { flex: none; }
+}
+/* one tool row above the matches: the matchday step on the left, the view (and order) on the right */
+.md-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; margin-top: .9rem; }
+.md-toolbar .pager { margin: 0; gap: .5rem; }
+.md-toolbar .pager > * { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.5rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: 8px; white-space: nowrap; }
+.md-toolbar .pager a:hover { border-color: var(--ink); }
+.md-toolbar .view-choice, .md-toolbar .sort-choice { margin: 0; }
+.md-toolbar .sort-choice { order: 1; }
+@media (max-width: 560px) {
+  .md-toolbar .pager > * { justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding: 0; font-size: 1.35rem; }
+  .pager-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 
 /* existing forecasts, composed into the matchday pages via htmx fragments */
 .forecast-summary { display: flex; align-items: center; justify-content: center; gap: .8rem; flex-wrap: wrap; margin: .8rem 0 0; }
@@ -1529,7 +1555,7 @@ h2 { font-size: 1.35rem; }
 .lead-line summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .lead-line ol { list-style: none; margin: .3rem 0 0; padding: 0; font-size: .85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .lead-line .min { display: inline-block; min-width: 2.6rem; color: var(--ink-mute); }
-.lead-legend { color: var(--ink-mute); font-size: .85rem; max-width: 70ch; margin: .6rem 0 0; }
+.lead-legend { color: var(--ink-mute); font-size: .85rem; max-width: 70ch; margin: 1rem 0 0; }
 @media (max-width: 560px) { .lead-line { padding-left: .9rem; } }
 @media print { .lead-line, .lead-legend { display: none !important; } }
 /* "Pokal in Zahlen": the pairings decided after 90 minutes, one striped line each */
@@ -1904,7 +1930,12 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .site-search input { width: 12.5rem; }
 }
 @media (max-width: 560px) {
-  .brand { width: auto; }
+  .brand { width: auto; white-space: nowrap; font-size: 1.35rem; }
+  .brand::before { width: 1.1rem; height: 1.1rem; }
+  .topnav-inner { column-gap: .4rem; }
+  .js .my-club-link { padding-inline: .7rem; font-size: .9rem; }
+  /* on phones the name alone: the tagline wrapped the brand into four rows above every page */
+  .tagline { display: none; }
 }
 
 /* Story r028: the matchday on paper. A4 portrait, black on white, only the fixtures:

@@ -30,8 +30,6 @@
     </p>
   </div>
 
-  {#if page.leadLines}<p class="lead-legend">Die Linie unter einem Ergebnis ist der Spielverlauf: nach oben bei einem Tor der Heimmannschaft, nach unten bei einem Tor der Gäste, die senkrechten Striche sind Halbzeit und, nach Verlängerung, die 90. Minute. Antippen zeigt die Tore.</p>{/if}
-
   {! story r096: starred open pairings move up into this block (nav.js); the stars live in this browser only !}
   <div class="watched" data-watch-block hidden>
     <h2 class="round-name">Beobachtet</h2>
@@ -74,6 +72,8 @@
   </details>
   {/for}
   </div>
+  {! the key to the lines under the results, below the rounds it explains !}
+  {#if page.leadLines}<p class="lead-legend">Die Linie unter einem Ergebnis ist der Spielverlauf: nach oben bei einem Tor der Heimmannschaft, nach unten bei einem Tor der Gäste, die senkrechten Striche sind Halbzeit und, nach Verlängerung, die 90. Minute. Antippen zeigt die Tore.</p>{/if}
 
   {#if page.field.remaining}
   {! "Noch im Wettbewerb": who is left, by division; who went out, in small type below !}
