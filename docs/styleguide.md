@@ -214,6 +214,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Bereiche** (`.area-tabs`, unter der Navigation, Story r020): drei Reiter „Spieltag“, „Saison“,
+  „KI-Bilanz“ der aktuellen Liga, jeder eine eigene Adresse. Der aktuelle Reiter fett mit 3-px-Linie
+  in `--ink` darunter und `aria-current`, nie nur Farbe. Zur Saison gehören Saisonseite,
+  Torschützenliste und Vereinsvergleich; zur KI-Bilanz Trefferbilanz und „So entsteht eine Prognose“;
+  eine Vereinsseite gehört zu keinem Reiter. Unter 560 px entfallen die Reiter, die Daumenleiste
+  trägt dieselben Bereiche plus „Verein“ (die Tabelle steckt im Spieltag).
 - **Vereinsvergleich** (`.compare`, eigene Seite `/{liga}/vergleich/{a}/{b}`, Story r026): auf der
   Vereinsseite „Vergleichen mit“ (ein einfaches Formular, Auswahl nur aus derselben Liga). Gespiegelte
   Balken für Punkte, Siege, Tore, Gegentore, Tordifferenz; der bessere Wert eines Paars (bei

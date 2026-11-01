@@ -1911,6 +1911,17 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   .since-results .badge, .since-results .crest, .since-results .muted { display: none; }
 }
 @media print { .since { display: none !important; } }
+/* story r020: the three areas of a league — a light strip under the navigation; the current tab is bold with
+   an ink line underneath, never colour alone. On phones the thumb bar carries the same areas instead. */
+.season-links { margin: .5rem 0; }
+.area-tabs { display: flex; gap: 1.5rem; padding: 0 clamp(1rem, 4vw, 3rem); background: var(--surface); border-bottom: 1px solid var(--line); }
+.area-tabs a { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--ink-soft); text-decoration: none;
+  box-shadow: inset 0 -3px 0 transparent; }
+.area-tabs a:hover { color: var(--ink); }
+.area-tabs a[aria-current="page"] { color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--ink); }
+.area-tabs a:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+@media (max-width: 559.98px) { .area-tabs { display: none; } }
+@media print { .area-tabs { display: none; } }
 /* story r011: the thumb bar on phones — light surface and a hairline, text only; the current area
    carries an ink line on top and bold type, not just a colour */
 .thumb-bar { display: none; }

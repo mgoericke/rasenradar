@@ -71,6 +71,13 @@
       </details>
     </nav>
   </header>
+  {! story r020: the three areas of a league as tabs — the matchday first, the season views, the KI-Bilanz.
+     Plain links to their own addresses; the script below marks the current one before the first paint. !}
+  <nav class="area-tabs" aria-label="Bereiche">
+    <a href="/{nav.leagueShortcut}" data-area="spieltag">Spieltag</a>
+    {#if nav.leagueShortcut != 'nla'}<a href="/{nav.leagueShortcut}/saison" data-area="saison">Saison</a>{/if}
+    <a href="/trefferbilanz" data-area="bilanz">KI-Bilanz</a>
+  </nav>
   <main class="page">
     {#insert body}{/}
   </main>
@@ -133,10 +140,10 @@
   </footer>
   {! story r011: the main areas within thumb reach on phones (CSS shows it below 560 px). The inline
      script marks the current area before the first paint and points "Verein" at the club of this
-     browser; "Tabelle" is the table view of the start page. !}
+     browser. Story r020: the same areas as the tabs above, plus "Verein"; the table lives in "Spieltag". !}
   <nav class="thumb-bar" aria-label="Bereiche">
     <a href="/" data-area="spieltag">Spieltag</a>
-    <a href="/#tabelle" data-area="tabelle" hx-boost="false">Tabelle</a>
+    <a href="/{#if nav.leagueShortcut == 'nla'}bl1{#else}{nav.leagueShortcut}{/if}/saison" data-area="saison">Saison</a>
     <a href="/trefferbilanz" data-area="bilanz">KI-Bilanz</a>
     <a href="/mein-verein" data-area="verein" data-my-club-href>Verein</a>
   </nav>
@@ -144,12 +151,13 @@
     var path = location.pathname, area = null;
     var table = document.getElementById('view-tabelle');
     if (path === '/' && location.hash === '#tabelle' && table) table.checked = true;
-    if (/^\/trefferbilanz/.test(path)) area = 'bilanz';
+    if (/^\/(trefferbilanz|so-entsteht-eine-prognose)/.test(path)) area = 'bilanz';
     else if (/^\/mein-verein|\/teams\//.test(path)) area = 'verein';
-    else if (path === '/') area = table && table.checked ? 'tabelle' : 'spieltag';
+    else if (/^\/[a-z0-9]+\/(saison|torschuetzen|vergleich)(\/|$)/.test(path)) area = 'saison';
+    else if (path === '/') area = 'spieltag';
     else if (/^\/(bl1|bl2|dfb|nla|ucl)(\/|$)/.test(path)) area = 'spieltag';
     function mark(a) {
-      document.querySelectorAll('.thumb-bar [data-area]').forEach(function (l) {
+      document.querySelectorAll('.thumb-bar [data-area], .area-tabs [data-area]').forEach(function (l) {
         if (l.dataset.area === a) l.setAttribute('aria-current', 'page'); else l.removeAttribute('aria-current');
       });
     }
@@ -158,15 +166,13 @@
       var c = JSON.parse(localStorage.getItem('rr-club') || 'null');
       if (c && /^\d+$/.test(String(c.id))) document.querySelector('[data-my-club-href]').href = '/mein-verein/' + c.id;
     } catch (e) {}
-    // on the start page the two first entries switch its view instead of loading it again
+    // on the start page "Spieltag" switches back to the matches instead of loading the page again
     if (path === '/' && table) {
-      document.querySelectorAll('.thumb-bar [data-area="spieltag"], .thumb-bar [data-area="tabelle"]').forEach(function (l) {
+      document.querySelectorAll('.thumb-bar [data-area="spieltag"]').forEach(function (l) {
         l.addEventListener('click', function (e) {
           e.preventDefault();
-          var t = l.dataset.area === 'tabelle';
-          document.getElementById(t ? 'view-tabelle' : 'view-spiele').checked = true;
-          history.replaceState(null, '', t ? '/#tabelle' : '/');
-          mark(l.dataset.area);
+          document.getElementById('view-spiele').checked = true;
+          history.replaceState(null, '', '/');
           window.scrollTo(0, 0);
         });
       });

@@ -7,6 +7,8 @@
 <section class="forecast-page season-page">
   <h1 class="page-title">{#if page.cup}{page.nav.leagueName} in Zahlen{#else}Saison {page.season}{/if}</h1>
   <p class="muted">{#if page.cup}Ausgabe {page.season}{#else}{page.nav.leagueName}{/if} · {#if page.basedOn == 1}1 beendetes Spiel{#else}{page.basedOn} beendete Spiele{/if}, vorläufige Ergebnisse zählen nicht mit</p>
+  {! story r020: the scorers belong to the season area too !}
+  <p class="season-links"><a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a></p>
   {#if page.leagues}
   <nav class="scorer-switch" aria-label="Liga">
     {#for l in page.leagues}<a href="/{l.shortcut}/saison"{#if l.active} aria-current="page" class="is-active"{/if}>{l.name}</a>{/for}
