@@ -135,7 +135,7 @@
   document.addEventListener('htmx:afterSettle', mark);
 })();
 
-// Story r028: "Bogen drucken" opens the browser's print dialog; the print stylesheet in app.css
+// Story r028: "Spieltag drucken" opens the browser's print dialog; the print stylesheet in app.css
 // turns the matchday page into a plain A4 sheet (Ctrl+P gives the same sheet).
 document.addEventListener('click', function (e) {
   if (e.target.closest && e.target.closest('[data-print]')) window.print();

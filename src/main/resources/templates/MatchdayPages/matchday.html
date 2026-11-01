@@ -12,7 +12,7 @@
       {/if}
       <a class="link-button" href="/{page.nav.leagueShortcut}/torschuetzen">Torschützenliste</a>
       {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2'}<a class="link-button" href="/{page.nav.leagueShortcut}/saison">Saison in Zahlen</a>{/if}
-      {#if page.days}<button type="button" class="link-button print-button" data-print>Bogen drucken</button>{/if}
+      {#if page.days}<button type="button" class="link-button print-button" data-print>Spieltag drucken</button>{/if}
     </p>
     {#if page.days}
     {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
