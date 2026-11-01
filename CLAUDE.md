@@ -124,7 +124,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Kreuztabelle (alle Paarungen der Saison, Heim in Zeilen, Gast in Spalten) | `CrossTable` |
 | Rechnerisch noch möglich (Story r058 „Wer kann noch?“: Punkte heute, höchstens möglich, im bisherigen Tempo) | `Reach` / `ReachCalculator` |
 | Restprogramm (die nächsten Spieltage je Verein, Gegner nach heutigem Platz) | `RunIn` / `RunInCalculator` |
-| Tabelle zur Halbzeit / „Schluss nach 80“ (Saison neu gezählt mit früherem Spielstand) | `ScenarioScores` |
+| Tabelle zur Halbzeit (Saison neu gezählt mit dem Halbzeitstand) | `ScenarioScores` |
 | Führungslinie (Spielverlauf eines beendeten Spiels als Linie) | `LeadLine` |
 | Torjäger-Steckbrief (Tore eines Schützen für seinen Verein) | `ScorerProfile` / `ScorerProfileCalculator` |
 | Vereinskalender (Saison eines Vereins als Monatsraster) | `CalendarMonth` / `CalendarDay` |
