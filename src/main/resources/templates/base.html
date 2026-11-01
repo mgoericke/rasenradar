@@ -24,7 +24,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Rasen-Radar">
   {! the visitor's theme choice ("Darstellung"), set before the first paint so pages never flash; browser-only !}
-  <script>{|document.documentElement.classList.add('js'); document.addEventListener('error', function (e) { var t = e.target; if (t.classList && t.classList.contains('crest')) t.classList.add('is-broken'); }, true); try { var t = localStorage.getItem('rr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}|}</script>
+  <script>{|document.documentElement.classList.add('js'); document.addEventListener('error', function (e) { var t = e.target; if (t.classList && t.classList.contains('crest')) t.classList.add('is-broken'); }, true); try { var t = localStorage.getItem('rr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {} try { if (localStorage.getItem('rr-view') === 'kompakt') document.documentElement.classList.add('rr-compact'); } catch (e) {}|}</script>
   <link rel="preload" href="/fonts/sofia-sans-extra-condensed-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/sofia-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/app.css?v={assetVersion}">
