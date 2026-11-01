@@ -524,11 +524,13 @@ document.addEventListener('click', function (e) {
     li.querySelector('.bt-new').hidden = false;
   }
 
-  // --- Sofa-Modus: the page's own list is the source ---
+  // --- Sofa-Modus: the page's own list is the source; a cup page narrows it to its current round
+  // ([data-board-scope]), the Nations League marks its matchday's matches with [data-board-row] ---
+  function sofaScope() { return document.querySelector('[data-board-scope]'); }
   function sofaRows() {
     var seen = {};
-    return Array.prototype.slice.call(document.querySelectorAll('li[data-watch]')).filter(function (li) {
-      var id = li.getAttribute('data-watch');
+    return Array.prototype.slice.call((sofaScope() || document).querySelectorAll('li[data-watch], li[data-board-row]')).filter(function (li) {
+      var id = li.getAttribute('data-watch') || li.getAttribute('data-board-row');
       if (seen[id] || !li.querySelector('a.fixture')) return false;
       return (seen[id] = true);
     });
@@ -542,7 +544,7 @@ document.addEventListener('click', function (e) {
       var li = tile({ link: a.getAttribute('href'), homeShort: text(a.querySelector('.home .team-name.short')) || text(a.querySelector('.home .team-name')),
         awayShort: text(a.querySelector('.away .team-name.short')) || text(a.querySelector('.away .team-name')),
         homeIcon: crest('.home'), awayIcon: crest('.away') });
-      li.setAttribute('data-board-match', row.getAttribute('data-watch'));
+      li.setAttribute('data-board-match', row.getAttribute('data-watch') || row.getAttribute('data-board-row'));
       li.setAttribute('data-time', text(a.querySelector('.time')));
       list.appendChild(li);
     });
@@ -625,9 +627,9 @@ document.addEventListener('click', function (e) {
     replay.minute = replay.end;
     replay.data.matches.forEach(function (m, i) {
       var li = tileAt(i);
-      set(li, 'Ende', m.result, { text: li.querySelector('.bt-line').textContent }, 'is-played');
+      set(li, 'Ende', m.result, { text: m.decision || li.querySelector('.bt-line').textContent }, 'is-played');
     });
-    $('[data-board-ticker]').textContent = 'Abpfiff. ' + plural(replay.data.goals, 'Tor', 'Tore') + ' an diesem Spieltag.';
+    $('[data-board-ticker]').textContent = 'Abpfiff. ' + plural(replay.data.goals, 'Tor', 'Tore') + ' ' + (replay.data.closing || 'an diesem Spieltag') + '.';
     $('[data-board-summary]').textContent = 'Abpfiff, ' + plural(replay.data.goals, 'Tor', 'Tore');
     $('[data-replay-pause]').hidden = true;
     $('[data-replay-step]').hidden = true;
@@ -669,7 +671,9 @@ document.addEventListener('click', function (e) {
     wake();
     $('[data-board-close]').focus();
     if (kind === 'sofa') {
-      $('[data-board-title]').textContent = text(document.querySelector('.matchday-title')) + ' · ' + text(document.querySelector('.matchday-season'));
+      var scope = sofaScope();
+      $('[data-board-title]').textContent = (scope && scope.getAttribute('data-board-title')) ||
+          text(document.querySelector('.matchday-title')) + ' · ' + text(document.querySelector('.matchday-season'));
       sofaBuild();
     } else {
       $('[data-board-title]').textContent = 'Konferenz';
@@ -774,6 +778,7 @@ document.addEventListener('click', function (e) {
     });
   }
   function label(el) {
+    if (el.hasAttribute('data-section-label')) return el.getAttribute('data-section-label');
     var h = el.querySelector('h2');
     var t = h ? h.cloneNode(true) : null;
     if (t) t.querySelectorAll('small, .muted, .sr-only').forEach(function (x) { x.remove(); });

@@ -1,0 +1,18 @@
+{! stories r038/r052: the dark stage in full size, for the Sofa-Modus and "Konferenz nachspielen";
+   nav.js fills it. Included by the matchday, cup and group pages. !}
+<div class="board" data-board hidden role="dialog" aria-modal="true" aria-labelledby="board-title">
+  <div class="board-head">
+    <p class="board-brand">Rasen-Radar</p>
+    <h2 class="board-title" id="board-title" data-board-title></h2>
+    <p class="board-summary" data-board-summary></p>
+    <p class="board-controls" data-board-controls hidden>
+      <button type="button" data-replay-pause>Pause</button>
+      <button type="button" data-replay-step hidden>Nächstes Tor</button>
+      <button type="button" data-replay-again>Nochmal</button>
+    </p>
+    <button type="button" class="board-close" data-board-close>Beenden</button>
+  </div>
+  <p class="board-note" data-board-note hidden></p>
+  <p class="board-ticker" data-board-ticker aria-live="polite" hidden></p>
+  <ol class="board-tiles" data-board-tiles></ol>
+</div>
