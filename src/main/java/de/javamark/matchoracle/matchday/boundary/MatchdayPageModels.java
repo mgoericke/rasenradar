@@ -422,7 +422,18 @@ public final class MatchdayPageModels {
     record MatchdayPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
                         List<DayGroup> days, List<StandingRow> standings, boolean standingsProvisional, DataInfo data,
                         List<RoundSection> rounds, String dateRange, boolean current, Map<Long, String> stakes,
-                        LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines) {
+                        LiveTable live, List<SplitTable> splits, Map<Long, LeadLine> leadLines,
+                        Map<Long, Integer> tension, Map<Long, Integer> tensionOrder) {
+
+        /** Story r073: the Spannung of an open match, 1 to 5, or null for a started or finished one. */
+        public Integer tensionOf(long matchId) {
+            return tension.get(matchId);
+        }
+
+        /** Story r073: the place of a match in "Spannendste zuerst" — open matches by Spannung, then the rest. */
+        public int tensionOrderOf(long matchId) {
+            return tensionOrder.getOrDefault(matchId, 0);
+        }
 
         /** Story r070: the "Es geht um" line of an open match, or null. */
         public String stakeOf(long matchId) {

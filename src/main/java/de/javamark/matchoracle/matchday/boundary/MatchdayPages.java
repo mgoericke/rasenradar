@@ -843,6 +843,7 @@ public class MatchdayPages {
                 .filter(n -> n.label == null) // spec 06: the pager stays inside the league phase
                 .map(n -> base + n.number).orElse(null);
 
+        Map<Long, Integer> tension = tension(matchday, matches, now);
         return new MatchdayPage(Nav.of(matchday.league), MatchdayPageModels.seasonLabel(matchday.season), matchday.season, matchday.number,
                 prev, next, days, rows, standings.includesProvisional(), DataInfo.of(matchday, Instant.now()),
                 roundSections(matchday.league, matchday.season, shortcut, now),
@@ -851,7 +852,50 @@ public class MatchdayPages {
                         matches.getLast().kickoff.atZone(MatchdayPageModels.DISPLAY_ZONE).toLocalDate()),
                 Matchday.findCurrent(matchday.league).map(c -> c.id.equals(matchday.id)).orElse(false),
                 stakes(matchday, matches, now), liveTable(matchday, standings, matches, now),
-                splitTables(matchday, playedSoFar), leadLines(matches));
+                splitTables(matchday, playedSoFar), leadLines(matches), tension, tensionOrder(matches, tension));
+    }
+
+    /**
+     * Story r073: the Spannung of every open match from the table before the matchday and the form —
+     * the same table the "Es geht um" lines use; nothing from a forecast enters.
+     */
+    private Map<Long, Integer> tension(Matchday matchday, List<Match> matches, Instant now) {
+        if (!matchday.league.hasTable()) {
+            return Map.of();
+        }
+        List<Match> open = matches.stream().filter(m -> !m.isPlayed() && !m.isLive(now, liveWindow)).toList();
+        if (open.isEmpty()) {
+            return Map.of();
+        }
+        Standings before = standingsCalculator.standingsBefore(matchday);
+        int teams = Math.max(before.positions().size(), Team.findInLeagueSeason(matchday.league, matchday.season).size());
+        Map<Long, Integer> tension = new HashMap<>();
+        for (Match m : open) {
+            tension.put(m.id, de.javamark.matchoracle.matchday.control.TensionCalculator.of(
+                    side(m.homeTeam, matchday, before, teams), side(m.awayTeam, matchday, before, teams), teams));
+        }
+        return tension;
+    }
+
+    private de.javamark.matchoracle.matchday.control.TensionCalculator.Side side(Team team, Matchday matchday, Standings before, int teams) {
+        var standing = before.of(team);
+        int formPoints = formCalculator.formBefore(team, matchday).lastMatches().stream()
+                .mapToInt(v -> switch (v.result()) { case WIN -> 3; case DRAW -> 1; case LOSS -> 0; }).sum();
+        return new de.javamark.matchoracle.matchday.control.TensionCalculator.Side(
+                standing.map(StandingPosition::position).orElse(teams), standing.map(s -> s.balance().points()).orElse(0), formPoints);
+    }
+
+    /** Story r073: open matches by Spannung (ties by kickoff), then the started and finished ones by kickoff. */
+    private static Map<Long, Integer> tensionOrder(List<Match> matches, Map<Long, Integer> tension) {
+        if (tension.isEmpty()) {
+            return Map.of();
+        }
+        List<Match> ordered = matches.stream()
+                .sorted(Comparator.comparingInt((Match m) -> -tension.getOrDefault(m.id, 0)).thenComparing(m -> m.kickoff))
+                .toList();
+        Map<Long, Integer> order = new HashMap<>();
+        for (int i = 0; i < ordered.size(); i++) order.put(ordered.get(i).id, i + 1);
+        return order;
     }
 
     /** Story r053: a lead line for every finished match of the matchday whose goal list is complete. */

@@ -1312,6 +1312,26 @@ h2 { font-size: 1.35rem; }
 .watched .fixtures { border: 1px solid var(--line); }
 .watch-day { display: none; }
 .watched .watch-day { display: block; }
+
+/* story r073: Spannung of an open match in five steps of ink (no brass, no traffic light); "Spannendste
+   zuerst" lays the days' lists into one column ordered by --t-order — the rows are not moved */
+.fixtures > li:has(> .tension) { flex-wrap: wrap; }
+.tension { flex-basis: 100%; order: 2; display: flex; align-items: center; gap: .45rem; margin: -.15rem 0 .4rem; padding: 0 .9rem 0 4.85rem; font-size: .78rem; color: var(--ink-mute); }
+.rr-compact .matchday .tension { display: none; }
+@media (max-width: 560px) { .tension { padding-left: .9rem; } }
+.tension-steps { display: inline-flex; gap: 2px; }
+.tension-steps span { width: .55rem; height: .4rem; border-radius: 1px; border: 1px solid var(--ink-mute); }
+.tension-steps span.on { background: var(--ink); border-color: var(--ink); }
+.tension-note { display: none; font-size: .85rem; color: var(--ink-soft); max-width: 46rem; margin: .8rem 0 0; }
+.rr-by-tension .tension-note { display: block; }
+.rr-by-tension [data-tension-sort] { display: flex; flex-direction: column; margin-top: 1rem; border-radius: 8px; overflow: hidden; }
+.rr-by-tension [data-tension-sort] > .day { display: none; }
+.rr-by-tension [data-tension-sort] > .fixtures { display: contents; }
+.rr-by-tension [data-tension-sort] > .fixtures > li { order: var(--t-order, 0); }
+.rr-by-tension [data-tension-sort] .watch-day { display: block; }
+/* the weekday takes room in the one column: short names, as in "Kompakt" */
+.rr-by-tension [data-tension-sort] .fixture .team-name.full { display: none; }
+.rr-by-tension [data-tension-sort] .fixture .team-name.short { display: block; }
 /* the same star on the start page: a third column beside the KI cell; the kickoff shows only
    in "Beobachtet", where the row is away from its kickoff block */
 .js .stream-row { grid-template-columns: 3.4rem minmax(0, 1fr) 8.8rem 2.75rem; padding-right: .25rem; }

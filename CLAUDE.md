@@ -134,6 +134,7 @@ Fachliche Abhängigkeiten: `forecast` liest Daten aus `matchday` und die Rücksc
 | Heimvorteil (Anteile Heimsieg/Remis/Auswärtssieg, Punkte je Heim- und Auswärtsspiel) | `HomeAdvantage` / `HomeAdvantageCalculator` |
 | Pokalbühne (Spiel der Runde / Überraschung der Runde über der Pokalseite) | `MatchdayPages.cupStage` / `stagePick`, `StageRoute` |
 | Noch im Wettbewerb (verbliebene Vereine nach Spielklasse, Ausgeschiedene mit Runde, Pokalsieger) | `CupField` / `MatchdayPages.cupField` |
+| Spannung (offenes Spiel, 1–5, aus Tabelle und Form, Story r073 „Spannendste zuerst") | `TensionCalculator` |
 | Punktestrahl (Tabelle als Punkteachse, Story r022) | `PointsAxis` / `AxisRow` |
 | Was noch geht (bester und schlechtester noch möglicher Gruppenplatz, Nations League) | `GroupReachCalculator` / `PlaceRange` |
 | Spiel des Spieltags (Bühne der Nations-League-Seite) | `MatchdayPages.groupStage` |

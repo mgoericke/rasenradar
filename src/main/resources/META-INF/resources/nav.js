@@ -135,6 +135,28 @@
   document.addEventListener('htmx:afterSettle', mark);
 })();
 
+// Story r073: "Nach Tag" or "Spannendste zuerst" on the matchday page, kept in this browser only
+// (rr-sort). The head script sets the class before the first paint; the order itself is CSS.
+(function () {
+  function mark() {
+    var byTension = document.documentElement.classList.contains('rr-by-tension');
+    document.querySelectorAll('.sort-choice').forEach(function (p) { p.hidden = false; });
+    document.querySelectorAll('[data-sort-choice]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.sortChoice === 'spannung') === byTension));
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-sort-choice]');
+    if (!b) return;
+    var byTension = b.dataset.sortChoice === 'spannung';
+    document.documentElement.classList.toggle('rr-by-tension', byTension);
+    try { if (byTension) localStorage.setItem('rr-sort', 'spannung'); else localStorage.removeItem('rr-sort'); } catch (err) {}
+    mark();
+  });
+  document.addEventListener('DOMContentLoaded', mark);
+  document.addEventListener('htmx:afterSettle', mark);
+})();
+
 // Story r028: "Spieltag drucken" opens the browser's print dialog; the print stylesheet in app.css
 // turns the matchday page into a plain A4 sheet (Ctrl+P gives the same sheet).
 document.addEventListener('click', function (e) {

@@ -203,6 +203,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   mit Display-Überschrift und 2-px-Kreidelinie, darunter ein Satz in Worten, dann die Zahlen auf
   Mähstreifen. Anteile Heim/Remis/Auswärts als ein Balken (`.share-bar`) in den Tendenzfarben
   (`--ink`, `--draw`, `--ink-soft`), die Zahlen immer als Text daneben.
+- **Spannung** (`.tension`, Spieltagsseite, Story r073): unter jedem offenen Spiel fünf kleine
+  Kästchen in Tinte (gefüllt `--ink`, leer gerahmt), dazu das Wort „Spannung" und für Vorleser
+  „4 von 5". Kein Messing, keine Ampel. Umschalter „Nach Tag | Spannendste zuerst" neben „Liste |
+  Kompakt", gemerkt nur im Browser (`rr-sort`, vor dem ersten Zeichnen gesetzt). Sortiert ordnet CSS
+  die Zeilen in einer Spalte (`--t-order`), mit Wochentag und Kurznamen, darüber ein Satz, woraus die
+  Spannung entsteht. In „Kompakt" entfällt die Zeile.
 - **Punktestrahl** (`.points-axis`, Saisonseite, Story r022): die Tabelle als senkrechte Punkteachse,
   eine Zeile je Punktzahl mit Wappen und Kurznamen, jeder fehlende Punkt dazwischen ein Schritt Abstand
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
