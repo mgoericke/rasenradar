@@ -18,7 +18,7 @@
      shows here what has been played since — before the first paint, so nothing below jumps.
      Neither the visit nor the club ever reaches the server. !}
   {#if page.current && page.recent}
-  <section class="since" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
+  <section class="since" data-section="start-seit-besuch" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
     <div class="since-head">
       <h2 id="since-title">Seit dem letzten Besuch</h2>
       <button type="button" class="link-button" data-since-close>Ausblenden</button>
@@ -105,7 +105,7 @@
       </header>
       {! design r102: the Vorbericht — the lines of other clubs than "Mein Verein" stay hidden (rrClubCss) !}
       {#if page.brief}
-      <aside class="brief" aria-labelledby="brief-title">
+      <aside class="brief" data-section="start-vorbericht" aria-labelledby="brief-title">
         <h2 id="brief-title">Vorbericht</h2>
         <ul>
           {#for b in page.brief}<li{#if b.clubId} class="my-club-only" data-my-club-row="{b.clubId}"{/if}><b>{b.lead}</b> {b.text}</li>{/for}
@@ -136,7 +136,7 @@
     </div>
 
     <aside class="landing-rail">
-      <section class="rail-card rail-table" aria-labelledby="rail-table">
+      <section class="rail-card rail-table" data-section="start-tabelle" aria-labelledby="rail-table">
         <h2 id="rail-table">Tabelle</h2>
         {#for l in page.leagues}<input class="table-input sr-only" type="radio" name="rail-table" id="table-{l.shortcut}" {#if l_isFirst}checked{/if}>{/for}
         <div class="rail-tabs">{#for l in page.leagues}<label for="table-{l.shortcut}">{l.name}</label>{/for}</div>
@@ -160,7 +160,7 @@
         {/for}
       </section>
 
-      <section class="rail-card rail-bilanz" aria-labelledby="rail-bilanz">
+      <section class="rail-card rail-bilanz" data-section="start-ki-bilanz" aria-labelledby="rail-bilanz">
         <h2 id="rail-bilanz">KI-Bilanz</h2>
         <div class="leaderboard-slot" hx-get="{page.leaderboardLink}" hx-trigger="load" hx-swap="innerHTML"></div>
       </section>

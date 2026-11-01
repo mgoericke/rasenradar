@@ -741,3 +741,82 @@ document.addEventListener('click', function (e) {
   // an hx-boost navigation away swaps the page: the board goes with it
   document.addEventListener('htmx:beforeSwap', function (e) { if (e.detail && e.detail.target === document.body) close(); });
 })();
+
+// Story r100 "Seite anpassen": switch sections of a page off, remembered in this browser only
+// (rr-hidden, a list of section keys — no login, nothing on the server). The head script in
+// base.html hides them before the first paint; this offers the dialog at the page's foot. The
+// matches themselves never carry a key, so they cannot be switched off.
+(function () {
+  var KEY = 'rr-hidden';
+  var memory = null;   // used when the browser refuses storage: the choice lasts until the next load
+  function read() {
+    if (memory) return memory.slice();
+    try { var h = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(h) ? h : []; } catch (e) { return []; }
+  }
+  function storable() {
+    try { localStorage.setItem(KEY + '-probe', '1'); localStorage.removeItem(KEY + '-probe'); return true; } catch (e) { return false; }
+  }
+  function write(keys) {
+    try {
+      if (keys.length) localStorage.setItem(KEY, JSON.stringify(keys)); else localStorage.removeItem(KEY);
+      memory = null;
+    } catch (e) { memory = keys.slice(); }
+    var style = document.getElementById('rr-hidden-style');
+    if (!keys.length) { if (style) style.remove(); return; }
+    if (!style) { style = document.createElement('style'); style.id = 'rr-hidden-style'; document.head.appendChild(style); }
+    style.textContent = window.rrHiddenCss(keys);
+  }
+  function sections() {
+    var seen = {};
+    return Array.prototype.slice.call(document.querySelectorAll('[data-section]')).filter(function (el) {
+      var k = el.getAttribute('data-section');
+      return seen[k] ? false : (seen[k] = true);
+    });
+  }
+  function label(el) {
+    var h = el.querySelector('h2');
+    var t = h ? h.cloneNode(true) : null;
+    if (t) t.querySelectorAll('small, .muted, .sr-only').forEach(function (x) { x.remove(); });
+    return (t ? t.textContent : el.getAttribute('data-section')).replace(/\s+/g, ' ').trim();
+  }
+  function fill(dialog) {
+    var hidden = read();
+    var list = dialog.querySelector('[data-customize-list]');
+    list.textContent = '';
+    sections().forEach(function (el) {
+      var key = el.getAttribute('data-section');
+      var li = document.createElement('li');
+      var lab = document.createElement('label');
+      var box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = hidden.indexOf(key) < 0;
+      box.setAttribute('data-key', key);
+      lab.appendChild(box);
+      lab.appendChild(document.createTextNode(' ' + label(el)));
+      li.appendChild(lab);
+      list.appendChild(li);
+    });
+    dialog.querySelector('[data-customize-blocked]').hidden = storable();
+  }
+  function init() {
+    var foot = document.querySelector('[data-customize]');
+    if (foot) foot.hidden = sections().length < 2;
+  }
+  document.addEventListener('click', function (e) {
+    var dialog = document.querySelector('[data-customize-dialog]');
+    if (!dialog) return;
+    if (e.target.closest('[data-customize-open]')) { fill(dialog); dialog.showModal(); return; }
+    if (e.target.closest('[data-customize-close]')) { dialog.close(); return; }
+    if (e.target.closest('[data-customize-all]')) { write([]); fill(dialog); }
+  });
+  document.addEventListener('change', function (e) {
+    var box = e.target.closest('[data-customize-list] input[data-key]');
+    if (!box) return;
+    var key = box.getAttribute('data-key');
+    var keys = read().filter(function (k) { return k !== key; });
+    if (!box.checked) keys.push(key);
+    write(keys);
+  });
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('htmx:afterSettle', init);
+})();

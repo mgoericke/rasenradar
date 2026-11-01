@@ -17,25 +17,25 @@
      marks the section in view. Every section below always renders (empty states inside), so no link dies. !}
   <nav class="season-toc" aria-label="Abschnitte">
     <ol>
-      {#if !page.cup}<li><a href="#punktestrahl">Punktestrahl</a></li>{/if}
-      {#if page.race}<li><a href="#saisonrennen">Saisonrennen</a></li>{/if}
-      {#if !page.cup}<li><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>{/if}
-      {#if !page.cup}<li><a href="#restprogramm">Restprogramm</a></li>{/if}
-      {#if page.lastYear}<li><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
-      {#if !page.cup}<li><a href="#serien">Serien</a></li>{/if}
-      <li><a href="#ergebnisse">Häufigste Ergebnisse</a></li>
-      <li><a href="#besondere-tore">Tore der besonderen Art</a></li>
-      <li><a href="#aufholjagden">Aufholjagden</a></li>
-      {#if page.crossTable}<li><a href="#kreuztabelle">Kreuztabelle</a></li>{/if}
-      <li><a href="#torminuten">Wann fallen die Tore?</a></li>
-      {#if page.decisions}<li><a href="#entscheidung">Verlängerung und Elfmeterschießen</a></li>{/if}
-      {#if !page.cup}<li><a href="#heimvorteil">Heimvorteil</a></li>{/if}
+      {#if !page.cup}<li data-section-toc="saison-punktestrahl"><a href="#punktestrahl">Punktestrahl</a></li>{/if}
+      {#if page.race}<li data-section-toc="saison-saisonrennen"><a href="#saisonrennen">Saisonrennen</a></li>{/if}
+      {#if !page.cup}<li data-section-toc="saison-wer-kann-noch"><a href="#wer-kann-noch">Rechnerisch noch möglich</a></li>{/if}
+      {#if !page.cup}<li data-section-toc="saison-restprogramm"><a href="#restprogramm">Restprogramm</a></li>{/if}
+      {#if page.lastYear}<li data-section-toc="saison-vorjahr"><a href="#vorjahr">Besser als vor einem Jahr?</a></li>{/if}
+      {#if !page.cup}<li data-section-toc="saison-serien"><a href="#serien">Serien</a></li>{/if}
+      <li data-section-toc="saison-ergebnisse"><a href="#ergebnisse">Häufigste Ergebnisse</a></li>
+      <li data-section-toc="saison-besondere-tore"><a href="#besondere-tore">Tore der besonderen Art</a></li>
+      <li data-section-toc="saison-aufholjagden"><a href="#aufholjagden">Aufholjagden</a></li>
+      {#if page.crossTable}<li data-section-toc="saison-kreuztabelle"><a href="#kreuztabelle">Kreuztabelle</a></li>{/if}
+      <li data-section-toc="saison-torminuten"><a href="#torminuten">Wann fallen die Tore?</a></li>
+      {#if page.decisions}<li data-section-toc="saison-entscheidung"><a href="#entscheidung">Verlängerung und Elfmeterschießen</a></li>{/if}
+      {#if !page.cup}<li data-section-toc="saison-heimvorteil"><a href="#heimvorteil">Heimvorteil</a></li>{/if}
     </ol>
   </nav>
 
 {#if !page.cup}
   {! story r022: the table on a points axis — the gaps, not only the order; top down, one row per points total !}
-  <section class="season-block" id="punktestrahl" aria-labelledby="punktestrahl-title">
+  <section class="season-block" id="punktestrahl" data-section="saison-punktestrahl" aria-labelledby="punktestrahl-title">
     <h2 id="punktestrahl-title">Punktestrahl</h2>
     <p class="season-sub">Die Tabelle nach Punkten: Je größer der Abstand zwischen zwei Zeilen, desto mehr Punkte liegen dazwischen.</p>
     {#let a=page.reach.axis}
@@ -60,7 +60,7 @@
 {#if page.race}
   {! story r019: every club's place after every matchday; neutral lines, one brought forward on hover, tap or focus !}
   {#let r=page.race}
-  <section class="season-block" id="saisonrennen" aria-labelledby="saisonrennen-title">
+  <section class="season-block" id="saisonrennen" data-section="saison-saisonrennen" aria-labelledby="saisonrennen-title">
     <h2 id="saisonrennen-title">Saisonrennen</h2>
     {#if !r.drawn}
     <p class="muted">Verlauf ab dem 2. Spieltag.</p>
@@ -109,7 +109,7 @@
 
 {#if !page.cup}
   {! story r058: what is still possible — points today, the maximum, the pace; a calculation, no forecast !}
-  <section class="season-block" id="wer-kann-noch" aria-labelledby="wer-kann-noch-title">
+  <section class="season-block" id="wer-kann-noch" data-section="saison-wer-kann-noch" aria-labelledby="wer-kann-noch-title">
     <h2 id="wer-kann-noch-title">Rechnerisch noch möglich</h2>
     <p class="season-sub">Punkte heute, höchstens noch möglich – und wo es endet, wenn jeder Verein so weiterpunktet wie bisher.</p>
     {#let w=page.reach}
@@ -140,7 +140,7 @@
 
 {#if !page.cup}
   {! story r045: who has the easier run-in — opponents by their place today, darker = stronger; scrolls in its own box !}
-  <section class="season-block" id="restprogramm" aria-labelledby="restprogramm-title">
+  <section class="season-block" id="restprogramm" data-section="saison-restprogramm" aria-labelledby="restprogramm-title">
     <h2 id="restprogramm-title">Restprogramm</h2>
     {#let p=page.runIn}
     {#if !p.matchdays}
@@ -171,7 +171,7 @@
 
 {#if page.lastYear}
   {! story r081: points now against the same number of games last season — more to the right (--win), fewer to the left (--loss) !}
-  <section class="season-block" id="vorjahr" aria-labelledby="vorjahr-title">
+  <section class="season-block" id="vorjahr" data-section="saison-vorjahr" aria-labelledby="vorjahr-title">
     <h2 id="vorjahr-title">Besser als vor einem Jahr?</h2>
     {#let v=page.lastYear}
     {#if page.basedOn == 0}
@@ -198,7 +198,7 @@
 
 {#if !page.cup}
   {! story r068: who is on a run and who is stuck — only the strongest running streak of each club per group !}
-  <section class="season-block" id="serien" aria-labelledby="serien-title">
+  <section class="season-block" id="serien" data-section="saison-serien" aria-labelledby="serien-title">
     <h2 id="serien-title">Serien</h2>
     {#if page.basedOn == 0}
     <p class="muted">Noch kein Spiel beendet.</p>
@@ -221,7 +221,7 @@
   {/if}
 
   {! story r076: every final score of the season as a grid; a cell opens the matches behind it (popover, no script) !}
-  <section class="season-block" id="ergebnisse" aria-labelledby="ergebnisse-title">
+  <section class="season-block" id="ergebnisse" data-section="saison-ergebnisse" aria-labelledby="ergebnisse-title">
     <h2 id="ergebnisse-title">Häufigste Ergebnisse</h2>
     {#if page.basedOn == 0}
     <p class="muted">Noch kein Spiel beendet.</p>
@@ -257,7 +257,7 @@
 
   {! story r084: four kinds of goal and the clubs behind them; a chosen "Mein Verein" outside the top
      places shows from the hidden rows (the club style in the head), nothing reaches the server !}
-  <section class="season-block" id="besondere-tore" aria-labelledby="besondere-tore-title">
+  <section class="season-block" id="besondere-tore" data-section="saison-besondere-tore" aria-labelledby="besondere-tore-title">
     <h2 id="besondere-tore-title">Tore der besonderen Art</h2>
     {#if page.basedOn == 0}
     <p class="muted">Noch kein Spiel beendet.</p>
@@ -284,7 +284,7 @@
   </section>
 
   {! story r091: points won after trailing (right, --win) and dropped after leading (left, --loss) — meaning, not decoration !}
-  <section class="season-block" id="aufholjagden" aria-labelledby="aufholjagden-title">
+  <section class="season-block" id="aufholjagden" data-section="saison-aufholjagden" aria-labelledby="aufholjagden-title">
     <h2 id="aufholjagden-title">Aufholjagden</h2>
     {#let c=page.comebacks}
     {#if !c.any}
@@ -309,7 +309,7 @@
 
 {#if page.crossTable}
   {! story r072: home teams down, away teams across, both in table order; scrolls sideways inside its own box !}
-  <section class="season-block" id="kreuztabelle" aria-labelledby="kreuztabelle-title">
+  <section class="season-block" id="kreuztabelle" data-section="saison-kreuztabelle" aria-labelledby="kreuztabelle-title">
     <h2 id="kreuztabelle-title">Kreuztabelle</h2>
     {#let x=page.crossTable}
     {#if x.lead}<p class="season-lead">{x.lead}</p>{/if}
@@ -337,7 +337,7 @@
   {/if}
 
   {! story r016: all goals of the league in 15-minute blocks — bars in HTML with the number on each, so nothing needs a chart library !}
-  <section class="season-block" id="torminuten" aria-labelledby="torminuten-title">
+  <section class="season-block" id="torminuten" data-section="saison-torminuten" aria-labelledby="torminuten-title">
     <h2 id="torminuten-title">Wann fallen die Tore?</h2>
     {#let t=page.goalTiming}
     <p class="season-lead">{t.sentence}</p>
@@ -358,7 +358,7 @@
 
   {! Pokal in Zahlen: pairings decided after 90 minutes, newest first !}
   {#if page.decisions}
-  <section class="season-block" id="entscheidung" aria-labelledby="entscheidung-title">
+  <section class="season-block" id="entscheidung" data-section="saison-entscheidung" aria-labelledby="entscheidung-title">
     <h2 id="entscheidung-title">Verlängerung und Elfmeterschießen</h2>
     {#let d=page.decisions}
     <p class="season-lead">{#if d.rows}{d.extraTime} von {d.matches} Begegnungen wurden in der Verlängerung entschieden, {d.shootouts} im Elfmeterschießen.{#else}Bisher wurde jede Begegnung nach 90 Minuten entschieden.{/if}</p>
@@ -375,7 +375,7 @@
 
 {#if !page.cup}
   {! story r098: how much the home side really gains — the league as a whole, then the clubs !}
-  <section class="season-block" id="heimvorteil" aria-labelledby="heimvorteil-title">
+  <section class="season-block" id="heimvorteil" data-section="saison-heimvorteil" aria-labelledby="heimvorteil-title">
     <h2 id="heimvorteil-title">Heimvorteil</h2>
     {#if page.basedOn == 0}
     <p class="muted">Noch kein Spiel beendet.</p>

@@ -214,6 +214,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   (höchstens sechs). Zonenlinien aus derselben Rechnung wie „Rechnerisch noch möglich" unter der Zeile,
   die den Platz hält: Grün/Rot als Bedeutung, gedämpft für Play-off/Relegation. Darüber ein Satz, wie
   viele Mannschaften höchstens drei Punkte hinter der ersten Zonenlinie liegen.
+- **Seite anpassen** (`.customize`, Fuß jeder Seite mit mindestens zwei schaltbaren Abschnitten,
+  Story r100): „Diese Seite anpassen“ öffnet einen nativen Dialog mit je einer Checkbox pro Abschnitt
+  (Text = Überschrift), dem Satz „Was ausgeschaltet wird, bleibt in diesem Browser ausgeblendet. Die
+  Spiele selbst bleiben immer da.“ und „Alles zeigen“. Schaltbar ist nur, was `data-section` trägt;
+  Spiellisten, Spieltagsliste und Spielkern nie. Ein ausgeschalteter Abschnitt fehlt auch im Wegweiser
+  (`data-section-toc`) und wird schon vor dem ersten Zeichnen ausgeblendet (Kopf-Skript, `rr-hidden`).
 - **Bühne in groß** (`.board`, Spieltagsseite, Stories r038 „Sofa-Modus“ und r052 „Konferenz
   nachspielen“): die dunkle Bühne bildschirmfüllend (Vollbild, sonst fensterfüllend), nur
   Stage-Tokens, kein Messing, kein zweites Dunkel-Thema. Kopf mit Marke, Titel, Zusammenfassung

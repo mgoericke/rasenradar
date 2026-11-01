@@ -30,6 +30,8 @@
   <link rel="stylesheet" href="/app.css?v={assetVersion}">
   {! story r003: "Mein Verein" lives in this browser only; its highlight is set before the first paint, so no row flashes !}
   <script>{|window.rrClubCss = function (id) { var s = '[data-clubs~="' + id + '"]'; return 'a' + s + ', li:has(> a' + s + '), tr' + s + ' > td { background: var(--zone) !important; } a' + s + ', tr' + s + ' > td:first-child { box-shadow: inset 3px 0 0 var(--ink); } a' + s + ' .team-name, tr' + s + ' .team { font-weight: 700; } .my-club-only[data-my-club-row="' + id + '"] { display: list-item; }'; }; try { var c = JSON.parse(localStorage.getItem('rr-club') || 'null'); if (c && /^\d+$/.test(String(c.id))) { var st = document.createElement('style'); st.id = 'rr-club-style'; st.textContent = window.rrClubCss(c.id); document.head.appendChild(st); } } catch (e) {}|}</script>
+  {! story r100: sections switched off in this browser stay off from the first paint on; unknown keys simply match nothing !}
+  <script>{|window.rrHiddenCss = function (keys) { return keys.filter(function (k) { return /^[a-z0-9-]+$/.test(k); }).map(function (k) { return '[data-section="' + k + '"], [data-section-toc="' + k + '"]'; }).join(', ') + ' { display: none !important; }'; }; try { var h = JSON.parse(localStorage.getItem('rr-hidden') || '[]'); if (Array.isArray(h) && h.length) { var hs = document.createElement('style'); hs.id = 'rr-hidden-style'; hs.textContent = window.rrHiddenCss(h); document.head.appendChild(hs); } } catch (e) {}|}</script>
   <script src="/vendor/htmx-2.0.10.min.js" defer></script>
   <script src="/nav.js?v={assetVersion}" defer></script>
   {! Visitor statistics: self-hosted Umami, no cookies and no personal data. The tracker hooks into
@@ -72,9 +74,23 @@
   <main class="page">
     {#insert body}{/}
   </main>
+  <dialog class="customize" data-customize-dialog aria-labelledby="customize-title">
+    <h2 id="customize-title">Diese Seite anpassen</h2>
+    <p>Was ausgeschaltet wird, bleibt in diesem Browser ausgeblendet. Die Spiele selbst bleiben immer da.</p>
+    <p class="customize-blocked" data-customize-blocked hidden>Dieser Browser erlaubt kein Speichern – die Auswahl gilt nur, bis die Seite neu geladen wird.</p>
+    <fieldset>
+      <legend class="sr-only">Abschnitte dieser Seite</legend>
+      <ul class="customize-list" data-customize-list></ul>
+    </fieldset>
+    <p class="customize-actions">
+      <button type="button" class="link-button" data-customize-all>Alles zeigen</button>
+      <button type="button" class="link-button" data-customize-close>Schließen</button>
+    </p>
+  </dialog>
   <footer class="site-footer">
     <div class="site-footer-inner">
       <div class="footer-top">
+        <p class="customize-open" data-customize hidden><button type="button" class="link-button" data-customize-open>Diese Seite anpassen</button></p>
         <nav class="footer-links" aria-label="Weitere Seiten">
           <a class="{#if nav.page == 'howItWorks'}is-active{/if}" href="/so-entsteht-eine-prognose" {#if nav.page == 'howItWorks'}aria-current="page"{/if}>So entsteht eine Prognose</a>
           <a class="{#if nav.page == 'accuracy'}is-active{/if}" href="/trefferbilanz" {#if nav.page == 'accuracy'}aria-current="page"{/if}>Trefferbilanz</a>
