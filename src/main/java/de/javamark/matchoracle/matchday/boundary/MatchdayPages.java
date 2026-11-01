@@ -574,7 +574,53 @@ public class MatchdayPages {
             tables.add(new SplitTable(key, label, note,
                     s.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList()));
         }
+        // story r071: the same season as if every match had ended at half time, or after 80 minutes
+        List<Match> finals = ordered.stream().filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        Standings real = standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, finals);
+        var half = de.javamark.matchoracle.matchday.control.ScenarioScores.atHalfTime(finals);
+        tables.add(scenarioTable("halbzeit", "Halbzeit", matchday, real, half,
+                "Jedes beendete Spiel zählt mit dem Halbzeitstand. ± zeigt die Plätze gegenüber der Tabelle aus endgültigen Ergebnissen."));
+        var eighty = de.javamark.matchoracle.matchday.control.ScenarioScores.afterEighty(finals);
+        tables.add(scenarioTable("nach-80", "Schluss nach 80", matchday, real, eighty,
+                "Jedes beendete Spiel zählt mit dem Stand nach der 80. Minute (Tore bis einschließlich Minute 80). "
+                        + lateSwing(real, standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, eighty.matches()))));
         return List.copyOf(tables);
+    }
+
+    private SplitTable scenarioTable(String key, String label, Matchday matchday, Standings real,
+                                     de.javamark.matchoracle.matchday.control.ScenarioScores.Rescored rescored, String note) {
+        Standings s = standingsCalculator.standings(matchday.league, matchday.season, matchday.number + 1, rescored.matches());
+        List<String> moves = s.positions().stream()
+                .map(p -> MatchdayPageModels.placesMoved(real.of(p.team()).map(StandingPosition::position).orElse(p.position()), p.position()))
+                .toList();
+        String left = rescored.excluded() == 0 ? ""
+                : " " + rescored.excluded() + (rescored.excluded() == 1 ? " Spiel fehlt" : " Spiele fehlen") + ", weil dafür die Angaben in den Daten fehlen.";
+        return new SplitTable(key, label, note + " Vorläufige Ergebnisse zählen nicht mit." + left,
+                s.positions().stream().map(p -> StandingRow.of(p, matchday.league)).toList(), moves);
+    }
+
+    /** Story r071: who won and who lost the most points after minute 80 — the real points against those after 80. */
+    private static String lateSwing(Standings real, Standings eighty) {
+        Team gainer = null, loser = null;
+        int most = 0, least = 0;
+        for (StandingPosition p : real.positions()) {
+            int then = eighty.of(p.team()).map(e -> e.balance().points()).orElse(0);
+            int diff = p.balance().points() - then;
+            if (diff > most) { most = diff; gainer = p.team(); }
+            if (diff < least) { least = diff; loser = p.team(); }
+        }
+        if (gainer == null && loser == null) {
+            return "Nach der 80. Minute hat sich an den Punkten nichts verschoben.";
+        }
+        StringBuilder text = new StringBuilder("Nach der 80. Minute");
+        if (gainer != null) text.append(" am meisten dazugewonnen: ").append(name(gainer)).append(" (+").append(most).append(most == 1 ? " Punkt)" : " Punkte)");
+        if (gainer != null && loser != null) text.append(";");
+        if (loser != null) text.append(" am meisten abgegeben: ").append(name(loser)).append(" (\u2212").append(-least).append(least == -1 ? " Punkt)" : " Punkte)");
+        return text.append(".").toString();
+    }
+
+    private static String name(Team t) {
+        return t.shortName == null || t.shortName.isBlank() ? t.name : t.shortName;
     }
 
     /**

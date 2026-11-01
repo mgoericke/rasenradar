@@ -427,7 +427,21 @@ public final class MatchdayPageModels {
     }
 
     /** Story r041: the table counted from home, away or the last five matches; {@code note} says what counts. */
-    record SplitTable(String key, String label, String note, List<StandingRow> rows) {
+    record SplitTable(String key, String label, String note, List<StandingRow> rows, List<String> moves) {
+        SplitTable(String key, String label, String note, List<StandingRow> rows) {
+            this(key, label, note, rows, List.of());
+        }
+
+        /** Story r071: the places gained or lost against the real table, one per row; empty for the plain splits. */
+        public String move(int index) {
+            return moves.isEmpty() ? null : moves.get(index);
+        }
+    }
+
+    /** Story r071: "+2", "−1", "0" — places a team stands higher (+) or lower (−) than in the real table. */
+    static String placesMoved(int realPosition, int scenarioPosition) {
+        int d = realPosition - scenarioPosition;
+        return d > 0 ? "+" + d : d < 0 ? "\u2212" + (-d) : "0";
     }
 
     /**
