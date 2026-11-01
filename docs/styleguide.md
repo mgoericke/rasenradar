@@ -24,9 +24,8 @@ entwickelt und gemessen).
   Rahmen; keine Linie kreuzt Text. Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte,
   Form) sind die große Schrift; die KI-Vorschau ist eine markierte Zeile darunter. Die Startseite zeigt
   darüber hinaus genau ein Spiel auf demselben Rasen, als Link zur Spielseite und über die volle Breite
-  direkt unter der Navigation, Wappen über dem Namen, das Ergebnis dazwischen: das Topspiel
-  (laufend vor anstehend vor beendet, je die beste Paarung nach Tabellenplatz) oder mit „Mein Verein"
-  dessen laufendes bzw. nächstes Spiel. Unter den Namen stehen Platz und Punkte vor dem Spiel und die
+  direkt unter der Navigation, Wappen über dem Namen, das Ergebnis dazwischen: nur mit „Mein Verein",
+  dessen laufendes bzw. nächstes Spiel. Ohne Verein bleibt die Bühne weg. Unter den Namen stehen Platz und Punkte vor dem Spiel und die
   Form als S/U/N-Kacheln (neuestes links; Sieg/Remis/Niederlage in den festen Tagesfarben von `--win`,
   `--draw`, `--loss`, damit die weiße Schrift in beiden Themen trägt). Unter einer Kreidelinie folgt die
   KI-Zeile (Richtwert, drei Wahrscheinlichkeiten unter den Vereinsnamen, Begründung in einer gekürzten
@@ -170,13 +169,14 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   hört die Seite auf zu fragen.
 - **Landingpage: Spieltags-Strom** (Spec 1). Kein Kopfbereich mit Schriftzug — die Marke steht
   in der Navigation. **Spieltagskopf** (Entwurf r102) über dem Strom: H1 „Spieltag", in derselben
-  Zeile der Ligaschalter Alle | 1. Liga | 2. Liga (`.stream-leagues`, schließt aus, die Tabelle
-  daneben folgt) und das Menü „Mehr zum Spieltag" (`details.md-menu`: Status Alle/Live/Beendet/
+  Zeile der Ligaschalter Alle | 1. Liga | 2. Liga | Pokal (`.stream-leagues`, schließt aus, die Tabelle
+  daneben folgt; vorgewählt ist die Liga von „Mein Verein", sonst die 1. Liga) und das Menü „Mehr zum Spieltag" (`details.md-menu`: Status Alle/Live/Beendet/
   Anstehend, je Liga Spieltag und Tabelle, Torschützen, Saison in Zahlen, dazu KI-Bilanz).
   Darunter beide Spieltage verlinkt und der Zeitraum, dann zwischen zwei 2 px-Kreidelinien die
   Werkzeugleiste (`.md-tools`): „‹ Aktueller Spieltag ›" als Links (`/?versatz=-1`, ohne Skript
   bedienbar, am Saisonrand ausgegraut, „Zurück zu jetzt" abseits von heute) und Liste | Kompakt
-  (`rr-view`). Abseits von heute fallen „Seit dem letzten Besuch" und der nächste Spieltag weg.
+  (`rr-view`). „Seit dem letzten Besuch" ist aus, bis es unter „Seite anpassen" eingeschaltet wird
+  (`data-section-default="off"`, `rr-shown`). Abseits von heute fallen diese Karte und der nächste Spieltag weg.
   Darunter der **Vorbericht** (`.brief`): kein Kasten, H2, je Zeile ein 2 px-Strich in `--ink`,
   fetter Anfang, unten eine Kreidelinie. Die Zeile von „Mein Verein" steht für jeden Verein im
   HTML und wird nur über `rrClubCss` sichtbar; in Kompakt fällt der Vorbericht weg.

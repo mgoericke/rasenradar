@@ -222,28 +222,17 @@ public class MatchdayPages {
     }
 
     /**
-     * The top match of the start page: the 1. Bundesliga first, the 2. Bundesliga when it has nothing.
-     * A match of the page the visitor browsed to ({@code spiel}) comes first.
+     * The start page's stage shows the match of "Mein Verein" only, which nav.js swaps in — a visitor
+     * without a club sees no stage. The server renders one only for a match browsed to with the stage's
+     * arrows ({@code spiel}) and no script.
      */
     private TopStage topStage(List<Match> shown, List<Match> next, Instant now, Long spiel) {
+        if (spiel == null) {
+            return null;
+        }
         List<Match> page = java.util.stream.Stream.concat(shown.stream(), next.stream()).toList();
-        if (spiel != null) {
-            Optional<Match> chosen = page.stream().filter(m -> m.id.equals(spiel)).findFirst();
-            if (chosen.isPresent()) {
-                return stageOf(chosen.get(), "", page, now);
-            }
-        }
-        for (League l : List.of(League.BUNDESLIGA_1, League.BUNDESLIGA_2)) {
-            List<Match> candidates = page.stream().filter(m -> m.matchday.league == l).toList();
-            if (candidates.isEmpty()) continue;
-            Matchday md = candidates.getFirst().matchday;
-            Map<Team, Integer> places = placesOf(l, md.season, Integer.MAX_VALUE);
-            Optional<Match> top = TopMatch.pick(candidates, places, now, liveWindow);
-            if (top.isPresent()) {
-                return stageOf(top.get(), "Topspiel", page, now);
-            }
-        }
-        return null;
+        return page.stream().filter(m -> m.id.equals(spiel)).findFirst()
+                .map(m -> stageOf(m, "", page, now)).orElse(null);
     }
 
     /**
@@ -468,7 +457,7 @@ public class MatchdayPages {
 
     /**
      * The start page's stage for "Mein Verein": the club's running or next match in any competition,
-     * swapped in by nav.js. Empty when the club has none — the top match then stays.
+     * swapped in by nav.js. Empty when the club has none — the stage then stays away.
      */
     @GET
     @Path("/mein-verein/{id}/topspiel")

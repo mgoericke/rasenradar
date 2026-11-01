@@ -231,8 +231,8 @@ document.addEventListener('click', function (e) {
   setInterval(refresh, 60000);
   document.addEventListener('visibilitychange', refresh);
   document.addEventListener('DOMContentLoaded', function () { loadNextMatch(read()); });
-  // the start page's stage: the club's own running or next match instead of the top match. The
-  // server's top match is kept and comes back without a club, or when the club has no match.
+  // the start page's stage: the club's own running or next match, and nothing without a club or
+  // when the club has no match. A match the server put there (browsed to without script) stays.
   function loadStage(c, force) {
     var slot = document.getElementById('top-stage');
     if (!slot || !window.htmx) return;
@@ -240,12 +240,16 @@ document.addEventListener('click', function (e) {
     var id = c ? String(c.id) : '';
     if (!force && slot.dataset.club === id) return;
     slot.dataset.club = id;
-    // the kept top match goes back as plain markup; htmx.process wires its KI line and arrows again
-    function restore() { slot.innerHTML = slot.rrTop; htmx.process(slot); }
+    // the kept markup goes back as it came; htmx.process wires its KI line and arrows again
+    function restore() { slot.innerHTML = slot.rrTop; htmx.process(slot); slot.hidden = !slot.children.length; }
     if (!c) { restore(); return; }
     htmx.ajax('GET', '/mein-verein/' + c.id + '/topspiel', { target: slot, swap: 'innerHTML' })
       .then(function () { if (!slot.children.length) restore(); });
   }
+  // whatever lands on the stage decides whether it shows: the club's match, a browsed one, or nothing
+  document.addEventListener('htmx:afterSwap', function (e) {
+    if (e.target.id === 'top-stage') e.target.hidden = !e.target.children.length;
+  });
   document.addEventListener('DOMContentLoaded', function () { loadStage(read()); });
   document.addEventListener('htmx:afterSettle', function (e) {
     if (e.target.closest && e.target.closest('#top-stage')) return;
@@ -749,22 +753,30 @@ document.addEventListener('click', function (e) {
 // Story r100 "Seite anpassen": switch sections of a page off, remembered in this browser only
 // (rr-hidden, a list of section keys — no login, nothing on the server). The head script in
 // base.html hides them before the first paint; this offers the dialog at the page's foot. The
-// matches themselves never carry a key, so they cannot be switched off.
+// matches themselves never carry a key, so they cannot be switched off. A section marked
+// data-section-default="off" works the other way round: it shows only once switched on (rr-shown),
+// and its own script asks window.rrSectionOn and listens for rr:sections.
 (function () {
-  var KEY = 'rr-hidden';
-  var memory = null;   // used when the browser refuses storage: the choice lasts until the next load
-  function read() {
-    if (memory) return memory.slice();
-    try { var h = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(h) ? h : []; } catch (e) { return []; }
+  var KEY = 'rr-hidden', SHOWN = 'rr-shown';
+  var memory = {};   // used when the browser refuses storage: the choice lasts until the next load
+  function list(key) {
+    if (memory[key]) return memory[key].slice();
+    try { var h = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(h) ? h : []; } catch (e) { return []; }
   }
+  function save(key, keys) {
+    try {
+      if (keys.length) localStorage.setItem(key, JSON.stringify(keys)); else localStorage.removeItem(key);
+      delete memory[key];
+    } catch (e) { memory[key] = keys.slice(); }
+  }
+  function read() { return list(KEY); }
+  window.rrSectionOn = function (key) { return list(SHOWN).indexOf(key) >= 0; };
+  function optIn(el) { return el.getAttribute('data-section-default') === 'off'; }
   function storable() {
     try { localStorage.setItem(KEY + '-probe', '1'); localStorage.removeItem(KEY + '-probe'); return true; } catch (e) { return false; }
   }
   function write(keys) {
-    try {
-      if (keys.length) localStorage.setItem(KEY, JSON.stringify(keys)); else localStorage.removeItem(KEY);
-      memory = null;
-    } catch (e) { memory = keys.slice(); }
+    save(KEY, keys);
     var style = document.getElementById('rr-hidden-style');
     if (!keys.length) { if (style) style.remove(); return; }
     if (!style) { style = document.createElement('style'); style.id = 'rr-hidden-style'; document.head.appendChild(style); }
@@ -794,8 +806,9 @@ document.addEventListener('click', function (e) {
       var lab = document.createElement('label');
       var box = document.createElement('input');
       box.type = 'checkbox';
-      box.checked = hidden.indexOf(key) < 0;
+      box.checked = optIn(el) ? window.rrSectionOn(key) : hidden.indexOf(key) < 0;
       box.setAttribute('data-key', key);
+      if (optIn(el)) box.setAttribute('data-opt-in', '');
       lab.appendChild(box);
       lab.appendChild(document.createTextNode(' ' + label(el)));
       li.appendChild(lab);
@@ -812,12 +825,25 @@ document.addEventListener('click', function (e) {
     if (!dialog) return;
     if (e.target.closest('[data-customize-open]')) { fill(dialog); dialog.showModal(); return; }
     if (e.target.closest('[data-customize-close]')) { dialog.close(); return; }
-    if (e.target.closest('[data-customize-all]')) { write([]); fill(dialog); }
+    if (e.target.closest('[data-customize-all]')) {
+      write([]);
+      save(SHOWN, list(SHOWN).concat(sections().filter(optIn).map(function (el) { return el.getAttribute('data-section'); })
+        .filter(function (k) { return !window.rrSectionOn(k); })));
+      fill(dialog);
+      document.dispatchEvent(new CustomEvent('rr:sections'));
+    }
   });
   document.addEventListener('change', function (e) {
     var box = e.target.closest('[data-customize-list] input[data-key]');
     if (!box) return;
     var key = box.getAttribute('data-key');
+    if (box.hasAttribute('data-opt-in')) {
+      var on = list(SHOWN).filter(function (k) { return k !== key; });
+      if (box.checked) on.push(key);
+      save(SHOWN, on);
+      document.dispatchEvent(new CustomEvent('rr:sections'));
+      return;
+    }
     var keys = read().filter(function (k) { return k !== key; });
     if (!box.checked) keys.push(key);
     write(keys);
