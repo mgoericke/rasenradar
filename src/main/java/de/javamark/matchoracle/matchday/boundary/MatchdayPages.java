@@ -1013,7 +1013,19 @@ public class MatchdayPages {
                 clubForm(team, shortcut, played),
                 currentSeason && !openMatches(schedule, Instant.now()).isEmpty()
                         ? "/" + shortcut + "/" + season + "/teams/" + team.id + "/spielplan.ics" : null,
-                MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing));
+                MatchdayPageModels.GoalTimingView.ofTeam(team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName, timing),
+                scorerProfiles(team, schedule, shortcut));
+    }
+
+    /** Story r063: one profile per scorer of the club, keyed by the name the scorer list shows. */
+    private static Map<String, MatchdayPageModels.ScorerProfileView> scorerProfiles(Team team, List<Match> schedule, String shortcut) {
+        String club = team.shortName == null || team.shortName.isBlank() ? team.name : team.shortName;
+        Map<String, MatchdayPageModels.ScorerProfileView> views = new LinkedHashMap<>();
+        int i = 0;
+        for (var e : de.javamark.matchoracle.matchday.control.ScorerProfileCalculator.of(team, schedule).entrySet()) {
+            views.put(e.getKey(), MatchdayPageModels.ScorerProfileView.of("scorer-" + (i++), e.getValue(), club, shortcut));
+        }
+        return views;
     }
 
     /** Story r024: the club's last final results, oldest first — provisional ones do not count as form. */

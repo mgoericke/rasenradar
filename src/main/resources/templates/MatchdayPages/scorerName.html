@@ -1,0 +1,14 @@
+{! story r063: the name opens the scorer's profile as a popover — native, so Escape, a tap beside it and
+   focus back on the name come from the browser, and it works without script !}
+{#if p}<button type="button" class="name scorer-open" popovertarget="{p.id}">{name}</button>
+<div class="scorer-profile" id="{p.id}" popover>
+  <h3>{p.name}</h3>
+  <p class="summary">{p.summary}</p>
+  {#if p.share}<p>{p.share}</p>{/if}
+  <p class="muted">{p.split}{#if p.late} · {p.late}{/if}</p>
+  <ol class="scorer-goals">
+    {#for g in p.goals}<li><a href="{g.link}"><span class="md">{g.matchday}.</span> <span class="opp">{g.opponent}</span> <span class="min">{g.minute}</span> <span class="sc">{g.scoreAfter}</span> <span class="muted">Endstand {g.finalScore}{#if g.penalty} · Elfmeter{/if}{#if g.provisional} · vorläufig{/if}</span></a></li>{/for}
+  </ol>
+  <p class="note">Nur Tore – Einsätze, Minuten oder Karten kennt die Datenquelle nicht. Eigentore zählen nicht für den Schützen.</p>
+  <button type="button" class="link-button" popovertarget="{p.id}" popovertargetaction="hide">Schließen</button>
+</div>{#else}<span class="name">{name}</span>{/if}
