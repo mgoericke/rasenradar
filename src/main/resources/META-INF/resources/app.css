@@ -822,6 +822,9 @@ h2 { font-size: 1.35rem; }
 .footer-legal { margin: 2rem 0 0; color: var(--ink-mute); font-size: .8rem; }
 .footer-legal a { border-bottom: 1px solid var(--line); }
 .footer-legal a:hover { color: var(--ink); border-color: var(--ink); }
+.footer-build { margin: .35rem 0 0; color: var(--ink-mute); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.footer-build a { color: inherit; border-bottom: 1px solid var(--line); }
+.footer-build a:hover { color: var(--ink); border-color: var(--ink); }
 
 @media (prefers-reduced-motion: no-preference) {
   .fixture, .pill, .pager a { transition: background-color .12s ease, border-color .12s ease; }

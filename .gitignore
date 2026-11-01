@@ -47,3 +47,6 @@ nb-configuration.xml
 # Claude Code session files and worktrees
 .claude/
 .worktrees/
+
+# Written by the build in GitHub Actions (footer version stamp)
+src/main/resources/build-info.properties

@@ -103,8 +103,7 @@
           <a class="{#if nav.page == 'accuracy'}is-active{/if}" href="/trefferbilanz" {#if nav.page == 'accuracy'}aria-current="page"{/if}>Trefferbilanz</a>
         </nav>
         <p class="provenance {#if data??}{#if data.stale}is-stale{/if}{/if}">
-          Spieldaten von <a href="https://www.openligadb.de" rel="noopener"><strong>OpenLigaDB</strong></a>{#if data??}, zuletzt geprüft {data.age}{#if data.stale} – das kann veraltet sein{/if}{/if} — ohne die dieses Projekt nicht möglich wäre.
-          Vorläufige Ergebnisse sind als solche markiert. Prognosen entstehen mit KI und können danebenliegen — keine Quoten, keine Wettempfehlungen.
+          {#if data??}Spieldaten zuletzt geprüft {data.age}{#if data.stale} – das kann veraltet sein{/if}. {/if}Vorläufige Ergebnisse sind als solche markiert. Prognosen entstehen mit KI und können danebenliegen — keine Quoten, keine Wettempfehlungen.
         </p>
       </div>
 
@@ -131,7 +130,7 @@
           </div>
           <div class="footer-col footer-sources">
             <p class="footer-heading">Quellen und Dank</p>
-            <p><a href="https://www.openligadb.de" rel="noopener">OpenLigaDB</a> <span class="muted">– Spiele, Ergebnisse, Torschützen; eine Community-Datenbank</span></p>
+            <p><a href="https://www.openligadb.de" rel="noopener">OpenLigaDB</a> <span class="muted">– Spiele, Ergebnisse, Torschützen; ohne diese Community-Datenbank gäbe es dieses Projekt nicht</span></p>
             <p><a href="https://www.dwd.de" rel="noopener">Deutscher Wetterdienst</a> über <a href="https://brightsky.dev" rel="noopener">Bright Sky</a> <span class="muted">– Wetter am Spielort</span></p>
             <p>Vereinswappen <span class="muted">– Adressen aus OpenLigaDB, meist von</span> <a href="https://commons.wikimedia.org" rel="noopener">Wikimedia Commons</a><span class="muted">; die Rechte liegen bei den Vereinen</span></p>
             <p><a href="https://www.anthropic.com" rel="noopener">Claude von Anthropic</a> <span class="muted">– KI-Vorschau</span></p>
@@ -143,6 +142,7 @@
       <p class="footer-legal">
         © 2026 Mark Göricke · <a href="https://www.javamark.de/impressum/" rel="noopener">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a>
       </p>
+      <p class="footer-build">{#if build.known}{#if build.version}Version {build.version} · {/if}Stand <a href="{build.commitUrl}" rel="noopener">{build.commit}</a>{#if build.builtAt}, gebaut am {build.builtAt}{/if}{#else}Entwicklungsstand, nicht aus GitHub gebaut{/if}</p>
     </div>
   </footer>
   {! story r011: the main areas within thumb reach on phones (CSS shows it below 560 px). The inline
