@@ -69,6 +69,27 @@
   document.addEventListener('htmx:oobAfterSwap', update); // the live poll swaps out of band only
 })();
 
+// Story r086: "Liste" or "Kompakt" on the matchday page, kept in this browser only (rr-view). The head
+// script sets the class before the first paint; without storage the list simply stays the default.
+(function () {
+  function mark() {
+    var compact = document.documentElement.classList.contains('rr-compact');
+    document.querySelectorAll('[data-view-choice]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.viewChoice === 'kompakt') === compact));
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-view-choice]');
+    if (!b) return;
+    var compact = b.dataset.viewChoice === 'kompakt';
+    document.documentElement.classList.toggle('rr-compact', compact);
+    try { if (compact) localStorage.setItem('rr-view', 'kompakt'); else localStorage.removeItem('rr-view'); } catch (err) {}
+    mark();
+  });
+  document.addEventListener('DOMContentLoaded', mark);
+  document.addEventListener('htmx:afterSettle', mark);
+})();
+
 // Story r028: "Bogen drucken" opens the browser's print dialog; the print stylesheet in app.css
 // turns the matchday page into a plain A4 sheet (Ctrl+P gives the same sheet).
 document.addEventListener('click', function (e) {

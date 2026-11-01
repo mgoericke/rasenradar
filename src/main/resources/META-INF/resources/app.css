@@ -697,6 +697,18 @@ h2 { font-size: 1.35rem; }
 /* the way to the forecast carries the KI lilac — nothing else does */
 .link-button.ai { border-color: var(--accent); }
 .link-button.ai:hover { background: var(--ki); border-color: var(--ki); color: var(--on-ink); }
+/* story r086: "Kompakt" — one line per match: time, short names, score; everything under the pairing goes.
+   The class sits on <html> from the head script, so the choice shows from the first paint. */
+.view-choice { display: none; margin: .7rem 0 0; }
+.js .view-choice { display: inline-flex; }
+.rr-compact .matchday .fixture { padding-top: .35rem; padding-bottom: .35rem; min-height: 40px; }
+.rr-compact .matchday .fixture .team-name.full { display: none; }
+.rr-compact .matchday .fixture .team-name.short { display: block; }
+.rr-compact .matchday .fixture .ht-score,
+.rr-compact .matchday .lead-line, .rr-compact .matchday .lead-legend, .rr-compact .matchday .stakes,
+.rr-compact .matchday .good-for, .rr-compact .matchday .star { display: none !important; }
+.rr-compact .matchday .day { margin: 1.1rem 0 .35rem; }
+@media print { .view-choice { display: none !important; } }
 /* story r028: the print button needs script, so it shows only once the head script set .js */
 .print-button { display: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer; }
 .js .print-button { display: inline-block; }

@@ -14,6 +14,12 @@
       {#if page.nav.leagueShortcut == 'bl1' || page.nav.leagueShortcut == 'bl2'}<a class="link-button" href="/{page.nav.leagueShortcut}/saison">Saison in Zahlen</a>{/if}
       {#if page.days}<button type="button" class="link-button print-button" data-print>Bogen drucken</button>{/if}
     </p>
+    {#if page.days}
+    {! story r086: one line per match; nav.js remembers the choice in this browser, without script the list stays !}
+    <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
+      <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
+    </p>
+    {/if}
     <nav class="pager" aria-label="Spieltag wechseln">
       {#if page.prevLink}<a href="{page.prevLink}" rel="prev">‹ Vorheriger</a>{#else}<span class="disabled">‹ Vorheriger</span>{/if}
       {#if page.nextLink}<a href="{page.nextLink}" rel="next">Nächster ›</a>{#else}<span class="disabled">Nächster ›</span>{/if}
@@ -43,7 +49,7 @@
           {#crest src=m.awayIcon lazy=true /}
           <span class="team-name full">{m.away}</span><span class="team-name short">{m.awayShort}</span>
         </span>
-        <span class="half">{#if m.halfTime}({m.halfTime}){/if}{#if m.provisional}<span class="print-note"> vorläufig</span>{/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
+        <span class="half">{#if m.halfTime}<span class="ht-score">({m.halfTime})</span>{/if}{#if m.provisional}<span class="print-note"> vorläufig</span>{/if}{#if page.nav.forecastSupported}<span id="forecast-marker-{m.id}" class="forecast-marker is-empty"></span>{/if}</span>
       </a>
       {! story r053: the course of a finished match; a tap opens the goals (minute, scorer, own goal or penalty) !}
       {#let line=page.leadLineOf(m.id)}{#if line}<details class="lead-line">
