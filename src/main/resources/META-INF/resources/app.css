@@ -1341,7 +1341,7 @@ h2 { font-size: 1.35rem; }
 .cup-decisions b { font-family: var(--display); font-size: 1.1rem; }
 @media (max-width: 560px) { .cup-decisions a { grid-template-columns: minmax(0, 1fr) auto; } .cup-decisions .muted { grid-column: 1 / -1; } }
 /* the cup prints the round that is open — "Runde drucken" — without the other rounds, the funnel and the surprises */
-@media print { .knockout .round:not([open]), .knockout .funnel-block, .knockout .upsets, .knockout #cup-stage, .knockout .knockout-rail, .knockout .cup-field, .knockout .season-chips, .knockout .watched { display: none !important; } }
+@media print { .knockout .round:not([open]), .knockout .funnel-block, .knockout .upsets, .knockout #cup-stage, .knockout .knockout-rail, .groups #cup-stage, .groups .knockout-rail, .knockout .cup-field, .knockout .season-chips, .knockout .watched { display: none !important; } }
 /* story r070: "Es geht um" under an open match — from the table as it stands, plain ink */
 .fixtures > li:has(> .stakes) { flex-wrap: wrap; }
 .stakes { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; font-size: .85rem; }
@@ -1489,6 +1489,24 @@ span.crest { display: inline-block; flex: none; box-sizing: border-box; }
 .group-table td.team a { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: .3rem; }
 .group-table td.team a:hover { text-decoration: underline; }
 @media (max-width: 640px) { .groups .group-table { display: block; overflow-x: auto; } }
+/* Nations League: the zones of a group, "Was noch geht" as a column and the decided facts above the table */
+.group-table tr.zone-top td.pos { box-shadow: inset 2px 0 0 var(--win); }
+.group-table tr.zone-bottom-playoff td.pos { box-shadow: inset 2px 0 0 color-mix(in srgb, var(--loss) 55%, transparent); }
+.group-table tr.zone-bottom td.pos { box-shadow: inset 2px 0 0 var(--loss); }
+.group-table th.possible, .group-table td.possible { white-space: nowrap; color: var(--ink-soft); }
+/* on the phone wins/draws/losses and goals make room for "Noch möglich" — difference and points stay */
+@media (max-width: 640px) { .groups .group-table .wdl { display: none; } }
+.group-lead { margin: .2rem 0 .4rem; font-size: .9rem; color: var(--ink-soft); max-width: 46rem; }
+.group-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; margin: 1.2rem 0 0; font-size: .8rem; color: var(--ink-mute); }
+.zone-key { display: inline-block; width: .8rem; height: .8rem; border-radius: 2px; margin-left: .5rem; }
+.zone-key:first-child { margin-left: 0; }
+.zone-key.zone-top { background: var(--win); }
+.zone-key.zone-bottom-playoff { background: color-mix(in srgb, var(--loss) 55%, transparent); }
+.zone-key.zone-bottom { background: var(--loss); }
+.holder-path { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .3rem; }
+.holder-path a { display: grid; grid-template-columns: 1fr auto; gap: .05rem .6rem; padding: .4rem .6rem; border: 1px solid var(--line); border-radius: 8px; font-size: .86rem; color: inherit; text-decoration: none; }
+.holder-path a:hover { border-color: var(--ink-mute); }
+.holder-path .upset-round { grid-column: 1 / -1; }
 
 /* Aufklappbare Runden: kein JavaScript, alles bleibt im Dokument — durchsuchbar,
    druckbar, und der Trichter von 32 auf 1 bleibt als Umriss lesbar. */
@@ -1538,7 +1556,7 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
 
 /* the cup page in two columns like the start page: rounds and the field on the left, a rail
    with the funnel, the first five scorers and the surprises in short on the right */
-.knockout { grid-column: 1 / -1; }
+.knockout, .groups { grid-column: 1 / -1; }
 .knockout-layout { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 2.4rem; align-items: start; }
 .knockout-main { min-width: 0; }
 .knockout-rail { display: grid; gap: 2rem; }

@@ -228,6 +228,15 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
   Elfmeterschießen" als gestreifte Liste (`.cup-decisions`). Ohne Tabelle, Serien, Vorjahr,
   Kreuztabelle und Heimvorteil; die Sprungmarken folgen.
+- **Nations-League-Seite** (Gruppen): oben die Bühne „Spiel des Spieltags" (offene Spiele zuerst,
+  die Paarung der bestplatzierten Teams, bei Gleichstand die engere Punktzahl; Pfeile blättern durch
+  den Spieltag aller Gruppen), darunter zwei Spalten wie die Pokalseite. Gruppentabellen mit Zonen
+  (Platz 1–2 Viertelfinale `zone-top`, Platz 3 Relegation `zone-bottom-playoff`, Platz 4 Abstieg in
+  Liga B `zone-bottom`) und Schlüssel darüber (`.group-legend`), Spalte „Noch möglich" („1.–3.",
+  „2. fest") und darüber eine Zeile mit dem Entschiedenen (`.group-lead`). Auf dem Telefon entfallen
+  S/U/N und Tore, damit „Noch möglich" ohne Wischen sichtbar bleibt. Leiste: Titelverteidiger mit
+  seinem Weg durch die Endrunde (`.holder-path`), die ersten fünf Torjäger, Gruppenspiele, Tore, Tore
+  je Spiel.
 - **Champions League: Saison in Zahlen** (`/ucl/saison`, dieselbe Vorlage): Tabellenabschnitte
   („Rechnerisch noch möglich" mit Platz 8 · Achtelfinale und Platz 24 · Play-offs, Restprogramm) aus
   der Ligaphase, alle übrigen Zahlen aus der ganzen Ausgabe; „Verlängerung und Elfmeterschießen" und

@@ -288,12 +288,21 @@ public final class MatchdayPageModels {
      * Spec 06: one group of a group competition — its own table and its matches of the shown matchday,
      * by day like on the matchday page (the time alone does not say when).
      */
-    record GroupSection(String name, List<StandingRow> table, List<DayGroup> days) {
+    record GroupSection(String name, List<StandingRow> table, List<DayGroup> days, Map<Long, String> stillPossible,
+                        String lead) {
+        /** "Was noch geht": the places a team can still finish on, e.g. "1.–3." or "1. fest"; null without a range. */
+        public String possibleOf(long teamId) {
+            return stillPossible.get(teamId);
+        }
     }
 
-    /** {@code rounds} carries a group competition's final round — empty while it is in the group stage. */
+    /**
+     * {@code rounds} carries a group competition's final round — empty while it is in the group stage.
+     * The stage shows the match of the shown matchday; the rail its scorers, figures and the holder.
+     */
     record GroupsPage(Nav nav, String season, int seasonYear, int number, String prevLink, String nextLink,
-                      List<GroupSection> groups, List<RoundSection> rounds, boolean standingsProvisional, DataInfo data) {
+                      List<GroupSection> groups, List<RoundSection> rounds, boolean standingsProvisional, DataInfo data,
+                      TopStage stage, List<LeagueScorerRow> scorers, GroupFigures figures, Holder holder) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(java.util.stream.Stream.concat(
@@ -303,6 +312,20 @@ public final class MatchdayPageModels {
     }
 
     record DayGroup(String label, List<MatchRow> matches) {
+    }
+
+    /** The edition in a line: finished group matches and their goals. */
+    record GroupFigures(int matches, int goals) {
+        public String perMatch() {
+            return matches == 0 ? "0" : String.format(java.util.Locale.GERMAN, "%.1f", (double) goals / matches);
+        }
+    }
+
+    /** The winner of the previous edition and its way through the final round. */
+    record Holder(String season, String team, String icon, List<HolderStep> path) {
+    }
+
+    record HolderStep(String round, String pairing, String score, String decision, String link) {
     }
 
     /**
@@ -341,6 +364,11 @@ public final class MatchdayPageModels {
     }
 
     static String zone(League league, int position) {
+        // Nations League, Liga A: first and second to the quarter-finals, third to the relegation
+        // play-off, fourth down to Liga B — only the group pages, no placement goals for an outlook
+        if (league == League.NATIONS_LEAGUE) {
+            return position <= 2 ? "zone-top" : position == 3 ? "zone-bottom-playoff" : "zone-bottom";
+        }
         List<PlacementGoal> goals = PlacementGoal.forPosition(league, position);
         if (goals.contains(PlacementGoal.KNOCKOUT_DIRECT) || goals.contains(PlacementGoal.EUROPE) || goals.contains(PlacementGoal.PROMOTION)) {
             return "zone-top";
@@ -525,7 +553,12 @@ public final class MatchdayPageModels {
         static final StageRoute HOME = new StageRoute("/", "/topspiel/", "top-stage");
 
         static StageRoute cup(String shortcut) {
-            return new StageRoute("/" + shortcut, "/" + shortcut + "/topspiel/", "cup-stage");
+            return competition("/" + shortcut, shortcut);
+        }
+
+        /** The stage of a competition page: {@code page} is where the arrows lead without script. */
+        static StageRoute competition(String page, String shortcut) {
+            return new StageRoute(page, "/" + shortcut + "/topspiel/", "cup-stage");
         }
     }
 

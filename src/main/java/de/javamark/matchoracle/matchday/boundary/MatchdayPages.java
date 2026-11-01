@@ -63,6 +63,7 @@ import de.javamark.matchoracle.matchday.control.FormCalculator;
 import de.javamark.matchoracle.matchday.control.GoalTimingCalculator;
 import de.javamark.matchoracle.matchday.control.HeadToHeadCalculator;
 import de.javamark.matchoracle.matchday.control.ScorerCalculator;
+import de.javamark.matchoracle.matchday.control.GroupReachCalculator;
 import de.javamark.matchoracle.matchday.control.StandingsCalculator;
 import de.javamark.matchoracle.matchday.control.MatchCalendar;
 import de.javamark.matchoracle.matchday.control.Stakes;
@@ -415,8 +416,8 @@ public class MatchdayPages {
     }
 
     /**
-     * The cup stage's arrows: another pairing of the same round on the stage, swapped in by htmx.
-     * Without htmx the cup page itself shows it.
+     * The stage's arrows on a competition page: another pairing of the same cup round, or another
+     * match of the same group matchday, swapped in by htmx. Without htmx the page itself shows it.
      */
     @GET
     @Path("/{league}/topspiel/{id}")
@@ -424,8 +425,19 @@ public class MatchdayPages {
                                    @HeaderParam("HX-Request") String htmxRequest) {
         League l = league(league);
         Match m = Match.<Match>findByIdOptional(id)
-                .filter(x -> x.matchday.league == l && l.format() == CompetitionFormat.KNOCKOUT)
-                .orElseThrow(() -> new NotFoundException("no cup match " + id));
+                .filter(x -> x.matchday.league == l && l.format() != CompetitionFormat.TABLE)
+                .orElseThrow(() -> new NotFoundException("no cup or group match " + id));
+        if (l.format() == CompetitionFormat.GROUPS) {
+            String page = "/" + l.sourceShortcut() + "/" + m.matchday.season + "/" + m.matchday.number;
+            if (htmxRequest == null) {
+                return Response.seeOther(URI.create(page + "?spiel=" + id)).build();
+            }
+            List<Match> day = Matchday.findAll(l, m.matchday.season, m.matchday.number).stream()
+                    .filter(md -> md.groupName != null).flatMap(md -> Match.findByMatchday(md).stream()).toList();
+            TopStage stage = groupStage(day, id, Instant.now(), page);
+            return Response.ok(stage == null ? "" : Templates.topStage(stage).render())
+                    .header("Cache-Control", "no-store").build();
+        }
         if (htmxRequest == null) {
             return Response.seeOther(URI.create("/" + l.sourceShortcut() + "?saison=" + m.matchday.season + "&spiel=" + id)).build();
         }
@@ -519,7 +531,7 @@ public class MatchdayPages {
         if (l.format() == CompetitionFormat.GROUPS) {
             Matchday.SeasonMatchday current = Matchday.currentNumber(l)
                     .orElseThrow(() -> new NotFoundException("no matchday known yet"));
-            return Templates.groups(groupsPage(l, current.season(), current.number()));
+            return Templates.groups(groupsPage(l, current.season(), current.number(), spiel));
         }
         Matchday matchday = Matchday.findDisplayed(l, Instant.now())
                 .orElseThrow(() -> new NotFoundException("no matchday known yet"));
@@ -528,10 +540,11 @@ public class MatchdayPages {
 
     @GET
     @Path("/{league}/{season}/{number}")
-    public TemplateInstance matchday(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number) {
+    public TemplateInstance matchday(@PathParam("league") String league, @PathParam("season") int season, @PathParam("number") int number,
+                                     @QueryParam("spiel") Long spiel) {
         League l = league(league);
         if (l.format() == CompetitionFormat.GROUPS) {
-            return Templates.groups(groupsPage(l, season, number));
+            return Templates.groups(groupsPage(l, season, number, spiel));
         }
         Matchday matchday = Matchday.find(l, season, number)
                 .orElseThrow(() -> new NotFoundException("matchday not found"));
@@ -1060,7 +1073,7 @@ public class MatchdayPages {
      * Spec 06: all groups of a group competition, each with its own table and its matches of
      * the shown matchday. One competition page, not one entry per group.
      */
-    private GroupsPage groupsPage(League league, int season, int number) {
+    private GroupsPage groupsPage(League league, int season, int number, Long spiel) {
         String shortcut = league.sourceShortcut();
         // the groups' matchday of that number, plus the edition's final round — the latter is a
         // phase of its own and does not share the groups' counting, so it always sits at the end
@@ -1074,15 +1087,21 @@ public class MatchdayPages {
         boolean provisional = false;
         List<MatchdayPageModels.GroupSection> sections = new ArrayList<>();
         List<RoundSection> rounds = new ArrayList<>();
+        List<Match> day = new ArrayList<>();
         for (Matchday group : groups) {
             List<Match> matches = Match.findByMatchday(group);
             matches.sort(Comparator.comparing((Match m) -> m.kickoff));
+            day.addAll(matches);
             // table after this matchday: everything played in this group up to and including it
             Standings standings = standingsCalculator.standingsBefore(withNumber(group, group.number + 1));
             provisional = provisional || standings.includesProvisional();
+            Map<Team, GroupReachCalculator.PlaceRange> reach = groupReach(group, standings);
+            Map<Long, String> possible = new HashMap<>();
+            reach.forEach((t, r) -> possible.put(t.id, r.settled() ? r.best() + ". fest" : r.best() + ".–" + r.worst() + "."));
             sections.add(new MatchdayPageModels.GroupSection(group.groupName,
                     standings.positions().stream().map(p -> StandingRow.of(p, league)).toList(),
-                    byDay(matches, m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow))));
+                    byDay(matches, m -> MatchdayPageModels.MatchRow.of(m, shortcut, now, liveWindow)),
+                    possible, groupLead(reach)));
         }
         // spec 06: sections of the final round are rounds, not groups — no table
         rounds.addAll(roundSections(league, season, shortcut, now));
@@ -1091,8 +1110,128 @@ public class MatchdayPages {
         boolean hasNext = Matchday.findAll(league, season, number + 1).stream().anyMatch(m -> m.groupName != null);
         String next = hasNext ? base + (number + 1) : null;
         Matchday reference = groups.isEmpty() ? finalRound.get(0) : groups.get(0);
+        List<LeagueScorerRow> scorers = MatchdayPageModels.topScorers(scorerCalculator.leagueScorersFor(league, season),
+                RAIL_SCORER_PLACES, clubLooks(ScorerCalculator.seasonMatches(league, season))).stream().limit(RAIL_SCORER_PLACES).toList();
+        List<Match> groupMatches = Match.findPlayedBefore(league, season, Integer.MAX_VALUE);
+        var figures = new MatchdayPageModels.GroupFigures(groupMatches.size(),
+                groupMatches.stream().mapToInt(MatchdayPages::goalsOf).sum());
         return new GroupsPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, number,
-                prev, next, sections, rounds, provisional, DataInfo.of(reference, now));
+                prev, next, sections, rounds, provisional, DataInfo.of(reference, now),
+                groupStage(day, spiel, now, base + number), scorers, figures, holder(league, season));
+    }
+
+    /**
+     * "Was noch geht" for one group after the shown matchday: every match of the group not counted in
+     * {@code standings} is still open — later matchdays and the shown one's unplayed matches.
+     */
+    private static Map<Team, GroupReachCalculator.PlaceRange> groupReach(Matchday group, Standings standings) {
+        List<Match> all = Matchday.<Matchday>list("league = ?1 and season = ?2 and groupName = ?3 and label is null",
+                group.league, group.season, group.groupName).stream().flatMap(md -> Match.findByMatchday(md).stream()).toList();
+        Map<Team, Integer> points = new java.util.LinkedHashMap<>();
+        standings.positions().forEach(p -> points.put(p.team(), p.balance().points()));
+        all.forEach(m -> {
+            points.putIfAbsent(m.homeTeam, 0);
+            points.putIfAbsent(m.awayTeam, 0);
+        });
+        List<Match> open = all.stream()
+                .filter(m -> m.matchday.number > group.number || m.fullTimeScore == null)
+                .toList();
+        return GroupReachCalculator.of(points, open);
+    }
+
+    /** The decided facts of a group in a line, or that nothing is decided yet. */
+    private static String groupLead(Map<Team, GroupReachCalculator.PlaceRange> reach) {
+        if (reach.isEmpty()) {
+            return null;
+        }
+        List<String> through = new ArrayList<>();
+        List<String> noQuarter = new ArrayList<>();
+        List<String> down = new ArrayList<>();
+        reach.forEach((t, r) -> {
+            if (r.worst() <= 2) {
+                through.add(t.name);
+            } else if (r.best() == 4) {
+                down.add(t.name);
+            } else if (r.best() > 2) {
+                noQuarter.add(t.name);
+            }
+        });
+        List<String> facts = new ArrayList<>();
+        if (!through.isEmpty()) facts.add("Viertelfinale sicher: " + String.join(", ", through) + ".");
+        if (!noQuarter.isEmpty()) facts.add("Viertelfinale nicht mehr erreichbar: " + String.join(", ", noQuarter) + ".");
+        if (!down.isEmpty()) facts.add("Steigt in Liga B ab: " + String.join(", ", down) + ".");
+        return facts.isEmpty() ? "Noch ist in dieser Gruppe nichts entschieden." : String.join(" ", facts);
+    }
+
+    /**
+     * The stage of a group matchday: the match of the matchday's two best-placed sides before it —
+     * open matches first, the closer points on a tie. A match the visitor browsed to takes its place.
+     */
+    private TopStage groupStage(List<Match> day, Long spiel, Instant now, String page) {
+        if (day.isEmpty()) {
+            return null;
+        }
+        StageRoute route = StageRoute.competition(page, day.get(0).matchday.league.sourceShortcut());
+        Optional<Match> browsed = spiel == null ? Optional.empty() : day.stream().filter(m -> m.id.equals(spiel)).findFirst();
+        if (browsed.isPresent()) {
+            TopStage s = stageOf(browsed.get(), "", day, now);
+            return s.on(route, browsed.get().matchday.groupName, s.reason());
+        }
+        Map<Matchday, Standings> before = new HashMap<>();
+        Comparator<Match> order = Comparator.comparingInt((Match m) -> m.isPlayed() ? 1 : 0)
+                .thenComparingInt(m -> {
+                    Standings s = before.computeIfAbsent(m.matchday, standingsCalculator::standingsBefore);
+                    return s.of(m.homeTeam).map(p -> p.position()).orElse(9) + s.of(m.awayTeam).map(p -> p.position()).orElse(9);
+                })
+                .thenComparingInt(m -> {
+                    Standings s = before.get(m.matchday);
+                    int home = s.of(m.homeTeam).map(p -> p.balance().points()).orElse(0);
+                    int away = s.of(m.awayTeam).map(p -> p.balance().points()).orElse(0);
+                    return Math.abs(home - away);
+                })
+                .thenComparing(m -> m.kickoff);
+        Match pick = day.stream().min(order).orElseThrow();
+        TopStage s = stageOf(pick, "", day, now);
+        return s.on(route, "Spiel des Spieltags",
+                pick.matchday.groupName + (s.reason().isEmpty() ? "" : " · " + s.reason()));
+    }
+
+    /**
+     * The winner of the previous edition and its way through the final round. The last round may hold
+     * the match for third place as well: the final is the one between the two semi-final winners.
+     */
+    private static MatchdayPageModels.Holder holder(League league, int season) {
+        Optional<Integer> previous = Matchday.<Matchday>list("league = ?1 and season < ?2 and label is not null", league, season)
+                .stream().map(m -> m.season).max(Integer::compare);
+        if (previous.isEmpty()) {
+            return null;
+        }
+        List<Matchday> rounds = Matchday.findRounds(league, previous.get());
+        List<Match> knockout = rounds.stream().flatMap(r -> Match.findByMatchday(r).stream())
+                .sorted(Comparator.comparing((Match m) -> m.kickoff)).toList();
+        int last = rounds.stream().mapToInt(r -> r.number).max().orElse(0);
+        List<Match> lastRound = knockout.stream().filter(m -> m.matchday.number == last).toList();
+        List<Match> earlier = knockout.stream().filter(m -> m.matchday.number < last).toList();
+        java.util.function.Predicate<Team> wonLastTie = t -> earlier.stream().filter(m -> m.involves(t))
+                .reduce((a, b) -> b).flatMap(Match::winner).map(t::equals).orElse(false);
+        Optional<Team> champion = lastRound.stream()
+                .filter(m -> wonLastTie.test(m.homeTeam) && wonLastTie.test(m.awayTeam))
+                .findFirst().flatMap(Match::winner);
+        if (champion.isEmpty()) {
+            return null;
+        }
+        Team t = champion.get();
+        String shortcut = league.sourceShortcut();
+        List<MatchdayPageModels.HolderStep> path = knockout.stream()
+                .filter(m -> m.involves(t) && m.isPlayed())
+                .filter(m -> m.matchday.number < last || lastRound.stream().anyMatch(x -> x == m && wonLastTie.test(m.homeTeam) && wonLastTie.test(m.awayTeam)))
+                .map(m -> new MatchdayPageModels.HolderStep(m.matchday.number == last ? "Endspiel" : m.matchday.displayName(),
+                        m.homeTeam.name + " – " + m.awayTeam.name,
+                        m.fullTimeScore.home + ":" + m.fullTimeScore.away,
+                        MatchdayPageModels.decisionLabel(m.decision, m.penaltyScore),
+                        "/" + shortcut + "/matches/" + m.id))
+                .toList();
+        return new MatchdayPageModels.Holder(MatchdayPageModels.seasonLabel(previous.get()), t.name, MatchdayPageModels.crestLink(t), path);
     }
 
     /** Matches in kickoff order, grouped under their day label ("Donnerstag, 24. September"). */

@@ -99,7 +99,13 @@ class MatchdayPageModelsTest {
     @Test
     void aCompetitionWithoutATableHasNoTableZone() {
         assertEquals("", MatchdayPageModels.zone(League.DFB_POKAL, 1));
-        assertEquals("", MatchdayPageModels.zone(League.NATIONS_LEAGUE, 1));
+    }
+
+    @Test
+    void aNationsLeagueGroupHasQuarterFinalPlayOffAndRelegationZones() {
+        assertEquals("zone-top", MatchdayPageModels.zone(League.NATIONS_LEAGUE, 2));
+        assertEquals("zone-bottom-playoff", MatchdayPageModels.zone(League.NATIONS_LEAGUE, 3));
+        assertEquals("zone-bottom", MatchdayPageModels.zone(League.NATIONS_LEAGUE, 4));
     }
 
     @Test
