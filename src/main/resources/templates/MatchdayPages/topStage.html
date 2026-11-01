@@ -3,7 +3,8 @@
    poller updates it. Below: place, points and form of both clubs before the match, then the KI line
    (loaded by htmx where there is a KI-Vorschau). The arrows browse the start page's matches — links to
    the start page without script, swapped in place with it. nav.js swaps in the club's own match for
-   "Mein Verein" (data-top-stage). !}
+   "Mein Verein" (data-top-stage). The cup page has the same stage in its own slot (stage.route): its
+   arrows browse the round, nav.js leaves it alone. !}
 <div class="scoreboard top-stage" data-top-stage="{stage.match.id}">
   <span class="box box-home" aria-hidden="true"></span><span class="box box-away" aria-hidden="true"></span>
   <p class="top-stage-label">{#if stage.label}<b>{stage.label}</b> {/if}{stage.leagueName} · {stage.when}{#if stage.reason} · <span class="top-stage-reason">{stage.reason}</span>{/if}</p>
@@ -32,8 +33,8 @@
   </div>
   {#if stage.browse}
   {#let b=stage.browse}
-  <a class="stage-nav prev" href="/?spiel={b.previous}" hx-get="/topspiel/{b.previous}" hx-target="#top-stage" hx-swap="innerHTML" hx-push-url="false" aria-label="Vorheriges Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  <a class="stage-nav next" href="/?spiel={b.next}" hx-get="/topspiel/{b.next}" hx-target="#top-stage" hx-swap="innerHTML" hx-push-url="false" aria-label="Nächstes Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <a class="stage-nav prev" href="{stage.route.page}?spiel={b.previous}" hx-get="{stage.route.fragment}{b.previous}" hx-target="#{stage.route.slot}" hx-swap="innerHTML" hx-push-url="false" aria-label="Vorheriges Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <a class="stage-nav next" href="{stage.route.page}?spiel={b.next}" hx-get="{stage.route.fragment}{b.next}" hx-target="#{stage.route.slot}" hx-swap="innerHTML" hx-push-url="false" aria-label="Nächstes Spiel"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   {#if b.position > 0}<p class="stage-pos">Spiel {b.position} von {b.count}</p>{/if}
   {/let}
   {/if}

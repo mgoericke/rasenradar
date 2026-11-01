@@ -228,6 +228,26 @@ public final class MatchdayPageModels {
     record RoundSection(String name, int matchCount, String dateRange, List<MatchRow> matches, boolean open) {
     }
 
+    /**
+     * "Noch im Wettbewerb": the clubs still in the cup by division, top division first, and the
+     * clubs that went out with the round they lost in, latest round first. {@code winner} once the
+     * final is played.
+     */
+    record CupField(List<CupTierGroup> remaining, List<CupExit> out, String winner, String winnerIcon) {
+        public int remainingCount() {
+            return remaining.stream().mapToInt(g -> g.clubs().size()).sum();
+        }
+    }
+
+    record CupTierGroup(String tier, String cssClass, List<CupClub> clubs) {
+    }
+
+    record CupClub(String name, String icon, String link) {
+    }
+
+    record CupExit(String round, List<String> clubs) {
+    }
+
     /** Spec 06: a match a lower-division club won, with how far apart the two divisions were. */
     record UpsetRow(String round, String winner, String loser, String winnerTier, String loserTier,
                     String score, String decision, String link, int gap) {
@@ -246,7 +266,8 @@ public final class MatchdayPageModels {
 
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
                         List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data,
-                        List<FunnelRow> funnel, FunnelFigures figures, Map<Long, LeadLine> leadLines) {
+                        List<FunnelRow> funnel, FunnelFigures figures, Map<Long, LeadLine> leadLines,
+                        TopStage stage, CupField field, List<LeagueScorerRow> scorers) {
 
         /** Story r053 in the cup: the course of every finished pairing whose goal list is complete. */
         public LeadLine leadLineOf(long matchId) {
@@ -465,7 +486,12 @@ public final class MatchdayPageModels {
      * KI-Vorschau. {@code browse} is the way through the start page's matches, null without.
      */
     record TopStage(String label, String leagueName, String when, String reason, String status, MatchRow match,
-                    StageTeam home, StageTeam away, String kiLink, StageBrowse browse) {
+                    StageTeam home, StageTeam away, String kiLink, StageBrowse browse, StageRoute route) {
+        /** The same stage on another page: its own label, reason and way of browsing. */
+        TopStage on(StageRoute other, String newLabel, String newReason) {
+            return new TopStage(newLabel, leagueName, when, newReason, status, match, home, away, kiLink, browse, other);
+        }
+
         /** Both clubs' facts, home first; empty without a table. */
         public List<StageTeam> clubs() {
             return home == null ? List.of() : List.of(home, away);
@@ -491,6 +517,18 @@ public final class MatchdayPageModels {
     }
 
     /** Design r102: browsing the stage through the start page's matches — "Spiel 11 von 18". */
+    /**
+     * Where a stage lives: the page its arrows link to without script ({@code page}?spiel=), the
+     * fragment htmx swaps in ({@code fragment}{id}) and the slot it swaps into.
+     */
+    record StageRoute(String page, String fragment, String slot) {
+        static final StageRoute HOME = new StageRoute("/", "/topspiel/", "top-stage");
+
+        static StageRoute cup(String shortcut) {
+            return new StageRoute("/" + shortcut, "/" + shortcut + "/topspiel/", "cup-stage");
+        }
+    }
+
     record StageBrowse(long previous, long next, int position, int count) {
         /**
          * The way from {@code current} through {@code order}, round at both ends. {@code position} is 0

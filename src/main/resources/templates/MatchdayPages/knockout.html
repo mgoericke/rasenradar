@@ -3,6 +3,12 @@
 {#description}Alle Runden des {page.nav.leagueName}s {page.season} – Ergebnisse, Spielklassen und die Überraschungen der Ausgabe.{/description}
 {#body}
 <section class="matchday knockout">
+  {! the cup stage over the full width: "Spiel der Runde" before the round, its biggest surprise
+     after it; the arrows browse the round. Its own slot, so nav.js's "Mein Verein" leaves it alone. !}
+  {#if page.stage}<div id="cup-stage">{#include MatchdayPages/topStage stage=page.stage /}</div>{/if}
+
+  <div class="knockout-layout">
+  <div class="knockout-main">
   <div class="matchday-head">
     <h1 class="matchday-title">{page.nav.leagueName}</h1>
     <p class="matchday-season">{page.season}</p>
@@ -65,12 +71,43 @@
   {/for}
   </div>
 
+  {#if page.field.remaining}
+  {! "Noch im Wettbewerb": who is left, by division; who went out, in small type below !}
+  <section class="cup-field" aria-labelledby="cup-field">
+    {#if page.field.winner}
+    <h2 class="round-name" id="cup-field">Pokalsieger</h2>
+    <p class="cup-winner">{#crest src=page.field.winnerIcon size="large" /} <strong>{page.field.winner}</strong></p>
+    {#else}
+    <h2 class="round-name" id="cup-field">Noch im Wettbewerb</h2>
+    <p class="round-meta">{page.field.remainingCount} {#if page.field.remainingCount == 1}Mannschaft{#else}Mannschaften{/if}, nach Spielklasse</p>
+    {#for g in page.field.remaining}
+    <div class="cup-tier">
+      <h3><span class="funnel-key {g.cssClass}" aria-hidden="true"></span>{g.tier} <span class="muted">{g.clubs.size}</span></h3>
+      <ul class="cup-crests">
+        {#for c in g.clubs}<li><a href="{c.link}" title="{c.name}">{#crest src=c.icon size="large" lazy=true /}<span>{c.name}</span></a></li>{/for}
+      </ul>
+    </div>
+    {/for}
+    {/if}
+    {#if page.field.out}
+    <details class="cup-out">
+      <summary>Ausgeschieden</summary>
+      <dl>
+        {#for e in page.field.out}<dt>{e.round}</dt><dd>{#each e.clubs}{it}{#if it_hasNext}, {/if}{/each}</dd>{/for}
+      </dl>
+    </details>
+    {/if}
+  </section>
+  {/if}
+  </div>
+
+  <aside class="knockout-rail">
   {#if page.funnel}
   {! Spec 06: der Trichter — wie sich das Feld von Runde zu Runde ausduennt und wer
      uebrig bleibt. Die Breite traegt die Aussage, die Spielklassen werden allein
      ueber die Tinte unterschieden (Gruen/Rot sind Ergebnisse, Lila ist die KI). !}
-  <section class="funnel-block">
-    <h2 class="round-name">Wie sich das Feld ausdünnt</h2>
+  <section class="rail-card funnel-block">
+    <h2>Wie sich das Feld ausdünnt</h2>
     <p class="round-meta muted">Mannschaften je Runde, aufgeschlüsselt nach Spielklasse.</p>
 
     <ol class="funnel">
@@ -108,27 +145,41 @@
   </section>
   {/if}
 
+  {#if page.scorers}
+  <section class="rail-card rail-scorers" aria-labelledby="rail-scorers">
+    <h2 id="rail-scorers">Torjäger</h2>
+    <table class="stream-table">
+      <caption class="sr-only">Die ersten fünf der Torschützenliste</caption>
+      <thead><tr><th class="pos">#</th><th class="team">Name</th><th class="team">Verein</th><th>Tore</th></tr></thead>
+      <tbody>
+        {#for s in page.scorers}
+        <tr><td class="pos">{s.rank}</td><td class="team">{s.name}</td><td class="team club">{#crest src=s.crest size="small" lazy=true /} {s.teamShort}</td><td class="points">{s.goals}</td></tr>
+        {/for}
+      </tbody>
+    </table>
+    <p class="note"><a href="/{page.nav.leagueShortcut}/torschuetzen">Ganze Torschützenliste</a></p>
+  </section>
+  {/if}
+
   {#if page.upsets}
-  <section class="upsets">
-    <h2 class="round-name">Überraschungen</h2>
-    <p class="round-meta muted">Begegnungen, die die klassentiefere Mannschaft gewonnen hat – der größte Klassenunterschied zuerst.</p>
+  <section class="rail-card upsets" aria-labelledby="rail-upsets">
+    <h2 id="rail-upsets">Überraschungen</h2>
+    <p class="round-meta">Die klassentiefere Mannschaft hat gewonnen, der größte Klassenunterschied zuerst.</p>
     <ol class="upset-list">
       {#for u in page.upsets}
       <li>
         <a class="upset" href="{u.link}">
-          <span class="upset-round">{u.round}</span>
-          <span class="upset-teams">
-            <strong>{u.winner}</strong> <span class="tier">{u.winnerTier}</span>
-            <span class="upset-beat">schlägt</span>
-            {u.loser} <span class="tier">{u.loserTier}</span>
-          </span>
+          <span class="upset-teams"><strong>{u.winner}</strong> <span class="upset-beat">schlägt</span> {u.loser}</span>
           <span class="upset-score">{u.score}{#if u.decision} <span class="decision">{u.decision}</span>{/if}</span>
+          <span class="upset-round">{u.round} · {u.winnerTier} gegen {u.loserTier}</span>
         </a>
       </li>
       {/for}
     </ol>
   </section>
   {/if}
+  </aside>
+  </div>
 </section>
 {#if page.livePollLink}<div id="live-poller" hx-get="{page.livePollLink}" hx-trigger="every 60s, visibilitychange[document.visibilityState === 'visible'] from:document" hx-swap="none"></div>{/if}
 {/body}

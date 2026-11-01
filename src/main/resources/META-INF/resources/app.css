@@ -528,7 +528,8 @@ h2 { font-size: 1.35rem; }
 .scoreboard .home { justify-content: flex-end; text-align: right; }
 .scoreboard .away { justify-content: flex-start; text-align: left; }
 .scoreboard .score { font-size: clamp(2.8rem, 7vw, 4.6rem); font-weight: 800; min-width: 6rem; padding: .05rem .8rem; border-color: var(--turf-line); color: var(--turf-soft); }
-.scoreboard .score.is-played { background: var(--turf-ink); color: var(--ink); border-color: var(--turf-ink); }
+/* the turf's own dark green, not --ink: in the dark theme --ink is light and the score vanished */
+.scoreboard .score.is-played { background: var(--turf-ink); color: var(--turf-a); border-color: var(--turf-ink); }
 .scoreboard .score.is-played.is-provisional { background: transparent; color: var(--turf-ink); border-color: var(--turf-ink); }
 .scoreboard .score.is-live { color: var(--turf-ink); border-color: var(--turf-ink); border-width: 2px; }
 .scoreboard .score.is-live.has-score { font-size: clamp(2.8rem, 7vw, 4.6rem); }
@@ -547,7 +548,7 @@ h2 { font-size: 1.35rem; }
 /* the start page's stage (design r102): the pitch over the full width, straight under the navigation.
    The match large in its middle — crest over name, the score between, place, points and form below,
    then the KI line beside "Alles zum Spiel". Arrows on the touchline browse the start page's matches. */
-#top-stage { margin: -2rem calc(50% - 50vw) 2rem; }
+#top-stage, #cup-stage { margin: -2rem calc(50% - 50vw) 2rem; }
 .top-stage {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.2rem; border-radius: 0;
   padding: 2.6rem max(clamp(3.6rem, 8vw, 7rem), (100% - 1280px) / 2) 4rem;
@@ -618,7 +619,7 @@ h2 { font-size: 1.35rem; }
   .stage-ki-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 }
 @media (max-width: 560px) {
-  #top-stage { margin-bottom: 1.4rem; }
+  #top-stage, #cup-stage { margin-bottom: 1.4rem; }
   .top-stage { padding: 2rem 1.4rem 3.4rem; gap: 1rem; --stage-cols: minmax(0, 1fr) 4.6rem minmax(0, 1fr); }
   .top-stage .teams { font-size: clamp(1.3rem, 6vw, 1.7rem); }
   .top-stage .home, .top-stage .away { gap: .4rem; }
@@ -1338,7 +1339,7 @@ h2 { font-size: 1.35rem; }
 .cup-decisions b { font-family: var(--display); font-size: 1.1rem; }
 @media (max-width: 560px) { .cup-decisions a { grid-template-columns: minmax(0, 1fr) auto; } .cup-decisions .muted { grid-column: 1 / -1; } }
 /* the cup prints the round that is open — "Runde drucken" — without the other rounds, the funnel and the surprises */
-@media print { .knockout .round:not([open]), .knockout .funnel-block, .knockout .upsets, .knockout .season-chips, .knockout .watched { display: none !important; } }
+@media print { .knockout .round:not([open]), .knockout .funnel-block, .knockout .upsets, .knockout #cup-stage, .knockout .knockout-rail, .knockout .cup-field, .knockout .season-chips, .knockout .watched { display: none !important; } }
 /* story r070: "Es geht um" under an open match — from the table as it stands, plain ink */
 .fixtures > li:has(> .stakes) { flex-wrap: wrap; }
 .stakes { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; font-size: .85rem; }
@@ -1532,6 +1533,41 @@ details.round > summary:focus-visible { outline: 2px solid var(--ink); outline-o
   font-size: .9rem; color: var(--ink-soft);
 }
 .funnel-figures strong { font-family: var(--display); color: var(--ink); }
+
+/* the cup page in two columns like the start page: rounds and the field on the left, a rail
+   with the funnel, the first five scorers and the surprises in short on the right */
+.knockout { grid-column: 1 / -1; }
+.knockout-layout { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 2.4rem; align-items: start; }
+.knockout-main { min-width: 0; }
+.knockout-rail { display: grid; gap: 2rem; }
+.knockout-rail .funnel-block, .knockout-rail .upsets { margin-top: 0; }
+.knockout-rail .funnel-row { grid-template-columns: 6.2rem 1fr 2rem; gap: .45rem; }
+.knockout-rail .funnel-label { font-size: .8rem; }
+.knockout-rail .upset { grid-template-columns: 1fr auto; gap: .1rem .6rem; padding: .45rem .6rem; font-size: .88rem; }
+.knockout-rail .upset-round { grid-column: 1 / -1; font-size: .76rem; }
+.rail-scorers td.club { white-space: nowrap; }
+@media (max-width: 1000px) {
+  .knockout-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* "Noch im Wettbewerb": a wall of crests by division, the clubs that went out in small type */
+.cup-field { margin-top: 2.5rem; }
+.cup-tier { margin-top: 1rem; }
+.cup-tier h3 { display: flex; align-items: center; gap: .45rem; font: 600 .95rem var(--text); margin: 0 0 .5rem; }
+.cup-tier h3 .muted { font-weight: 400; }
+.cup-crests { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: .6rem .4rem; }
+.cup-crests a { display: grid; justify-items: center; gap: .3rem; text-decoration: none; color: var(--ink-soft); font-size: .74rem; text-align: center; line-height: 1.2; }
+.cup-crests a:hover { color: var(--ink); }
+.cup-crests a:hover span { text-decoration: underline; }
+.cup-crests .crest.large { width: 2.6rem; height: 2.6rem; }
+.cup-winner { display: flex; align-items: center; gap: .8rem; font-family: var(--display); font-size: 2rem; margin: .4rem 0 0; }
+.cup-winner .crest.large { width: 3.6rem; height: 3.6rem; }
+.cup-out { margin-top: 1.4rem; font-size: .8rem; color: var(--ink-mute); }
+.cup-out summary { cursor: pointer; color: var(--ink-soft); font-weight: 600; }
+.cup-out dl { margin: .5rem 0 0; display: grid; grid-template-columns: max-content 1fr; gap: .35rem .9rem; }
+.cup-out dt { color: var(--ink-soft); }
+.cup-out dd { margin: 0; line-height: 1.45; }
+@media (max-width: 560px) { .cup-out dl { grid-template-columns: 1fr; } .cup-out dd { margin-bottom: .4rem; } }
 
 @media (max-width: 640px) {
   .funnel-row { grid-template-columns: 5.5rem 1fr 2rem; gap: .4rem; }

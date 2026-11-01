@@ -19,7 +19,7 @@ entwickelt und gemessen).
   Haarlinien zwischen Zeilen. Die Streifen tragen Rhythmus, keine Bedeutung — nichts darf davon abhängen,
   sie zu unterscheiden.
 - **Kreidelinien trennen.** Tagesüberschriften enden in einer 2-px-Kreidelinie, Abschnitte ebenso.
-- **Grüne Bühne nur für ein einzelnes Spiel: der Spielkopf und das Topspiel.** Auf der Spielseite steht
+- **Grüne Bühne nur für ein einzelnes Spiel: der Spielkopf, das Topspiel und die Pokalbühne.** Auf der Spielseite steht
   die Begegnung auf dem gestreiften Rasen (`--turf-a`/`--turf-b`) mit Seitenlinie und Strafräumen als
   Rahmen; keine Linie kreuzt Text. Die Fakten (Wappen, Namen, Ergebnis oder Anstoß, Platz, Punkte,
   Form) sind die große Schrift; die KI-Vorschau ist eine markierte Zeile darunter. Die Startseite zeigt
@@ -31,8 +31,12 @@ entwickelt und gemessen).
   `--draw`, `--loss`, damit die weiße Schrift in beiden Themen trägt). Unter einer Kreidelinie folgt die
   KI-Zeile (Richtwert, drei Wahrscheinlichkeiten unter den Vereinsnamen, Begründung in einer gekürzten
   Zeile), daneben „Alles zum Spiel". Pfeile auf der Seitenlinie blättern durch alle Spiele der
-  Startseite („Spiel 11 von 18"). Mehr Bühnen gibt es nicht; Listen, Tabellen und Karten bleiben
-  auf Kreide.
+  Startseite („Spiel 11 von 18"). Die Pokalseite hat dieselbe Bühne in eigenem Platz (`#cup-stage`,
+  „Mein Verein" tauscht dort nichts): vor und während der Runde das „Spiel der Runde" (die Paarung der
+  beiden höchsten Spielklassen), danach die „Überraschung der Runde" (größter Klassenunterschied)
+  oder sonst das torreichste Spiel; statt Platz und Punkte die Spielklassen („Bochum (2. Liga) schlägt
+  Mainz (1. Liga)"), keine KI-Zeile. Die Pfeile blättern durch die Runde. Mehr Bühnen gibt es nicht;
+  Listen, Tabellen und Karten bleiben auf Kreide.
 - **Suche** (`.site-search`, Entwurf r102): Feld im Rasenband, findet Vereine, Spiele der Startseite und
   Torjäger beider Bundesligen. Die Treffer stehen in einem Feld wie das Menü „Darstellung", `/`
   springt hinein. Ohne Skript führt das Feld auf die Seite `/suche`. Auf dem Telefon ist es eine Lupe in
@@ -213,7 +217,12 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   Torverlauf unter jeder beendeten Begegnung (gemeinsamer Baustein `{#leadLine}`; nach Verlängerung
   reicht die Achse bis 125 Minuten, ein zweiter Strich markiert die 90.), Stern und „Beobachtet"
   für offene Begegnungen, Liste | Kompakt und „Runde drucken" (gedruckt wird nur die offene Runde,
-  ohne Trichter und Überraschungen).
+  ohne Bühne, Seitenleiste und Feld). Zwei Spalten wie die Startseite (`.knockout-layout`, unter
+  1000 px untereinander): links Kopf, Runden und „Noch im Wettbewerb", rechts eine nicht klebende
+  Leiste mit Trichter und Zahlen, den ersten fünf Torjägern und den Überraschungen in Kurzform.
+  **Noch im Wettbewerb** (`.cup-field`): Wappenwand der verbliebenen Vereine nach Spielklasse (Schlüssel
+  wie im Trichter), darunter aufklappbar „Ausgeschieden" mit der Runde, in der es endete, in kleiner
+  Schrift; nach dem Endspiel nur der Pokalsieger.
 - **Pokal in Zahlen** (`/dfb/saison`, Vorlage der Saisonseite mit `page.cup`): nur, was im K.-o.
   trägt — häufigste Ergebnisse, Tore der besonderen Art, die größte Aufholjagd (ohne Vereinsbalken,
   Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
