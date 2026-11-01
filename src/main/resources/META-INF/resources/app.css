@@ -1326,6 +1326,8 @@ h2 { font-size: 1.35rem; }
 .lead-legend { color: var(--ink-mute); font-size: .85rem; max-width: 70ch; margin: .6rem 0 0; }
 @media (max-width: 560px) { .lead-line { padding-left: .9rem; } }
 @media print { .lead-line, .lead-legend { display: none !important; } }
+/* the cup prints the round that is open — "Runde drucken" — without the other rounds, the funnel and the surprises */
+@media print { .knockout .round:not([open]), .knockout .funnel-block, .knockout .upsets, .knockout .season-chips, .knockout .watched { display: none !important; } }
 /* story r070: "Es geht um" under an open match — from the table as it stands, plain ink */
 .fixtures > li:has(> .stakes) { flex-wrap: wrap; }
 .stakes { order: 3; flex-basis: 100%; margin: -.35rem 0 0; padding: 0 .9rem .55rem 4.85rem; font-size: .85rem; }

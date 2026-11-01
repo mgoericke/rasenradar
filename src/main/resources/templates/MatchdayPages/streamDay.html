@@ -23,10 +23,7 @@
         </a>
         <span id="ki-{r.match.id}" class="stream-ki is-pending"></span>
         {#if !r.match.played && !r.match.live}<button type="button" class="star" data-star="{r.match.id}" aria-pressed="false" aria-label="{r.match.homeShort} – {r.match.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
-        {#if r.lead}<details class="lead-line">
-          <summary><svg viewBox="0 0 100 24" preserveAspectRatio="none" role="img" aria-label="{r.lead.label}"><line class="ht" x1="{r.lead.halfTime}" x2="{r.lead.halfTime}" y1="2" y2="22"/><line class="zero" x1="0" x2="100" y1="12" y2="12"/><path d="{r.lead.path}"/></svg><span class="sr-only">Torfolge zeigen</span></summary>
-          {#if r.lead.goals}<ol>{#for g in r.lead.goals}<li><span class="min">{g.minute}</span> {g.score} {g.scorer}{#if g.note} <span class="muted">({g.note})</span>{/if}</li>{/for}</ol>{#else}<p class="muted">Keine Tore.</p>{/if}
-        </details>{/if}
+        {#if r.lead}{#leadLine line=r.lead /}{/if}
       </li>
       {/for}
     </ol>

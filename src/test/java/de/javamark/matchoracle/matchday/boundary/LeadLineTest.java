@@ -69,4 +69,19 @@ class LeadLineTest {
         unplayed.fullTimeScore = null;
         assertNull(LeadLine.of(unplayed));
     }
+
+    @Test
+    void afterExtraTimeTheLineRunsTo125WithATickAt90() {
+        Match m = match(1, 1);
+        m.decision = de.javamark.matchoracle.matchday.entity.Decision.PENALTIES;
+        goal(m, 50, 1, 0);
+        goal(m, 112, 1, 1);
+
+        LeadLine line = LeadLine.of(m);
+
+        assertEquals("M0 12 H40.0 V7.0 H89.6 V12.0 H100", line.path());
+        assertEquals("36.0", line.halfTime());
+        assertEquals("72.0", line.fullTime());
+        assertNull(LeadLine.of(match(0, 0)).fullTime());
+    }
 }

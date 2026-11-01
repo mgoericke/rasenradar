@@ -11,7 +11,22 @@
       {#for s in page.otherSeasons}<a class="chip" href="{s.link}">{s.season}</a>{/for}
     </nav>
     {/if}
+    <p class="matchday-actions">
+      <button type="button" class="link-button print-button" data-print>Runde drucken</button>
+    </p>
+    <p class="seg view-choice" role="group" aria-label="Darstellung der Spiele">
+      <button type="button" data-view-choice="liste" aria-pressed="true">Liste</button><button type="button" data-view-choice="kompakt" aria-pressed="false">Kompakt</button>
+    </p>
   </div>
+
+  {#if page.leadLines}<p class="lead-legend">Die Linie unter einem Ergebnis ist der Spielverlauf: nach oben bei einem Tor der Heimmannschaft, nach unten bei einem Tor der Gäste, die senkrechten Striche sind Halbzeit und, nach Verlängerung, die 90. Minute. Antippen zeigt die Tore.</p>{/if}
+
+  {! story r096: starred open pairings move up into this block (nav.js); the stars live in this browser only !}
+  <div class="watched" data-watch-block hidden>
+    <h2 class="round-name">Beobachtet</h2>
+    <ol class="fixtures"></ol>
+  </div>
+  <div data-watch-root data-watch-over="{page.over}">
 
   {! Spec 06: kein Turnierbaum — der Wettbewerb wird nach jeder Runde neu ausgelost.
      Die Runden stehen als Band, Endspiel zuoberst. !}
@@ -23,9 +38,9 @@
     </summary>
     <ol class="fixtures">
       {#for m in round.matches}
-      <li>
+      <li data-watch="{m.id}">
         <a class="fixture" href="{m.link}" data-clubs="{m.homeId} {m.awayId}">
-          <span class="time">{m.time}</span>
+          <span class="time"><span class="watch-day">{m.weekday} </span>{m.time}</span>
           <span class="home">
             <span class="team-name full">{m.home}</span><span class="team-name short">{m.homeShort}</span>
             {#if m.homeTier}<span class="tier">{m.homeTier}</span>{/if}
@@ -39,11 +54,14 @@
           </span>
           <span class="half">{#if m.decision}<span class="decision">{m.decision}</span>{/if}</span>
         </a>
+        {#let line=page.leadLineOf(m.id)}{#if line}{#leadLine line=line /}{/if}{/let}
+        {#if !m.played && !m.live}<button type="button" class="star" data-star="{m.id}" aria-pressed="false" aria-label="{m.homeShort} – {m.awayShort} beobachten" hidden><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.2l2.4 5 5.4.6-4 3.7 1.1 5.4L10 14.2l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>{/if}
       </li>
       {/for}
     </ol>
   </details>
   {/for}
+  </div>
 
   {#if page.funnel}
   {! Spec 06: der Trichter — wie sich das Feld von Runde zu Runde ausduennt und wer

@@ -205,6 +205,11 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
 - **Kompakt** (Spieltagsseite, Umschalter „Liste | Kompakt“): eine Zeile je Spiel mit Zeit,
   Kurznamen und Ergebnis, der KI-Marker bleibt; alles unter der Paarung entfällt. Die Wahl liegt nur
   im Browser (`rr-view`) und wird wie die Darstellung im `<head>` vor dem ersten Zeichnen gesetzt.
+- **Pokalseite** (DFB-Pokal, K.-o.-Runden): dieselben Werkzeuge wie die Spieltagsseite —
+  Torverlauf unter jeder beendeten Begegnung (gemeinsamer Baustein `{#leadLine}`; nach Verlängerung
+  reicht die Achse bis 125 Minuten, ein zweiter Strich markiert die 90.), Stern und „Beobachtet"
+  für offene Begegnungen, Liste | Kompakt und „Runde drucken" (gedruckt wird nur die offene Runde,
+  ohne Trichter und Überraschungen).
 - **Spielseite: der Spielkopf** (`.scoreboard`, `.board-ai`, `.board-verdict`): gestreifter Rasen
   mit Seitenlinie und zwei Strafräumen als Rahmen; Wappen auf weißer Scheibe, Namen und Ergebnis in
   Display-Schrift 800. Unter einer Kreidelinie eine KI-Zeile — KI-Plakette, Richtwert und Tendenz

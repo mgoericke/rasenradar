@@ -246,7 +246,17 @@ public final class MatchdayPageModels {
 
     record KnockoutPage(Nav nav, String season, int seasonYear, List<SeasonChip> otherSeasons,
                         List<RoundSection> rounds, List<UpsetRow> upsets, DataInfo data,
-                        List<FunnelRow> funnel, FunnelFigures figures) {
+                        List<FunnelRow> funnel, FunnelFigures figures, Map<Long, LeadLine> leadLines) {
+
+        /** Story r053 in the cup: the course of every finished pairing whose goal list is complete. */
+        public LeadLine leadLineOf(long matchId) {
+            return leadLines.get(matchId);
+        }
+
+        /** Story r096: stars only while a pairing of the edition is still open. */
+        public boolean over() {
+            return rounds.stream().flatMap(r -> r.matches().stream()).allMatch(m -> m.played());
+        }
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(rounds.stream().flatMap(r -> r.matches().stream()), false);
@@ -1289,11 +1299,12 @@ public final class MatchdayPageModels {
      * Story r053 "Spielverlauf als Führungslinie": the lead of a finished match from minute 0 to the
      * end, up for every home goal and down for every away goal (an own goal counts for the side that
      * benefits — the source's running score already says so). {@code path} is an SVG path in a
-     * 100 × 24 box; the lead is clamped at two goals, the goal list underneath stays exact.
+     * 100 × 24 box; the lead is clamped at two goals, the goal list underneath stays exact. A cup
+     * match that went to extra time runs to minute 125 instead of 95 ({@code end}).
      */
-    record LeadLine(String path, String label, List<GoalRow> goals) {
+    record LeadLine(String path, String label, List<GoalRow> goals, double end) {
         static final int CLAMP = 2;
-        private static final double MID = 12, STEP = 5, LAST_MINUTE = 95;
+        private static final double MID = 12, STEP = 5, LAST_MINUTE = 95, LAST_EXTRA_MINUTE = 125;
 
         /** Null for an unplayed match or one whose goal list does not add up to its final score. */
         static LeadLine of(Match m) {
@@ -1301,6 +1312,7 @@ public final class MatchdayPageModels {
                     || m.goals.stream().anyMatch(g -> g.minute == null || g.scoreAfter == null)) {
                 return null;
             }
+            double end = m.decision != null && m.decision != Decision.REGULAR ? LAST_EXTRA_MINUTE : LAST_MINUTE;
             StringBuilder path = new StringBuilder("M0 12");
             List<GoalRow> rows = new java.util.ArrayList<>();
             Score before = new Score(0, 0);
@@ -1308,17 +1320,17 @@ public final class MatchdayPageModels {
                 boolean forHome = g.scoreAfter.home > before.home;
                 before = g.scoreAfter;
                 int lead = Math.max(-CLAMP, Math.min(CLAMP, g.scoreAfter.home - g.scoreAfter.away));
-                path.append(" H").append(x(g.minute)).append(" V").append(fmt(MID - STEP * lead));
+                path.append(" H").append(x(g.minute, end)).append(" V").append(fmt(MID - STEP * lead));
                 rows.add(GoalRow.of(g, forHome));
             }
             path.append(" H100");
             String label = m.goals.isEmpty() ? "Spielverlauf: keine Tore"
                     : "Spielverlauf: " + rows.stream().map(r -> r.minute() + " " + r.score()).collect(java.util.stream.Collectors.joining(", "));
-            return new LeadLine(path.toString(), label, List.copyOf(rows));
+            return new LeadLine(path.toString(), label, List.copyOf(rows), end);
         }
 
-        private static String x(int minute) {
-            return fmt(Math.min(100, 100.0 * minute / LAST_MINUTE));
+        private static String x(int minute, double end) {
+            return fmt(Math.min(100, 100.0 * minute / end));
         }
 
         private static String fmt(double v) {
@@ -1327,7 +1339,12 @@ public final class MatchdayPageModels {
 
         /** Where the half-time tick sits in the same box. */
         public String halfTime() {
-            return x(45);
+            return x(45, end);
+        }
+
+        /** Where full time sits when the match went to extra time; null otherwise. */
+        public String fullTime() {
+            return end > LAST_MINUTE ? x(90, end) : null;
         }
     }
 

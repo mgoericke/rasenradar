@@ -1043,6 +1043,9 @@ public class MatchdayPages {
         }
         upsets.sort(Comparator.comparingInt(UpsetRow::gap).reversed());
 
+        Map<Long, MatchdayPageModels.LeadLine> lines = new HashMap<>();
+        rounds.forEach(r -> lines.putAll(leadLines(Match.findByMatchday(r))));
+
         List<SeasonChip> otherEditions = Matchday.<Matchday>list("league = ?1", league).stream()
                 .map(m -> m.season).distinct().filter(y -> y != season).sorted(Comparator.reverseOrder())
                 .map(y -> new SeasonChip(MatchdayPageModels.seasonLabel(y), MatchdayPageModels.leagueName(league), null,
@@ -1051,7 +1054,7 @@ public class MatchdayPages {
 
         CupFunnel funnel = cupFunnelCalculator.funnelFor(league, season);
         return new KnockoutPage(Nav.of(league), MatchdayPageModels.seasonLabel(season), season, otherEditions,
-                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel));
+                sections, upsets, DataInfo.of(rounds.get(0), now), funnelRows(funnel), figuresOf(funnel), lines);
     }
 
     /**

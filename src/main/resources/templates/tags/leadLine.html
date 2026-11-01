@@ -1,0 +1,7 @@
+{! Story r053: the course of a finished match as a line; a tap opens the goals (minute, scorer, own
+   goal or penalty). One markup for the matchday page, the start page and the cup rounds; after
+   extra time a second tick marks minute 90. !}
+<details class="lead-line">
+  <summary><svg viewBox="0 0 100 24" preserveAspectRatio="none" role="img" aria-label="{line.label}"><line class="ht" x1="{line.halfTime}" x2="{line.halfTime}" y1="2" y2="22"/>{#if line.fullTime}<line class="ht" x1="{line.fullTime}" x2="{line.fullTime}" y1="2" y2="22"/>{/if}<line class="zero" x1="0" x2="100" y1="12" y2="12"/><path d="{line.path}"/></svg><span class="sr-only">Torfolge zeigen</span></summary>
+  {#if line.goals}<ol>{#for g in line.goals}<li><span class="min">{g.minute}</span> {g.score} {g.scorer}{#if g.note} <span class="muted">({g.note})</span>{/if}</li>{/for}</ol>{#else}<p class="muted">Keine Tore.</p>{/if}
+</details>
