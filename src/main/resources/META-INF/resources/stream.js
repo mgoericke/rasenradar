@@ -2,7 +2,8 @@
 // and by league. Empty kickoff blocks, days and stream parts ("Spieltag", "Nächster Spieltag")
 // disappear with their matches. Design r102: one league or both ("Alle / 1. Liga / 2. Liga"), the
 // status inside "Mehr zum Spieltag". Without this script switch and status stay hidden and every
-// match shows — nothing depends on it.
+// match shows — nothing depends on it. The stream opens on the league of "Mein Verein", without a
+// club on the 1. Bundesliga: "Alle" mixes in finished cup ties and other leagues' matches.
 // The landing page arrives by hx-boost as often as by a full load, so this runs on every swap
 // but binds its click handler only once.
 (function () {
@@ -48,11 +49,28 @@
     root.querySelectorAll('[data-league]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.league === state.league)); });
   }
 
+  // the league of "Mein Verein" from the tables beside, else the first league of the page
+  function home(root) {
+    var club = null;
+    try { var c = JSON.parse(localStorage.getItem('rr-club') || 'null'); if (c && /^\d+$/.test(String(c.id))) club = String(c.id); } catch (e) {}
+    var row = club && root.querySelector('.rail-panel tr[data-clubs~="' + club + '"]');
+    var panel = row && row.closest('.rail-panel');
+    var mine = panel && Array.prototype.slice.call(panel.classList).filter(function (k) { return k.indexOf('table-') === 0; })[0];
+    var first = root.querySelector('[data-league]:not([data-league="alle"])');
+    return mine ? mine.slice(6) : first ? first.dataset.league : 'alle';
+  }
+
+  function reset(root) {
+    state = { status: 'alle', league: home(root) };
+    var table = root.querySelector('#table-' + state.league);
+    if (table) table.checked = true;
+  }
+
   function init() {
     var root = document.querySelector('.landing');
     if (!root) return;
     root.querySelectorAll('.stream-leagues, .md-menu-status').forEach(function (el) { el.hidden = false; });
-    state = { status: 'alle', league: 'alle' };
+    reset(root);
     apply(root);
   }
 
@@ -68,7 +86,7 @@
       var table = root.querySelector('#table-' + state.league);
       if (table) table.checked = true;
     } else {
-      state = { status: 'alle', league: 'alle' };
+      reset(root);
     }
     apply(root);
   });

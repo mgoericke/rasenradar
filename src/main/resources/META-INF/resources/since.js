@@ -4,6 +4,8 @@
 // the biggest move in the table. The base of the comparison stays for this tab (rr-since) until the
 // card is closed, so browsing away and back keeps it. Runs right after the card, before the first
 // paint, so nothing below the card jumps. Nothing of it is ever sent to the server.
+// The card is off until switched on in "Seite anpassen" (rr-shown); the visit is remembered anyway,
+// so switching it on shows what has been played since right away.
 (function () {
   var VISIT = 'rr-visit', SINCE = 'rr-since', GAP = 2 * 60 * 60 * 1000, SHOWN = 6;
   var card = document.querySelector('[data-since]');
@@ -49,24 +51,7 @@
     if (last && now - last.t > GAP) { base = last; set(sessionStorage, SINCE, base); }
   }
   set(localStorage, VISIT, { t: now, places: places });
-  if (!base) return;
-
-  var rows = card.querySelectorAll('li[data-end]'), shown = 0, more = 0;
-  rows.forEach(function (li) {
-    var since = +li.dataset.end * 1000 > base.t;
-    if (since && shown < SHOWN) { li.hidden = false; shown++; } else if (since) more++;
-  });
-  var text = move(base.places || {}, places);
-  if (!shown && !text) return;
-  var line = card.querySelector('.since-move');
-  line.textContent = text;
-  line.hidden = !text;
-  var rest = card.querySelector('.since-more');
-  rest.textContent = more ? 'und ' + more + (more === 1 ? ' weiteres Spiel' : ' weitere Spiele') : '';
-  rest.hidden = !more;
-  card.querySelector('.since-results').hidden = !shown;
-  card.hidden = false;
-
+  window.rrSince = function () { show(card, base, places); };
   if (!window.rrSinceBound) {
     window.rrSinceBound = true;
     document.addEventListener('click', function (e) {
@@ -76,5 +61,30 @@
       var c = document.querySelector('[data-since]');
       if (c) c.hidden = true;
     });
+    document.addEventListener('rr:sections', function () { if (document.querySelector('[data-since]')) window.rrSince(); });
+  }
+  window.rrSince();
+
+  function show(card, base, places) {
+    var on = false;
+    try { on = (JSON.parse(localStorage.getItem('rr-shown') || '[]') || []).indexOf('start-seit-besuch') >= 0; } catch (e) {}
+    card.hidden = true;
+    if (!on || !base) return;
+
+    var rows = card.querySelectorAll('li[data-end]'), shown = 0, more = 0;
+    rows.forEach(function (li) {
+      var since = +li.dataset.end * 1000 > base.t;
+      if (since && shown < SHOWN) { li.hidden = false; shown++; } else if (since) more++;
+    });
+    var text = move(base.places || {}, places);
+    if (!shown && !text) return;
+    var line = card.querySelector('.since-move');
+    line.textContent = text;
+    line.hidden = !text;
+    var rest = card.querySelector('.since-more');
+    rest.textContent = more ? 'und ' + more + (more === 1 ? ' weiteres Spiel' : ' weitere Spiele') : '';
+    rest.hidden = !more;
+    card.querySelector('.since-results').hidden = !shown;
+    card.hidden = false;
   }
 })();

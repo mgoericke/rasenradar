@@ -10,15 +10,15 @@
   <input class="view-input sr-only" type="radio" name="landing-view" id="view-tabelle">
   <input class="view-input sr-only" type="radio" name="landing-view" id="view-bilanz">
 
-  {! the start page's stage: the top match of the 1. Bundesliga, or the club's own with "Mein Verein";
-     it opens the page over the full width, directly under the navigation (design r102) !}
-  {#if page.top}<div id="top-stage">{#include MatchdayPages/topStage stage=page.top /}</div>{/if}
+  {! the start page's stage (design r102): only with "Mein Verein" — nav.js swaps in the club's running or
+     next match. Without a club it stays empty; the server fills it only for a match browsed to without script. !}
+  <div id="top-stage"{#if !page.top} hidden{/if}>{#if page.top}{#include MatchdayPages/topStage stage=page.top /}{/if}</div>
 
   {! story r044: the browser remembers the last visit and the final table of then (rr-visit) and
      shows here what has been played since — before the first paint, so nothing below jumps.
-     Neither the visit nor the club ever reaches the server. !}
+     Neither the visit nor the club ever reaches the server. Off until switched on in "Seite anpassen". !}
   {#if page.current && page.recent}
-  <section class="since" data-section="start-seit-besuch" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
+  <section class="since" data-section="start-seit-besuch" data-section-default="off" data-since data-places="{page.finalPlaces}" aria-labelledby="since-title" hidden>
     <div class="since-head">
       <h2 id="since-title">Seit dem letzten Besuch</h2>
       <button type="button" class="link-button" data-since-close>Ausblenden</button>
