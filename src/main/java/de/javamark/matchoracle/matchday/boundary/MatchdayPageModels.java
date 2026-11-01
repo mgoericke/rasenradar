@@ -419,6 +419,10 @@ public final class MatchdayPageModels {
         }
     }
 
+    /** The cup round that stands in the start page's stream this week: "2. Runde", its link, its shortcut for the switch. */
+    record CupRound(String shortcut, String name, String round, String link) {
+    }
+
     /**
      * Design r102, "Vorbericht": one line above the stream — the match of the matchday, "Mein Verein"
      * (a line for every club with an open match, the browser shows only its own: {@code clubId}) and
@@ -589,7 +593,7 @@ public final class MatchdayPageModels {
     record LandingPage(Nav nav, String dateRange, List<LandingLeague> leagues, List<StreamDayView> days, int liveCount,
                        List<StreamDayView> nextDays, String forecastPath, String nextForecastPath, String leaderboardLink,
                        List<SinceRow> recent, String finalPlaces, TopStage top, MatchdayStep step,
-                       List<BriefLine> brief) {
+                       List<BriefLine> brief, CupRound cup) {
 
         public String livePollLink() {
             return MatchdayPageModels.livePollLink(days.stream().flatMap(d -> d.slots().stream())

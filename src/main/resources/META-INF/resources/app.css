@@ -830,6 +830,7 @@ h2 { font-size: 1.35rem; }
 .landing-sub { margin: .3rem 0 0; color: var(--ink-soft); }
 .landing-sub a:hover { color: var(--ink); }
 .landing-sub b { color: var(--ink); font-weight: 600; }
+.landing-sub a { white-space: nowrap; }
 
 /* segmented control and chips: filter bar and phone view switch */
 .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
@@ -967,9 +968,13 @@ h2 { font-size: 1.35rem; }
 }
 @media (max-width: 720px) {
   .stream .landing-head { grid-template-columns: minmax(0, 1fr) auto; }
-  .stream-leagues { grid-column: 1; grid-row: 3; }
-  .md-menu { grid-column: 2; grid-row: 3; }
-  .md-tools { grid-row: 4; }
+  /* the switch gets its own row — with the cup it holds four buttons */
+  .stream-leagues { grid-column: 1 / -1; grid-row: 3; display: flex; }
+  .stream-leagues button { flex: 1; }
+  .js .stream-leagues[hidden] { display: flex; }
+  .md-menu { grid-column: 1 / -1; grid-row: 4; justify-self: start; }
+  .md-menu-panel { left: 0; right: auto; }
+  .md-tools { grid-row: 5; }
   .md-step { flex: 1 1 100%; flex-wrap: wrap; }
   .md-step .md-now { order: 1; margin: .4rem auto 0; }
   .md-step-label { flex: 1; text-align: center; }

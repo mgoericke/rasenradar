@@ -179,6 +179,10 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   **Spielzeilen** ohne Anstoß-Kästen: eine Mähstreifen-Zeile je Spiel, links Anstoß und
   Liga-Abzeichen, das Endergebnis ohne Kasten in Display-Schrift (vorläufig gestrichelt, live
   rot umrandet), unter beendeten Spielen der Torverlauf (Story r053).
+  **Pokal im Strom:** Pokalspiele, die in den vier Tagen vor dem gezeigten Bundesliga-Spieltag oder
+  währenddessen angepfiffen werden, stehen mit Abzeichen „DFB" im selben Strom; der Ligaschalter
+  bekommt „Pokal", das Menü einen Abschnitt DFB-Pokal, die Unterzeile die Runde. Unter 720 px steht
+  der Schalter in einer eigenen Zeile. Vorbericht, Tabelle und KI-Vorschau bleiben bei den Bundesligen.
   Beide Bundesligen bilden **einen** Strom nach Tag (`.stream-day-label`) und Anstoß-Block
   (`.stream-slot`, Mähstreifen, Kopfzeile mit Uhrzeit und „KI x von y getroffen"); jede Zeile
   trägt links das Liga-Abzeichen und rechts **neben** dem Link die KI-Zelle (`.stream-ki`):

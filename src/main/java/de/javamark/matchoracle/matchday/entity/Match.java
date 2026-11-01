@@ -172,6 +172,10 @@ public class Match extends PanacheEntity {
      * Every finished match of a season, whatever its round — the cup's rounds carry a label, which
      * {@link #findPlayedBefore} leaves out.
      */
+    public static List<Match> findKickoffBetween(League league, Instant from, Instant to) {
+        return list("matchday.league = ?1 and kickoff >= ?2 and kickoff <= ?3 order by kickoff", league, from, to);
+    }
+
     public static List<Match> findPlayedInSeason(League league, int season) {
         return list("matchday.league = ?1 and matchday.season = ?2 and fullTimeScore is not null", league, season);
     }

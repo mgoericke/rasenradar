@@ -54,9 +54,9 @@
          stream.js and nav.js; the step is plain links. !}
       <header class="landing-head">
         <h1 id="landing-heading" class="landing-heading">Spieltag</h1>
-        <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.shortName}</b> {l.matchdayNumber}. Spieltag</a> · {/for}{page.dateRange}</p>
+        <p class="landing-sub">{#for l in page.leagues}<a href="{l.matchdayLink}"><b>{l.shortName}</b> {l.matchdayNumber}. Spieltag</a> · {/for}{#if page.cup}<a href="{page.cup.link}"><b>{page.cup.name}</b> {page.cup.round}</a> · {/if}{page.dateRange}</p>
         <div class="seg stream-leagues" role="group" aria-label="Wettbewerb" hidden>
-          <button type="button" data-league="alle" aria-pressed="true">Alle</button>{#for l in page.leagues}<button type="button" data-league="{l.shortcut}" aria-pressed="false">{l.shortName}</button>{/for}
+          <button type="button" data-league="alle" aria-pressed="true">Alle</button>{#for l in page.leagues}<button type="button" data-league="{l.shortcut}" aria-pressed="false">{l.shortName}</button>{/for}{#if page.cup}<button type="button" data-league="{page.cup.shortcut}" aria-pressed="false">Pokal</button>{/if}
         </div>
         <details class="md-menu">
           <summary>Mehr zum Spieltag</summary>
@@ -78,6 +78,14 @@
               <li><a href="/{l.shortcut}/saison">Saison in Zahlen</a></li>
             </ul>
             {/for}
+            {#if page.cup}
+            <p class="md-menu-label">{page.cup.name}</p>
+            <ul>
+              <li><a href="{page.cup.link}">{page.cup.round} und alle Runden</a></li>
+              <li><a href="/{page.cup.shortcut}/torschuetzen">Torschützen</a></li>
+              <li><a href="/{page.cup.shortcut}/saison">Pokal in Zahlen</a></li>
+            </ul>
+            {/if}
             <ul><li><a href="/trefferbilanz">KI-Bilanz</a></li></ul>
           </div>
         </details>

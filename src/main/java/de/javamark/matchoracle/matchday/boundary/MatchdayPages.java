@@ -20,6 +20,7 @@ import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.SinceRow;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.TopStage;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.MatchdayStep;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.BriefLine;
+import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.CupRound;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageTeam;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.StageBrowse;
 import de.javamark.matchoracle.matchday.boundary.MatchdayPageModels.FormChip;
@@ -189,6 +190,10 @@ public class MatchdayPages {
         }
         MatchdayStep step = new MatchdayStep(offset,
                 steps[0] && offset > -MAX_STEPS ? offset - 1 : null, steps[1] && offset < MAX_STEPS ? offset + 1 : null);
+        List<Match> cupMatches = cupMatchesAround(shown);
+        shown.addAll(cupMatches);
+        CupRound cup = cupMatches.isEmpty() ? null : new CupRound("dfb", MatchdayPageModels.leagueName(League.DFB_POKAL),
+                cupMatches.getFirst().matchday.displayName(), "/dfb");
         List<StreamDay> days = MatchdayStream.of(shown);
         List<StreamDayView> dayViews = streamViews(days, now);
         List<StreamDayView> nextViews = streamViews(MatchdayStream.of(next), now);
@@ -197,7 +202,7 @@ public class MatchdayPages {
         return Templates.home(new LandingPage(Nav.page("home"), range, leagues, dayViews, live, nextViews,
                 MatchdayPageModels.forecastLink(dayViews), MatchdayPageModels.forecastLink(nextViews),
                 MatchdayPageModels.LEADERBOARD_LINK, offset == 0 ? sinceRows(now) : List.of(), String.join(";", finalPlaces),
-                topStage(shown, next, now, spiel), step, offset == 0 ? brief(shown, now) : List.of()));
+                topStage(shown, next, now, spiel), step, offset == 0 ? brief(shown, now) : List.of(), cup));
     }
 
     /**
@@ -231,7 +236,8 @@ public class MatchdayPages {
      * browser shows the line of "Mein Verein" only), and the strongest running streak at stake.
      */
     private List<BriefLine> brief(List<Match> shown, Instant now) {
-        List<Match> open = shown.stream().filter(m -> !m.isPlayed() && !m.isLive(now, liveWindow))
+        // the Bundesligas only: a cup tie has no table and its own streaks
+        List<Match> open = shown.stream().filter(m -> m.matchday.league.hasTable() && !m.isPlayed() && !m.isLive(now, liveWindow))
                 .sorted(Comparator.comparing((Match m) -> m.kickoff).thenComparing(m -> m.id)).toList();
         if (open.isEmpty()) {
             return List.of();
@@ -305,6 +311,22 @@ public class MatchdayPages {
     /** How far "‹ Aktueller Spieltag ›" reaches either way — a season has at most 38 matchdays. */
     private static final int MAX_STEPS = 40;
 
+    /** How long before a Bundesliga matchday a cup round still belongs to its week — Tuesday and Wednesday before the weekend. */
+    private static final Duration CUP_LEAD = Duration.ofDays(4);
+
+    /**
+     * The DFB-Pokal on the start page: the cup's matches that kick off in the days before the shown
+     * Bundesliga matchdays or during them — a midweek round stands with the weekend that follows it.
+     */
+    static List<Match> cupMatchesAround(List<Match> leagueMatches) {
+        if (leagueMatches.isEmpty()) {
+            return List.of();
+        }
+        Instant first = leagueMatches.stream().map(m -> m.kickoff).min(Comparator.naturalOrder()).orElseThrow();
+        Instant last = leagueMatches.stream().map(m -> m.kickoff).max(Comparator.naturalOrder()).orElseThrow();
+        return Match.findKickoffBetween(League.DFB_POKAL, first.minus(CUP_LEAD), last);
+    }
+
     /** The matches of the start page: the displayed matchday of both Bundesligas, and the next one where the stream shows it. */
     static List<Match> startPageMatches(Instant now) {
         List<Match> all = new ArrayList<>();
@@ -318,6 +340,7 @@ public class MatchdayPages {
                 }
             });
         }
+        all.addAll(cupMatchesAround(all));
         return all;
     }
 
