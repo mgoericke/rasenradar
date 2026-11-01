@@ -76,4 +76,22 @@ class GoalTimingCalculatorTest {
         assertEquals("1.-15.", timing.get(0).label());
         assertEquals("76.-90.", timing.get(5).label());
     }
+
+    @Test
+    void inTheCupExtraTimeGoalsGetAWindowOfTheirOwn() {
+        Match extra = played(1, mainz, 2, leipzig, 1);
+        extra.decision = de.javamark.matchoracle.matchday.entity.Decision.EXTRA_TIME;
+        goal(extra, "Burkardt", 1, 0).minute = 30;
+        goal(extra, "Openda", 1, 1).minute = 80;
+        goal(extra, "Amiri", 2, 1).minute = 112;
+        Match regular = played(1, leipzig, 1, mainz, 0);
+        goal(regular, "Openda", 1, 0).minute = 93;   // Nachspielzeit stays with 76.-90.
+
+        List<GoalTiming> cup = GoalTimingCalculator.cup(List.of(extra, regular));
+
+        assertEquals(7, cup.size());
+        assertEquals(new GoalTiming("76.-90.", 2, 0), cup.get(5));
+        assertEquals(new GoalTiming("91.-120.", 1, 0), cup.get(6));
+        assertEquals(6, GoalTimingCalculator.league(List.of(extra)).size());
+    }
 }

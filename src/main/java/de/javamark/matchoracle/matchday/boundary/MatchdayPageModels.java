@@ -922,7 +922,29 @@ public final class MatchdayPageModels {
     record SeasonPage(Nav nav, String season, List<NavLeague> leagues, int basedOn, HomeAdvantageView homeAdvantage,
                       List<StreakRow> streaksGoing, List<StreakRow> streaksStuck, ScoreGridView scores,
                       List<SpecialGoalCard> specialGoals, ComebackView comebacks, CrossTable crossTable,
-                      ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear) {
+                      ReachView reach, RunInView runIn, GoalTimingView goalTiming, LastYearView lastYear,
+                      CupDecisionView decisions) {
+        /** The cup's numbers page: no table, so no reach, run-in, streaks, cross table, last year or home advantage. */
+        public boolean cup() {
+            return decisions != null;
+        }
+    }
+
+    /** "Pokal in Zahlen": how many pairings went to extra time and to penalties, and which ones went the distance. */
+    record CupDecisionView(int matches, int extraTime, int shootouts, List<CupDecisionRow> rows) {
+        static CupDecisionView of(List<Match> settled, String shortcut) {
+            List<CupDecisionRow> rows = settled.stream().filter(m -> m.decision != null && m.decision != Decision.REGULAR)
+                    .sorted(java.util.Comparator.comparing((Match m) -> m.kickoff).reversed())
+                    .map(m -> new CupDecisionRow(m.matchday.displayName(), shortOrName(m.homeTeam) + " – " + shortOrName(m.awayTeam),
+                            m.fullTimeScore.home + ":" + m.fullTimeScore.away, decisionLabel(m.decision, m.penaltyScore),
+                            "/" + shortcut + "/matches/" + m.id))
+                    .toList();
+            int shootouts = (int) settled.stream().filter(m -> m.decision == Decision.PENALTIES).count();
+            return new CupDecisionView(settled.size(), rows.size() - shootouts, shootouts, rows);
+        }
+    }
+
+    record CupDecisionRow(String round, String pairing, String score, String decision, String link) {
     }
 
     /** Story r098: the league's home/draw/away shares and the two club lists, ready to print. */

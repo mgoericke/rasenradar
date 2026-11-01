@@ -643,6 +643,9 @@ public class MatchdayPages {
     @Path("/{league}/saison")
     public TemplateInstance season(@PathParam("league") String league) {
         League l = league(league);
+        if (l == League.DFB_POKAL) {
+            return cupSeason(l);
+        }
         if (l != League.BUNDESLIGA_1 && l != League.BUNDESLIGA_2) {
             throw new NotFoundException("no season page for " + league);
         }
@@ -669,7 +672,29 @@ public class MatchdayPages {
                 MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.league(settled)),
                 MatchdayPageModels.LastYearView.of(de.javamark.matchoracle.matchday.control.LastYearCalculator.of(l, settled, Map.of(
                         League.BUNDESLIGA_1, Match.findPlayedBefore(League.BUNDESLIGA_1, season - 1, Integer.MAX_VALUE),
-                        League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut)));
+                        League.BUNDESLIGA_2, Match.findPlayedBefore(League.BUNDESLIGA_2, season - 1, Integer.MAX_VALUE))), shortcut),
+                null));
+    }
+
+    /**
+     * "Pokal in Zahlen": the season page's figures that make sense in a knockout competition — most
+     * frequent results, special goals, the biggest comeback, when the goals fall (with extra time), and
+     * how often a pairing went to extra time or penalties. Final results only.
+     */
+    private TemplateInstance cupSeason(League l) {
+        int season = Matchday.latestSeason(l).orElseThrow(() -> new NotFoundException("no season known yet"));
+        List<Match> settled = ScorerCalculator.seasonMatches(l, season).stream()
+                .filter(m -> m.resultStatus == ResultStatus.FINAL).toList();
+        String shortcut = l.sourceShortcut();
+        return Templates.season(new MatchdayPageModels.SeasonPage(Nav.of(l), MatchdayPageModels.seasonLabel(season), List.of(),
+                settled.size(), null, List.of(), List.of(),
+                MatchdayPageModels.ScoreGridView.of(de.javamark.matchoracle.matchday.control.ScoreFrequencyCalculator.of(settled), shortcut),
+                de.javamark.matchoracle.matchday.control.SpecialGoalsCalculator.of(settled).stream()
+                        .map(c -> MatchdayPageModels.SpecialGoalCard.of(c, shortcut)).toList(),
+                MatchdayPageModels.ComebackView.of(de.javamark.matchoracle.matchday.control.ComebackCalculator.of(settled), shortcut),
+                null, null, null,
+                MatchdayPageModels.GoalTimingView.ofLeague(GoalTimingCalculator.cup(settled)),
+                null, MatchdayPageModels.CupDecisionView.of(settled, shortcut)));
     }
 
     /** Story r058: points, maximum and pace per club, from final results only. */

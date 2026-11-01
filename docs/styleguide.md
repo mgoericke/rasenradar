@@ -210,6 +210,11 @@ der Navigation erlaubt „Wie System", „Hell" und „Dunkel"; die Wahl liegt n
   reicht die Achse bis 125 Minuten, ein zweiter Strich markiert die 90.), Stern und „Beobachtet"
   für offene Begegnungen, Liste | Kompakt und „Runde drucken" (gedruckt wird nur die offene Runde,
   ohne Trichter und Überraschungen).
+- **Pokal in Zahlen** (`/dfb/saison`, Vorlage der Saisonseite mit `page.cup`): nur, was im K.-o.
+  trägt — häufigste Ergebnisse, Tore der besonderen Art, die größte Aufholjagd (ohne Vereinsbalken,
+  Punkte gibt es im Pokal nicht), Torminuten mit eigenem Fenster 91.–120. und „Verlängerung und
+  Elfmeterschießen" als gestreifte Liste (`.cup-decisions`). Ohne Tabelle, Serien, Vorjahr,
+  Kreuztabelle und Heimvorteil; die Sprungmarken folgen.
 - **Spielseite: der Spielkopf** (`.scoreboard`, `.board-ai`, `.board-verdict`): gestreifter Rasen
   mit Seitenlinie und zwei Strafräumen als Rahmen; Wappen auf weißer Scheibe, Namen und Ergebnis in
   Display-Schrift 800. Unter einer Kreidelinie eine KI-Zeile — KI-Plakette, Richtwert und Tendenz
